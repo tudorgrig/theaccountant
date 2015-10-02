@@ -1,0 +1,11 @@
+>>>>> Running the project <<<<<
+
+-> The following commands are executed from the directory where the project is located:
+
+1. Compiling the source code and generating the jar application:
+
+	'mvn clean install'
+
+2. Run the jar application: 
+
+	'java -jar target\MyMoneyTracker-0.0.1-SNAPSHOT.jar'
