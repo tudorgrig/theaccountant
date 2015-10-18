@@ -1,5 +1,7 @@
 
 *.project
 *.classpath
-
+.idea/
 target/
+*.properties
+*.iml
