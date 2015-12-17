@@ -2,12 +2,23 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
-       http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+       http://www.springframework.org/schema/data/jpa
+       http://www.springframework.org/schema/data/jpa/spring-jpa-1.8.xsd">
 
+       <tx:annotation-driven />
+       <context:annotation-config/>
        <context:property-placeholder location="classpath:application.properties" />
+       <!--The following is needed to show which package is being scanned for JpaRepository classes-->
+       <jpa:repositories base-package="com.myMoneyTracker.dao" />
 
        <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
               <property name="driverClassName" value="${hibernate.connection.driver}" />
@@ -17,24 +28,37 @@
 
        </bean>
 
-       <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-              <property name="dataSource" ref="dataSource"/>
-              <property name="packagesToScan">
-                     <list>
-                            <value>com.myMoneyTracker.model</value>
-                     </list>
-              </property>
-              <property name="hibernateProperties">
-                     <props>
-                            <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
-                            <prop key="hibernate.show_sql">true</prop>
-                            <prop key="hibernate.format_sql">true</prop>
-                     </props>
-              </property>
+       <!--<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">-->
+              <!--<property name="dataSource" ref="dataSource"/>-->
+              <!--<property name="packagesToScan">-->
+                     <!--<list>-->
+                            <!--<value>com.myMoneyTracker.model</value>-->
+                     <!--</list>-->
+              <!--</property>-->
+              <!--<property name="hibernateProperties">-->
+                     <!--<props>-->
+                            <!--<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>-->
+                            <!--<prop key="hibernate.show_sql">true</prop>-->
+                            <!--<prop key="hibernate.format_sql">true</prop>-->
+                     <!--</props>-->
+              <!--</property>-->
+       <!--</bean>-->
+
+       <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+              <property name="showSql" value="true"/>
+              <property name="generateDdl" value="true"/>
+              <property name="database" value="POSTGRESQL"/>
        </bean>
 
-       <bean id="transactionManager"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-              <property name="sessionFactory" ref="sessionFactory" />
+       <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+              <property name="dataSource" ref="dataSource"/>
+              <property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
+              <!-- spring based scanning for entity classes>-->
+              <property name="packagesToScan" value="com.myMoneyTracker.model"/>
+       </bean>
+
+       <bean id="transactionManager"  class="org.springframework.orm.jpa.JpaTransactionManager">
+              <property name="entityManagerFactory" ref="entityManagerFactory" />
        </bean>
 
        <bean id="persistenceExceptionTranslationPostProcessor"
