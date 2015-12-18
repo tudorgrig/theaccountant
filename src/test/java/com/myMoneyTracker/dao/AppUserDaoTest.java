@@ -36,13 +36,6 @@ public class AppUserDaoTest {
         assertTrue(appUser.getId() != 0);
     }
 
-    private AppUser createAppUser() {
-        AppUser appUser = new AppUser();
-        appUser.setFirstName("Tudor");
-        appUser.setSurname("Grigoriu");
-        appUser.setBirthdate(new Date());
-        return appUser;
-    }
 
     @Test
     public void shouldFindAppUser(){
@@ -85,4 +78,11 @@ public class AppUserDaoTest {
         assertTrue(appUser.getId() > 0);
     }
 
+    private AppUser createAppUser() {
+    	AppUser appUser = new AppUser();
+    	appUser.setFirstName("Tudor");
+    	appUser.setSurname("Grigoriu");
+    	appUser.setBirthdate(new Date());
+    	return appUser;
+    }
 }

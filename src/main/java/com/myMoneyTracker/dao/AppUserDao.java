@@ -1,4 +1,5 @@
 package com.myMoneyTracker.dao;
+
 import com.myMoneyTracker.model.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,6 +11,5 @@ import javax.transaction.Transactional;
  */
 @Transactional
 public interface AppUserDao extends JpaRepository<AppUser, Long>{
-
 
 }
