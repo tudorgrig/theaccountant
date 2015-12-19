@@ -9,9 +9,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -25,20 +27,20 @@ public class AppUserDaoTest {
 
     @Autowired
     private AppUserDao appUserDao;
-
+    private String FIRST_NAME = "Tudor";
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
 
     @Test
     public void shouldSaveAppUser(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         logger.info("The user has id = " + appUser.getId());
         assertTrue(appUser.getId() != 0);
     }
 
-    private AppUser createAppUser() {
+    private AppUser createAppUser(String firstName) {
         AppUser appUser = new AppUser();
-        appUser.setFirstName("Tudor");
+        appUser.setFirstName(firstName);
         appUser.setSurname("Grigoriu");
         appUser.setBirthdate(new Date());
         return appUser;
@@ -46,7 +48,7 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldFindAppUser(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser = appUserDao.findOne(appUser.getId());
         assertTrue(appUser != null);
@@ -54,7 +56,7 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldNotFindAppUser(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser = appUserDao.findOne(new Random().nextLong());
         assertTrue(appUser == null);
@@ -62,7 +64,7 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldDeleteAppUser(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUserDao.delete(appUser);
         appUser = appUserDao.findOne(appUser.getId());
@@ -71,7 +73,7 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldUpdateAppUser(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser.setSurname("Florin");
         AppUser result = appUserDao.save(appUser);
@@ -80,9 +82,19 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldSaveAndFlush(){
-        AppUser appUser = createAppUser();
+        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.saveAndFlush(appUser);
         assertTrue(appUser.getId() > 0);
+    }
+
+    @Test
+    public void shouldFindAll(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        AppUser appUser2 = createAppUser("Florin");
+        appUserDao.save(appUser);
+        appUserDao.save(appUser2);
+        List<AppUser> appUserList = appUserDao.findAll();
+        assertEquals(appUserList.size(),2);
     }
 
 }
