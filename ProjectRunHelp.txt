@@ -5,7 +5,11 @@
 1. Compiling the source code and generating the jar application:
 
 	'mvn clean install'
+	
+2. Creating the project structure and dependencies for IDE import:
 
-2. Run the jar application: 
+	'mvn eclipse:clean eclipse:eclipse'
+
+3. Run the jar application: 
 
 	'java -jar target\MyMoneyTracker-0.0.1-SNAPSHOT.jar'
