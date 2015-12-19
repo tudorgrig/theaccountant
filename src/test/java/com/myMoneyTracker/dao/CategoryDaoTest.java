@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 @Transactional
 public class CategoryDaoTest {
 	
-	private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
+	private static final Logger logger = Logger.getLogger(CategoryDaoTest.class.getName());
 
 	@Autowired
 	private CategoryDao categoryDao;
