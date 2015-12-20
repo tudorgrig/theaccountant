@@ -2,6 +2,7 @@ package com.myMoneyTracker.dao;
 
 import com.myMoneyTracker.model.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 
@@ -10,6 +11,7 @@ import javax.transaction.Transactional;
  * Data access object class for app_user
  */
 @Transactional
+@Repository
 public interface AppUserDao extends JpaRepository<AppUser, Long>{
 
 }
