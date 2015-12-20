@@ -1,9 +1,9 @@
 package com.myMoneyTracker.model.category;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by florinIacob on 18.12.2015.
@@ -15,6 +15,9 @@ public class Category {
 	@Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
+	@NotNull
+	@Length(min=3, message="Category name should have at least 3 characters")
+	@Column(nullable = false)
 	private String name;
 	
 	public long getId() {

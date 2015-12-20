@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
@@ -38,8 +39,11 @@ public class Income {
 //	@ManyToOne(fetch = FetchType.EAGER)
 //	@JoinColumn(name="subcategory_id")
 //	private Subcategory subcategory;
-	
+
+	@NotNull
+	@Column(nullable = false)
 	private String name;
+
 	private String description;
 	
 	@Column(nullable = false)
