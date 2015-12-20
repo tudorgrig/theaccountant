@@ -1,6 +1,7 @@
 package com.myMoneyTracker.dao;
 
 import com.myMoneyTracker.model.user.AppUser;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ public class AppUserDaoTest {
     private AppUserDao appUserDao;
     private String FIRST_NAME = "Tudor";
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
+
+    @Before
+    public void deleteData(){
+        appUserDao.deleteAll();
+    }
 
     @Test
     public void shouldSaveAppUser(){
@@ -93,6 +99,7 @@ public class AppUserDaoTest {
     	AppUser appUser = new AppUser();
     	appUser.setFirstName(firstName);
     	appUser.setSurname("Grigoriu");
+        appUser.setPassword("TEST_PASS");
     	appUser.setBirthdate(new Date());
     	return appUser;
     }

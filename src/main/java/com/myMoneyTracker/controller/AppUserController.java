@@ -35,6 +35,7 @@ public class AppUserController {
     public ResponseEntity<AppUser> createAppUser(@RequestBody AppUser appUser){
         //TODO: We should add hibernate validator filter so that all fields from the req body are correct (bussiness wise)
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(encryptedPassword);
         AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
     }

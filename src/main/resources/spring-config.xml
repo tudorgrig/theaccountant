@@ -52,4 +52,8 @@
 
     <bean id="persistenceExceptionTranslationPostProcessor"
           class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+
+    <bean id="passwordEncrypt" class="com.myMoneyTracker.util.PasswordEncrypt">
+        <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
+    </bean>
 </beans>
