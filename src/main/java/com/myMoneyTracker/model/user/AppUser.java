@@ -16,6 +16,15 @@ public class AppUser {
     private String firstName;
     private String surname;
     private Date birthdate;
+    private String password;
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public long getId() {
         return id;
