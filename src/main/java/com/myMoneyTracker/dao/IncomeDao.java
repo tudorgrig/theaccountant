@@ -9,6 +9,6 @@ import com.myMoneyTracker.model.income.Income;
  * 
  * @author Florin, on 19.12.2015
  */
-public interface IncomeDao  extends JpaRepository<Income, Long> {
+public interface IncomeDao extends JpaRepository<Income, Long> {
 
 }

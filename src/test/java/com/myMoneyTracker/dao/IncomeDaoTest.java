@@ -40,7 +40,6 @@ public class IncomeDaoTest {
 	
 	private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
 
-	
 	@Test
     public void shouldSaveIncome() {
 		Income income = createIncome();
@@ -85,7 +84,7 @@ public class IncomeDaoTest {
     public void shouldFindAll(){
 		Income income1 = createIncome();
 		Income income2 = createIncome();
-		//2 different incomes will be saved into the databes
+		//2 different incomes will be saved into the database
 		// because the id for both is null
 		incomeDao.save(income1);
 		incomeDao.save(income2);
