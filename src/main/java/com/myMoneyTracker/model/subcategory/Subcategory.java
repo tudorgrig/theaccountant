@@ -15,6 +15,8 @@ public class Subcategory {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
 
+    private String name;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name="category_id")
     private Category category;
@@ -33,5 +35,13 @@ public class Subcategory {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

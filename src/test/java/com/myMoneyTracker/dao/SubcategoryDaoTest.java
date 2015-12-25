@@ -89,6 +89,7 @@ public class SubcategoryDaoTest {
 
     private Subcategory createSubcategory() {
         Subcategory subcategory = new Subcategory();
+        subcategory.setName("SUBCATEGORY");
         subcategory.setCategory(createCategory());
         return subcategory;
     }
