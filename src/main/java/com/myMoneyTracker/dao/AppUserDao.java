@@ -14,4 +14,7 @@ import javax.transaction.Transactional;
 @Repository
 public interface AppUserDao extends JpaRepository<AppUser, Long>{
 
+    AppUser findByEmail(String loginString);
+
+    AppUser findByUsername(String loginString);
 }

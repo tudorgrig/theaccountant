@@ -2,6 +2,7 @@ package com.myMoneyTracker.controller;
 
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.util.EmailValidator;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -25,10 +26,13 @@ import java.util.logging.Logger;
 public class AppUserController {
 
     @Autowired
-    AppUserDao appUserDao;
+    private AppUserDao appUserDao;
 
     @Autowired
-    PasswordEncrypt passwordEncrypt;
+    private EmailValidator emailValidator;
+
+    @Autowired
+    private PasswordEncrypt passwordEncrypt;
 
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
@@ -52,6 +56,20 @@ public class AppUserController {
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findAppUser(@PathVariable("id") Long id){
         AppUser appUser = appUserDao.findOne(id);
+        if(appUser == null){
+            return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/login/{login}", method = RequestMethod.GET)
+    public ResponseEntity<?> login(@PathVariable("login") String loginString){
+        AppUser appUser = null;
+        if(emailValidator.validate(loginString)){
+            appUser = appUserDao.findByEmail(loginString);
+        } else {
+            appUser = appUserDao.findByUsername(loginString);
+        }
         if(appUser == null){
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }

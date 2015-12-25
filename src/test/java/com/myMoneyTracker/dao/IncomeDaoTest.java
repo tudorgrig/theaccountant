@@ -123,6 +123,7 @@ public class IncomeDaoTest {
     	appUser.setFirstName("Florin");
     	appUser.setSurname("Iacob");
 		appUser.setPassword("TEST_PASS");
+		appUser.setUsername("tudorgrig");
     	appUser.setBirthdate(new Date());
 		appUser.setEmail("my-money-tracker@gmail.com");
     	appUserDao.save(appUser);

@@ -108,6 +108,7 @@ public class AppUserDaoTest {
     	appUser.setFirstName(firstName);
     	appUser.setSurname("Grigoriu");
         appUser.setPassword("TEST_PASS");
+        appUser.setUsername("tudorgrig");
     	appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
     	return appUser;
