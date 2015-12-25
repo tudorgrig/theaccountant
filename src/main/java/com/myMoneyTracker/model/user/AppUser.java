@@ -1,6 +1,8 @@
 package com.myMoneyTracker.model.user;
 
+import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,14 +18,25 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
+
     @NotNull
     private String firstName;
+
     @NotNull
     private String surname;
+
     private Date birthdate;
+
     @NotNull
     @Length(min=8, message="Password should have at least 8 characters")
     private String password;
+
+    @NotNull
+    @NotEmpty
+    @Email(message="Please provide a valid email address")
+    private String email;
+
+    private boolean activated;
 
     public String getPassword() {
         return password;
@@ -63,5 +76,21 @@ public class AppUser {
 
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

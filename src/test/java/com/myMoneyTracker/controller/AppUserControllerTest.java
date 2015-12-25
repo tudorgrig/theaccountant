@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import javax.validation.ConstraintViolationException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.util.Date;
@@ -39,6 +42,13 @@ public class AppUserControllerTest  {
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((AppUser)responseEntity.getBody()).getId() > 0);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void shouldNotCreateAppUser(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUser.setEmail("wrongFormat");
+        appUserController.createAppUser(appUser);
     }
 
     @Test
@@ -128,6 +138,7 @@ public class AppUserControllerTest  {
         appUser.setSurname("Grigoriu");
         appUser.setPassword("TEST_PASS");
         appUser.setBirthdate(new Date());
+        appUser.setEmail("my-money-tracker@gmail.com");
         return appUser;
     }
 }
