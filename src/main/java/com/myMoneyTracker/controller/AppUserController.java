@@ -34,7 +34,6 @@ public class AppUserController {
 
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
     public ResponseEntity<AppUser> createAppUser(@RequestBody @Valid AppUser appUser){
-        //TODO: We should add hibernate validator filter so that all fields from the req body are correct (bussiness wise)
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         AppUser createdAppUser = appUserDao.saveAndFlush(appUser);

@@ -17,7 +17,6 @@ public class Category {
     private long id;
 	@NotNull
 	@Length(min=3, message="Category name should have at least 3 characters")
-	@Column(nullable = false)
 	private String name;
 	
 	public long getId() {

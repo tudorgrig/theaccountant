@@ -29,6 +29,7 @@ public class Income {
 	
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name="user_id")
+	@NotNull
 	private AppUser user;
 	
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -41,15 +42,14 @@ public class Income {
 //	private Subcategory subcategory;
 
 	@NotNull
-	@Column(nullable = false)
 	private String name;
 
 	private String description;
-	
-	@Column(nullable = false)
+
+	@NotNull
 	private Double amount;
-	
-	@Column(nullable = false)
+
+	@NotNull
 	private Timestamp creationDate;
 	
 	public long getId() {

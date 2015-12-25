@@ -17,15 +17,12 @@ public class AppUser {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
     @NotNull
-    @Column(nullable = false)
     private String firstName;
     @NotNull
-    @Column(nullable = false)
     private String surname;
     private Date birthdate;
     @NotNull
     @Length(min=8, message="Password should have at least 8 characters")
-    @Column(nullable = false)
     private String password;
 
     public String getPassword() {
