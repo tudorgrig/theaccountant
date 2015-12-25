@@ -3,6 +3,7 @@ package com.myMoneyTracker.model.subcategory;
 import com.myMoneyTracker.model.category.Category;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Tudor Grigoriu.
@@ -15,10 +16,12 @@ public class Subcategory {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
 
+    @NotNull
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name="category_id")
+    @NotNull
     private Category category;
 
     public long getId() {
