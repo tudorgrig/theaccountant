@@ -126,6 +126,7 @@ public class AppUserControllerTest  {
         AppUser appUser = new AppUser();
         appUser.setFirstName(firstName);
         appUser.setSurname("Grigoriu");
+        appUser.setPassword("TEST_PASS");
         appUser.setBirthdate(new Date());
         return appUser;
     }

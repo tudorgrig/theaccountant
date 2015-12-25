@@ -2,6 +2,7 @@ package com.myMoneyTracker.controller;
 
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.util.PasswordEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -25,11 +26,16 @@ public class AppUserController {
     @Autowired
     AppUserDao appUserDao;
 
+    @Autowired
+    PasswordEncrypt passwordEncrypt;
+
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
     public ResponseEntity<AppUser> createAppUser(@RequestBody AppUser appUser){
         //TODO: We should add hibernate validator filter so that all fields from the req body are correct (bussiness wise)
+        String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(encryptedPassword);
         AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
     }
