@@ -1,6 +1,9 @@
 package com.myMoneyTracker.model.user;
 
+import org.hibernate.validator.constraints.Length;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -13,9 +16,13 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long id;
+    @NotNull
     private String firstName;
+    @NotNull
     private String surname;
     private Date birthdate;
+    @NotNull
+    @Length(min=8, message="Password should have at least 8 characters")
     private String password;
 
     public String getPassword() {

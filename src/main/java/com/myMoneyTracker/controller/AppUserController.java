@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -32,8 +33,7 @@ public class AppUserController {
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
-    public ResponseEntity<AppUser> createAppUser(@RequestBody AppUser appUser){
-        //TODO: We should add hibernate validator filter so that all fields from the req body are correct (bussiness wise)
+    public ResponseEntity<AppUser> createAppUser(@RequestBody @Valid AppUser appUser){
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
@@ -59,7 +59,7 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
-    public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody AppUser appUser){
+    public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser){
         AppUser oldAppUser = appUserDao.findOne(id);
         if(oldAppUser == null){
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);

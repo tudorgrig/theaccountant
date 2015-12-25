@@ -122,6 +122,7 @@ public class IncomeDaoTest {
     	AppUser appUser = new AppUser();
     	appUser.setFirstName("Florin");
     	appUser.setSurname("Iacob");
+		appUser.setPassword("TEST_PASS");
     	appUser.setBirthdate(new Date());
     	appUserDao.save(appUser);
     	return appUser;

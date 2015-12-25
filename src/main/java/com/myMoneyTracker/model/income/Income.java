@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
@@ -28,6 +29,7 @@ public class Income {
 	
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name="user_id")
+	@NotNull
 	private AppUser user;
 	
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -38,14 +40,16 @@ public class Income {
 //	@ManyToOne(fetch = FetchType.EAGER)
 //	@JoinColumn(name="subcategory_id")
 //	private Subcategory subcategory;
-	
+
+	@NotNull
 	private String name;
+
 	private String description;
-	
-	@Column(nullable = false)
+
+	@NotNull
 	private Double amount;
-	
-	@Column(nullable = false)
+
+	@NotNull
 	private Timestamp creationDate;
 	
 	public long getId() {
