@@ -124,6 +124,7 @@ public class IncomeDaoTest {
     	appUser.setSurname("Iacob");
 		appUser.setPassword("TEST_PASS");
     	appUser.setBirthdate(new Date());
+		appUser.setEmail("my-money-tracker@gmail.com");
     	appUserDao.save(appUser);
     	return appUser;
     }

@@ -1,6 +1,7 @@
 package com.myMoneyTracker.dao;
 
 import com.myMoneyTracker.model.user.AppUser;
+import javax.validation.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,12 +96,20 @@ public class AppUserDaoTest {
         assertEquals(appUserList.size(),2);
     }
 
+    @Test(expected = ConstraintViolationException.class)
+    public void shouldFailEmailValidation(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUser.setEmail("wrongEmailFormat");
+        appUser = appUserDao.saveAndFlush(appUser);
+    }
+
     private AppUser createAppUser(String firstName) {
     	AppUser appUser = new AppUser();
     	appUser.setFirstName(firstName);
     	appUser.setSurname("Grigoriu");
         appUser.setPassword("TEST_PASS");
     	appUser.setBirthdate(new Date());
+        appUser.setEmail("my-money-tracker@gmail.com");
     	return appUser;
     }
 }
