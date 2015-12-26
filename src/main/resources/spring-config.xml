@@ -56,4 +56,5 @@
     <bean id="passwordEncrypt" class="com.myMoneyTracker.util.PasswordEncrypt">
         <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
     </bean>
+    <bean id="emailValidator" class="com.myMoneyTracker.util.EmailValidator"/>
 </beans>

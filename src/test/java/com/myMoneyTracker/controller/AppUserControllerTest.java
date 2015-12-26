@@ -132,11 +132,36 @@ public class AppUserControllerTest  {
         assertEquals( HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
     }
 
+    @Test
+    public void shouldLoginWithUsername(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        ResponseEntity loginResponseEntity = appUserController.login("tudorgrig");
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldLoginWithEmail(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        ResponseEntity loginResponseEntity = appUserController.login("my-money-tracker@gmail.com");
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldNotLogin(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        ResponseEntity loginResponseEntity = appUserController.login("failure");
+        assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
+    }
+
     private AppUser createAppUser(String firstName) {
         AppUser appUser = new AppUser();
         appUser.setFirstName(firstName);
         appUser.setSurname("Grigoriu");
         appUser.setPassword("TEST_PASS");
+        appUser.setUsername("tudorgrig");
         appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
         return appUser;

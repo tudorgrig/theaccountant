@@ -36,6 +36,11 @@ public class AppUser {
     @Email(message="Please provide a valid email address")
     private String email;
 
+    @NotNull
+    @NotEmpty
+    @Length(min = 5)
+    private String username;
+
     private boolean activated;
 
     public String getPassword() {
@@ -92,5 +97,13 @@ public class AppUser {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
