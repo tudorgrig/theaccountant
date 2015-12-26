@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
+import com.myMoneyTracker.model.subcategory.Subcategory;
 import com.myMoneyTracker.model.user.AppUser;
 
 /**
@@ -35,11 +36,10 @@ public class Income {
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name="category_id")
 	private Category category;
-	
-	//TODO: subcategory must be implemented
-//	@ManyToOne(fetch = FetchType.EAGER)
-//	@JoinColumn(name="subcategory_id")
-//	private Subcategory subcategory;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="subcategory_id")
+	private Subcategory subcategory;
 
 	@NotNull
 	private String name;
@@ -106,5 +106,13 @@ public class Income {
 	
 	public void setCreationDate(Timestamp creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public Subcategory getSubcategory() {
+		return subcategory;
+	}
+
+	public void setSubcategory(Subcategory subcategory) {
+		this.subcategory = subcategory;
 	}
 }

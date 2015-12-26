@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import com.myMoneyTracker.model.subcategory.Subcategory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class IncomeDaoTest {
 	
 	@Autowired
 	private CategoryDao categoryDao;
+
+	@Autowired
+	private SubcategoryDao subcategoryDao;
 	
 	private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
 
@@ -56,11 +60,42 @@ public class IncomeDaoTest {
 		income = incomeDao.findOne(income.getId());
 		assertTrue(income != null);
 	}
-	
+
+	@Test
+	public void shouldFindIncomeByUserId(){
+		Income income = createIncome();
+		income = incomeDao.save(income);
+		List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getId());
+		assertEquals(1, incomeForUser.size());
+		assertEquals(income.getId(), incomeForUser.get(0).getId());
+	}
+
+	@Test
+	public void shouldFindIncomeByCategoryId(){
+		Income income = createIncome();
+		income = incomeDao.save(income);
+		List<Income> incomeByCategory = incomeDao.findByCategoryId(income.getCategory().getId());
+		assertEquals(1, incomeByCategory.size());
+		assertEquals(income.getId(), incomeByCategory.get(0).getId());
+	}
+
+	@Test
+	public void shouldFindIncomeBySubcategoryId(){
+		Income income = createIncome();
+		Subcategory subcategory = new Subcategory();
+		subcategory.setCategory(income.getCategory());
+		subcategory.setName("subcategory");
+		subcategory = subcategoryDao.save(subcategory);
+		income.setSubcategory(subcategory);
+		income = incomeDao.save(income);
+		List<Income> incomeByCategory = incomeDao.findBySubcategoryId(income.getSubcategory().getId());
+		assertEquals(1, incomeByCategory.size());
+		assertEquals(income.getId(), incomeByCategory.get(0).getId());
+	}
+
 	@Test
     public void shouldNotFindIncome() {
-		Income income = createIncome();
-		income = incomeDao.findOne(new Random().nextLong());
+		Income income = incomeDao.findOne(new Random().nextLong());
 		assertTrue(income == null);
 	}
 	
