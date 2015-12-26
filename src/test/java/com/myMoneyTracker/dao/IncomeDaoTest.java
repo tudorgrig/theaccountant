@@ -107,13 +107,14 @@ public class IncomeDaoTest {
 	}
 	
 	private Income createIncome() {
+		AppUser currentUser = createAppUser();
 		Income income = new Income();
 		income.setName("name1");
 		income.setDescription("description1");
 		income.setAmount(new Double(222.222));
 		income.setCreationDate(new Timestamp(System.currentTimeMillis()));
-		income.setUser(createAppUser());
-		income.setCategory(createCategory());
+		income.setUser(currentUser);
+		income.setCategory(createCategory(currentUser));
 		return income;
 	}
 	
@@ -126,9 +127,10 @@ public class IncomeDaoTest {
     	return appUser;
     }
     
-	private Category createCategory() {
+	private Category createCategory(AppUser currentUser) {
 		Category category = new Category();
 		category.setName("Florin");
+		category.setUser(currentUser);
 		categoryDao.save(category);
 		return category;
 	}

@@ -16,6 +16,9 @@ public class AppUser {
     private String firstName;
     private String surname;
     private Date birthdate;
+    
+    @Column(unique=true)
+    private String username;
     private String password;
 
     public String getPassword() {
@@ -57,4 +60,12 @@ public class AppUser {
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
     }
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
 }

@@ -108,13 +108,14 @@ public class ExpenseDaoTest {
 	}
 	
 	private Expense createExpense() {
+		AppUser currentUser = createAppUser();
 		Expense expense = new Expense();
 		expense.setName("name1");
 		expense.setDescription("description1");
 		expense.setAmount(new Double(222.222));
 		expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
-		expense.setUser(createAppUser());
-		expense.setCategory(createCategory());
+		expense.setUser(currentUser);
+		expense.setCategory(createCategory(currentUser));
 		return expense;
 	}
 	
@@ -127,9 +128,10 @@ public class ExpenseDaoTest {
     	return appUser;
     }
     
-	private Category createCategory() {
+	private Category createCategory(AppUser currentUser) {
 		Category category = new Category();
 		category.setName("Florin");
+		category.setUser(currentUser);
 		categoryDao.save(category);
 		return category;
 	}
