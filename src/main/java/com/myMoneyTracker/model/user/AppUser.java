@@ -17,7 +17,6 @@ public class AppUser {
     private String surname;
     private Date birthdate;
     
-    @Column(unique=true)
     private String username;
     private String password;
 

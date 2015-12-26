@@ -67,7 +67,7 @@ public class CategoryDaoTest {
 	public void shouldFindCategoryByNameAndUsername() {
 		Category category = createCategory();
 		category = categoryDao.save(category);
-		category = categoryDao.findCategoryByNameAndUsername(CATEGORY_NAME, USERNAME);
+		category = categoryDao.findByNameAndUsername(CATEGORY_NAME, USERNAME);
 		assertTrue(category != null);
 	}
 	
@@ -75,11 +75,11 @@ public class CategoryDaoTest {
 	public void shouldFindCategoriesByUsername() {
 		Category category1 = createCategory();
 		Category category2 = createCategory();
-		//2 different expenses will be saved into the database
+		//2 different categories will be saved into the database
 		// because the id for both is null
 		categoryDao.save(category1);
 		categoryDao.save(category2);
-		List<Category> categoryList = categoryDao.findCategoriesByUsername(USERNAME);
+		List<Category> categoryList = categoryDao.findByUsername(USERNAME);
 		assertEquals(2, categoryList.size());
 	}
 	
@@ -87,7 +87,7 @@ public class CategoryDaoTest {
     public void shouldFindAll(){
 		Category category1 = createCategory();
 		Category category2 = createCategory();
-		//2 different expenses will be saved into the database
+		//2 different categories will be saved into the database
 		// because the id for both is null
 		categoryDao.save(category1);
 		categoryDao.save(category2);

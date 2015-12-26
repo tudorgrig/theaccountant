@@ -13,12 +13,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class ControllerUtil {
 
+	/**
+	 * Get the name of the user that is currently logged into the application. 
+	 * 
+	 * @return
+	 */
 	public static String getCurrentLoggedUsername() {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		System.out.println(" + + + + LOGGED USERNAME: " + username);
-		return username;
+		return "florin";//username;
 	}
 
+	/**
+	 * Method that can be used to register a user for current session, useful in unit tests. 
+	 * 
+	 * @param username
+	 */
 	public static void setCurrentLoggedUser(final String username) {
 		Authentication authentication = new Authentication() {
 			

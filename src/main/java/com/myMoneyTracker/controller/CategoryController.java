@@ -41,17 +41,16 @@ public class CategoryController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<Category> createCategory(@RequestBody @Valid Category category) {
     	String currentUsername = ControllerUtil.getCurrentLoggedUsername();
-    	System.out.println(" >>>> Username: " + currentUsername);
-    	AppUser user = appUserDao.findUserByUsername(currentUsername);
+    	AppUser user = appUserDao.findByUsername(currentUsername);
     	category.setUser(user);
     	Category responseCategory = categoryDao.save(category);
     	return new ResponseEntity<Category>(responseCategory, HttpStatus.OK);
     }
     
-    @RequestMapping(value = "find/{cetegoryName}", method = RequestMethod.GET)
-    public ResponseEntity<?> getCategory(@PathVariable("name") String categoryName) {
+    @RequestMapping(value = "find/{categoryName}", method = RequestMethod.GET)
+    public ResponseEntity<?> getCategory(@PathVariable("categoryName") String categoryName) {
     	String username = ControllerUtil.getCurrentLoggedUsername();
-    	Category category = categoryDao.findCategoryByNameAndUsername(categoryName, username);
+    	Category category = categoryDao.findByNameAndUsername(categoryName, username);
     	if(category == null){
             return new ResponseEntity<String>("Category not found", HttpStatus.NOT_FOUND);
         }
@@ -59,11 +58,11 @@ public class CategoryController {
     }
     
     @RequestMapping(value = "find_all", method = RequestMethod.GET)
-    public ResponseEntity<?> getAllCategories() {
+    public ResponseEntity<List<Category>> getAllCategories() {
     	String username = ControllerUtil.getCurrentLoggedUsername();
-    	List<Category> categoryList = categoryDao.findCategoriesByUsername(username);
+    	List<Category> categoryList = categoryDao.findByUsername(username);
     	if(categoryList.isEmpty()){
-            return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<List<Category>>(HttpStatus.NO_CONTENT);
         }
     	return new ResponseEntity<List<Category>>(categoryList, HttpStatus.OK);
     }
@@ -75,7 +74,8 @@ public class CategoryController {
             return new ResponseEntity<String>("Category not found", HttpStatus.NOT_FOUND);
         }
         category.setId(id);
-        category.setUser(oldCategory.getUser());
+        String currentUsername = ControllerUtil.getCurrentLoggedUsername();
+        category.setUser(appUserDao.findByUsername(currentUsername));
         categoryDao.save(category);
         return new ResponseEntity<String>("Category updated", HttpStatus.NO_CONTENT);
     }
@@ -91,14 +91,15 @@ public class CategoryController {
         return new ResponseEntity<String>("Category deleted", HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/deleteAll/", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteAll(){
     	String username = ControllerUtil.getCurrentLoggedUsername();
-    	List<Category> categoryList = categoryDao.findCategoriesByUsername(username);
+    	List<Category> categoryList = categoryDao.findByUsername(username);
     	for (Category c : categoryList) {
     		categoryDao.delete(c);
     	}
-    	//categoryDao.deleteAllCategoriesForUser(username);
+//    	categoryDao.deleteAllCategoriesForUser(username); TODO: investigate deletion
+//    	categoryDao.flush();
         return new ResponseEntity<String>("Categories deleted", HttpStatus.NO_CONTENT);
     }
 }
