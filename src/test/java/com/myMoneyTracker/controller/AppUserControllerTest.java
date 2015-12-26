@@ -55,6 +55,8 @@ public class AppUserControllerTest  {
     public void shouldFindAllUsers(){
         for(int i = 0 ; i < 5; i++) {
             AppUser appUser = createAppUser(FIRST_NAME);
+            appUser.setEmail("email" + i + "@gmail.com");
+            appUser.setUsername("tudorgrig" + i);
             ResponseEntity responseEntity = appUserController.createAppUser(appUser);
             assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
             assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);

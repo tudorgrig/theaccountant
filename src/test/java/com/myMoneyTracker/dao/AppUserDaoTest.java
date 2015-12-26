@@ -35,6 +35,7 @@ public class AppUserDaoTest {
     @Before
     public void deleteData(){
         appUserDao.deleteAll();
+        appUserDao.flush();
     }
 
     @Test
@@ -43,6 +44,15 @@ public class AppUserDaoTest {
         appUser = appUserDao.save(appUser);
         logger.info("The user has id = " + appUser.getId());
         assertTrue(appUser.getId() != 0);
+    }
+
+    @Test(expected = org.springframework.dao.DataIntegrityViolationException.class)
+    public void shouldNotSaveWithTheSameEmail(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserDao.saveAndFlush(appUser);
+
+        AppUser appUser1 = createAppUser(FIRST_NAME);
+        appUserDao.saveAndFlush(appUser1);
     }
 
     @Test
@@ -90,6 +100,8 @@ public class AppUserDaoTest {
     public void shouldFindAll(){
         AppUser appUser = createAppUser(FIRST_NAME);
         AppUser appUser2 = createAppUser("Florin");
+        appUser2.setUsername("florin");
+        appUser2.setEmail("test@test.com");
         appUserDao.save(appUser);
         appUserDao.save(appUser2);
         List<AppUser> appUserList = appUserDao.findAll();

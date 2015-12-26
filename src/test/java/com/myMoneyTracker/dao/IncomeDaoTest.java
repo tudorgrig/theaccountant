@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +38,24 @@ public class IncomeDaoTest {
 	
 	@Autowired
 	private CategoryDao categoryDao;
+
+	private static final String USERNAME = "tudorgrig";
+	private static final String EMAIL = "help.mmt@gmail.com";
 	
 	private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
 
-	
+	@Before
+	public void cleanUp(){
+		appUserDao.deleteAll();
+		appUserDao.flush();
+		incomeDao.deleteAll();
+		incomeDao.flush();
+	}
+
 	@Test
     public void shouldSaveIncome() {
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.save(income);
 		logger.info("The income has id = " + income.getId());
         assertTrue(income.getId() != 0);
@@ -51,7 +63,8 @@ public class IncomeDaoTest {
 	
 	@Test
     public void shouldFindIncome() {
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.save(income);
 		income = incomeDao.findOne(income.getId());
 		assertTrue(income != null);
@@ -59,15 +72,14 @@ public class IncomeDaoTest {
 	
 	@Test
     public void shouldNotFindIncome() {
-		Income income = createIncome();
-		income = incomeDao.findOne(new Random().nextLong());
-		assertTrue(income == null);
+		assertTrue(incomeDao.findOne(new Random().nextLong()) == null);
 	}
 	
 	@Test
     public void shouldUpdateIncome() {
 		String updatedName = "NameUpdated";
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.save(income);
 		income.setName(updatedName);
 		Income result = incomeDao.save(income);
@@ -76,15 +88,18 @@ public class IncomeDaoTest {
 	
 	@Test
     public void shouldSaveAndFlush() {
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.saveAndFlush(income);
 		assertTrue(income.getId() > 0);
 	}
 	
 	@Test
     public void shouldFindAll(){
-		Income income1 = createIncome();
-		Income income2 = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income1 = createIncome(appUser);
+		AppUser appUser2 = createAppUser("test@test.com", "test_username");
+		Income income2 = createIncome(appUser2);
 		//2 different incomes will be saved into the databes
 		// because the id for both is null
 		incomeDao.save(income1);
@@ -95,37 +110,39 @@ public class IncomeDaoTest {
 	
 	@Test
 	public void shouldHaveCategoryNotNull() {
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.save(income);
 		assertTrue(income.getCategory() != null);
 	}
 	
 	@Test
 	public void shouldHaveUserNotNull() {
-		Income income = createIncome();
+		AppUser appUser = createAppUser(EMAIL, USERNAME);
+		Income income = createIncome(appUser);
 		income = incomeDao.save(income);
 		assertTrue(income.getUser() != null);
 	}
 	
-	private Income createIncome() {
+	private Income createIncome(AppUser appUser) {
 		Income income = new Income();
 		income.setName("name1");
 		income.setDescription("description1");
 		income.setAmount(new Double(222.222));
 		income.setCreationDate(new Timestamp(System.currentTimeMillis()));
-		income.setUser(createAppUser());
+		income.setUser(appUser);
 		income.setCategory(createCategory());
 		return income;
 	}
 	
-    private AppUser createAppUser() {
+    private AppUser createAppUser(String email, String username) {
     	AppUser appUser = new AppUser();
     	appUser.setFirstName("Florin");
     	appUser.setSurname("Iacob");
 		appUser.setPassword("TEST_PASS");
-		appUser.setUsername("tudorgrig");
+		appUser.setUsername(username);
     	appUser.setBirthdate(new Date());
-		appUser.setEmail("my-money-tracker@gmail.com");
+		appUser.setEmail(email);
     	appUserDao.save(appUser);
     	return appUser;
     }

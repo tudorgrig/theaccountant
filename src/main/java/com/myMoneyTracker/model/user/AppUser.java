@@ -13,7 +13,12 @@ import java.util.Date;
  * Entity class for the app_user table
  */
 @Entity
-@Table(name = "app_user")
+@Table(name = "app_user" ,
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"username"}),
+                @UniqueConstraint(columnNames = {"email"})
+        }
+)
 public class AppUser {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
