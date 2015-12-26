@@ -20,7 +20,7 @@ public class ControllerUtil {
 	 */
 	public static String getCurrentLoggedUsername() {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		return "florin";//username;
+		return username;
 	}
 
 	/**
