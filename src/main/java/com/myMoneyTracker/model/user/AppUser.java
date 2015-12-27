@@ -31,20 +31,20 @@ public class AppUser {
     private String surname;
 
     private Date birthdate;
+    
+    @NotNull
+    @NotEmpty
+    @Length(min = 5)
+    private String username;
 
     @NotNull
     @Length(min=8, message="Password should have at least 8 characters")
-    private String password;
+	private String password;
 
     @NotNull
     @NotEmpty
     @Email(message="Please provide a valid email address")
     private String email;
-
-    @NotNull
-    @NotEmpty
-    @Length(min = 5)
-    private String username;
 
     private boolean activated;
 

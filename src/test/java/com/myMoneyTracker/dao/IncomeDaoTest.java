@@ -100,8 +100,6 @@ public class IncomeDaoTest {
 		Income income1 = createIncome(appUser);
 		AppUser appUser2 = createAppUser("test@test.com", "test_username");
 		Income income2 = createIncome(appUser2);
-		//2 different incomes will be saved into the databes
-		// because the id for both is null
 		incomeDao.save(income1);
 		incomeDao.save(income2);
 		List<Income> incomeList = incomeDao.findAll();
@@ -131,7 +129,7 @@ public class IncomeDaoTest {
 		income.setAmount(new Double(222.222));
 		income.setCreationDate(new Timestamp(System.currentTimeMillis()));
 		income.setUser(appUser);
-		income.setCategory(createCategory());
+		income.setCategory(createCategory(appUser));
 		return income;
 	}
 	
@@ -147,9 +145,10 @@ public class IncomeDaoTest {
     	return appUser;
     }
     
-	private Category createCategory() {
+	private Category createCategory(AppUser currentUser) {
 		Category category = new Category();
 		category.setName("Florin");
+		category.setUser(currentUser);
 		categoryDao.save(category);
 		return category;
 	}
