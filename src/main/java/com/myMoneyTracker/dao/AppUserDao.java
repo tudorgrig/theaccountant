@@ -13,7 +13,7 @@ import com.myMoneyTracker.model.user.AppUser;
  */
 @Transactional
 @Repository
-public interface AppUserDao extends JpaRepository<AppUser, Long>{
+public interface AppUserDao extends JpaRepository<AppUser, Long> {
 
     AppUser findByEmail(String loginString);
 

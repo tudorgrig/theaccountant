@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/spring-config.xml"})
+@ContextConfiguration(locations = { "/spring-config.xml" })
 @Transactional
 public class HibernateConnectionTest {
 
@@ -29,9 +29,10 @@ public class HibernateConnectionTest {
     private EntityManagerFactory entityManagerFactory;
 
     @Test
-    public void shouldConnectToDatabase(){
+    public void shouldConnectToDatabase() {
+
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        Session session = (Session)entityManager.getDelegate();
+        Session session = (Session) entityManager.getDelegate();
         assertTrue(session.isConnected());
     }
 }

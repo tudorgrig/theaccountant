@@ -20,7 +20,6 @@ import java.util.logging.Logger;
  * Rest Controller for AppUser entity
  */
 
-
 @RestController
 @RequestMapping(value = "/user")
 public class AppUserController {
@@ -36,8 +35,9 @@ public class AppUserController {
 
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
-    @RequestMapping(value = "/add" , method = RequestMethod.POST)
-    public ResponseEntity<AppUser> createAppUser(@RequestBody @Valid AppUser appUser){
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResponseEntity<AppUser> createAppUser(@RequestBody @Valid AppUser appUser) {
+
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
@@ -46,40 +46,44 @@ public class AppUserController {
 
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<AppUser>> listAllUsers() {
+
         List<AppUser> users = appUserDao.findAll();
-        if(users.isEmpty()){
+        if (users.isEmpty()) {
             return new ResponseEntity<List<AppUser>>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<List<AppUser>>(users, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
-    public ResponseEntity<?> findAppUser(@PathVariable("id") Long id){
+    public ResponseEntity<?> findAppUser(@PathVariable("id") Long id) {
+
         AppUser appUser = appUserDao.findOne(id);
-        if(appUser == null){
+        if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/login/{login}", method = RequestMethod.GET)
-    public ResponseEntity<?> login(@PathVariable("login") String loginString){
+    public ResponseEntity<?> login(@PathVariable("login") String loginString) {
+
         AppUser appUser = null;
-        if(emailValidator.validate(loginString)){
+        if (emailValidator.validate(loginString)) {
             appUser = appUserDao.findByEmail(loginString);
         } else {
             appUser = appUserDao.findByUsername(loginString);
         }
-        if(appUser == null){
+        if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
-    public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser){
+    public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser) {
+
         AppUser oldAppUser = appUserDao.findOne(id);
-        if(oldAppUser == null){
+        if (oldAppUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
         appUser.setId(id);
@@ -88,10 +92,11 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id){
+    public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id) {
+
         try {
             appUserDao.delete(id);
-        }catch(EmptyResultDataAccessException emptyResultDataAccessException){
+        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
             log.info(emptyResultDataAccessException.getMessage());
             return new ResponseEntity<String>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
         }
@@ -99,7 +104,8 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/deleteAll/", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteAll(){
+    public ResponseEntity<String> deleteAll() {
+
         appUserDao.deleteAll();
         return new ResponseEntity<String>("Users deleted", HttpStatus.NO_CONTENT);
     }

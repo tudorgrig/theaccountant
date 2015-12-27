@@ -14,26 +14,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    	// TODO : setup configuration security
-        http
-                .authorizeRequests()
-                .antMatchers("/*").permitAll()
-                .anyRequest().permitAll();
-        http
-                .csrf().disable();
-//        http
-//                .formLogin()
-//                .defaultSuccessUrl("/")
-//                .loginPage("/login")
-//                .permitAll()
-//                .and()
-//                .logout()
-//                .permitAll();
+        // TODO : setup configuration security
+        http.authorizeRequests().antMatchers("/*").permitAll().anyRequest().permitAll();
+        http.csrf().disable();
+        //        http
+        //                .formLogin()
+        //                .defaultSuccessUrl("/")
+        //                .loginPage("/login")
+        //                .permitAll()
+        //                .and()
+        //                .logout()
+        //                .permitAll();
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder authManagerBuilder) throws Exception {
-        authManagerBuilder.inMemoryAuthentication()
-                .withUser("user").password("password").roles("USER");
+    protected void configure(AuthenticationManagerBuilder authManagerBuilder)
+            throws Exception {
+
+        authManagerBuilder.inMemoryAuthentication().withUser("user").password("password").roles("USER");
     }
 }
