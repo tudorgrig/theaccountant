@@ -62,4 +62,9 @@
         <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
     </bean>
     <bean id="emailValidator" class="com.myMoneyTracker.util.EmailValidator"/>
+    
+    <bean id="emailSender" class="com.myMoneyTracker.util.EmailSender">
+        <property name="senderEmail" value="${emailSender.email}"/>
+        <property name="senderPassword" value="${emailSender.password}"/>
+    </bean>
 </beans>
