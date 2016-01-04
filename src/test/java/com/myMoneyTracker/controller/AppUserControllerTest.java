@@ -1,6 +1,7 @@
 package com.myMoneyTracker.controller;
 
 import com.myMoneyTracker.model.user.AppUser;
+import com.sun.media.jfxmedia.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +54,17 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         appUser.setEmail("wrongFormat");
         appUserController.createAppUser(appUser);
+    }
+
+    @Test
+    public void shouldNotCreateDuplicateAppUser() {
+        AppUser appUser = createAppUser(FIRST_NAME);
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);
+        appUser = createAppUser(FIRST_NAME);
+        responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
     }
 
     @Test

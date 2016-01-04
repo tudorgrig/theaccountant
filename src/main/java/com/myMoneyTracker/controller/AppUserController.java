@@ -5,6 +5,7 @@ import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.util.EmailValidator;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -36,12 +38,17 @@ public class AppUserController {
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<AppUser> createAppUser(@RequestBody @Valid AppUser appUser) {
-
+    public ResponseEntity<?> createAppUser(@RequestBody @Valid AppUser appUser) {
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
-        AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
-        return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
+        try {
+            AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
+            return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
+        }catch(DataIntegrityViolationException dive){
+            log.log(Level.INFO, dive.getMessage());
+            return new ResponseEntity<String>(dive.getMostSpecificCause().getMessage(), HttpStatus.CONFLICT);
+        }
+
     }
 
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
