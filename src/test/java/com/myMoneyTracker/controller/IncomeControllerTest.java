@@ -26,37 +26,38 @@ import static org.junit.Assert.assertTrue;
 //@ContextConfiguration(locations={"/spring-config.xml"})
 public class IncomeControllerTest {
 
-//    @Autowired
+    //    @Autowired
     IncomeController incomeController;
 
-//    @Autowired
+    //    @Autowired
     AppUserController appUserController;
 
-//    @Before
-//    public void deleteAllIncomes(){
-//        incomeController.deleteAll();
-//    }
+    //    @Before
+    //    public void deleteAllIncomes(){
+    //        incomeController.deleteAll();
+    //    }
 
-//    @Test
-//    public void shouldCreateIncome(){
-//        AppUser appUser = createAppUser(FIRST_NAME);
-//        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-//        assertTrue(((AppUser)responseEntity.getBody()).getId() > 0);
-//    }
+    //    @Test
+    //    public void shouldCreateIncome(){
+    //        AppUser appUser = createAppUser(FIRST_NAME);
+    //        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+    //        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    //        assertTrue(((AppUser)responseEntity.getBody()).getId() > 0);
+    //    }
 
-//    private Income createIncome() {
-//        Income income = new Income();
-//        income.setName("name1");
-//        income.setDescription("description1");
-//        income.setAmount(new Double(222.222));
-//        income.setCreationDate(new Timestamp(System.currentTimeMillis()));
-//        income.setUser(createAppUser());
-//        income.setCategory(createCategory());
-//        return income;
-//    }
+    //    private Income createIncome() {
+    //        Income income = new Income();
+    //        income.setName("name1");
+    //        income.setDescription("description1");
+    //        income.setAmount(new Double(222.222));
+    //        income.setCreationDate(new Timestamp(System.currentTimeMillis()));
+    //        income.setUser(createAppUser());
+    //        income.setCategory(createCategory());
+    //        return income;
+    //    }
 
     private AppUser createAppUser() {
+
         AppUser appUser = new AppUser();
         appUser.setFirstName("Florin");
         appUser.setSurname("Iacob");
@@ -64,13 +65,13 @@ public class IncomeControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        return (AppUser)responseEntity.getBody();
+        return (AppUser) responseEntity.getBody();
     }
 
-//    private Category createCategory() {
-//        Category category = new Category();
-//        category.setName("Florin");
-//        categoryDao.save(category);
-//        return category;
-//    }
+    //    private Category createCategory() {
+    //        Category category = new Category();
+    //        category.setName("Florin");
+    //        categoryDao.save(category);
+    //        return category;
+    //    }
 }

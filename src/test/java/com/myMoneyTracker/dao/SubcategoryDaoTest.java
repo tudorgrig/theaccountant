@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  * Test class for the subcategory dao
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/spring-config.xml"})
+@ContextConfiguration(locations = { "/spring-config.xml" })
 @Transactional
 public class SubcategoryDaoTest {
 
@@ -33,6 +33,7 @@ public class SubcategoryDaoTest {
 
     @Test
     public void shouldSaveSubCategory() {
+
         Subcategory subcategory = createSubcategory();
         subcategory = subcategoryDao.save(subcategory);
         logger.info("The category has id = " + subcategory.getId());
@@ -41,6 +42,7 @@ public class SubcategoryDaoTest {
 
     @Test
     public void shouldFindCategory() {
+
         Subcategory subcategory = createSubcategory();
         subcategory = subcategoryDao.save(subcategory);
         subcategory = subcategoryDao.findOne(subcategory.getId());
@@ -49,12 +51,14 @@ public class SubcategoryDaoTest {
 
     @Test
     public void shouldNotFindCategory() {
+
         Subcategory subcategory = subcategoryDao.findOne(new Random().nextLong());
         assertTrue(subcategory == null);
     }
 
     @Test
     public void shouldDeleteCategory() {
+
         Subcategory subcategory = createSubcategory();
         subcategory = subcategoryDao.save(subcategory);
         subcategoryDao.delete(subcategory);
@@ -64,6 +68,7 @@ public class SubcategoryDaoTest {
 
     @Test
     public void shouldUpdateSubcategory() {
+
         Subcategory subcategory = createSubcategory();
         subcategory = subcategoryDao.save(subcategory);
         Category category = createCategory();
@@ -75,19 +80,21 @@ public class SubcategoryDaoTest {
 
     @Test
     public void shouldSaveAndFlush() {
+
         Subcategory subcategory = createSubcategory();
         subcategory = subcategoryDao.save(subcategory);
         assertTrue(subcategory.getId() > 0);
     }
 
     private Category createCategory() {
+
         Category category = new Category();
         category.setName("Florin");
         return categoryDao.save(category);
     }
 
-
     private Subcategory createSubcategory() {
+
         Subcategory subcategory = new Subcategory();
         subcategory.setName("SUBCATEGORY");
         subcategory.setCategory(createCategory());

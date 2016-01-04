@@ -1,4 +1,4 @@
-package com.myMoneyTracker.model.income;
+package com.myMoneyTracker.model.expense;
 
 import java.sql.Timestamp;
 
@@ -10,19 +10,17 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
-import com.myMoneyTracker.model.subcategory.Subcategory;
 import com.myMoneyTracker.model.user.AppUser;
 
 /**
- * Entity class for the 'income' table
+ * Entity class for the 'expense' table
  *
- * @author Florin, on 19.12.2015
+ * @author Florin, on 20.12.2015
  */
 @Entity
-public class Income {
+public class Expense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -30,26 +28,24 @@ public class Income {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id")
-    @NotNull
     private AppUser user;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "subcategory_id")
-    private Subcategory subcategory;
+    //TODO: subcategory must be implemented
+    //	@ManyToOne(fetch = FetchType.EAGER)
+    //	@JoinColumn(name="subcategory_id")
+    //	private Subcategory subcategory;
 
-    @NotNull
     private String name;
-
     private String description;
 
-    @NotNull
+    @Column(nullable = false)
     private Double amount;
 
-    @NotNull
+    @Column(nullable = false)
     private Timestamp creationDate;
 
     public long getId() {
@@ -121,15 +117,4 @@ public class Income {
 
         this.creationDate = creationDate;
     }
-
-    public Subcategory getSubcategory() {
-
-        return subcategory;
-    }
-
-    public void setSubcategory(Subcategory subcategory) {
-
-        this.subcategory = subcategory;
-    }
-
 }

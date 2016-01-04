@@ -14,40 +14,45 @@
 
     <!-- Used to inform spring framework that the application is using annotations
     to create components -->
-    <tx:annotation-driven />
+    <tx:annotation-driven/>
     <context:annotation-config/>
     <!-- Used to search for the properties file -->
-    <context:property-placeholder location="classpath:application.properties" />
+    <context:property-placeholder location="classpath:application.properties"/>
 
     <!-- Used by the spring framework to create spring container components-->
-    <context:component-scan base-package="com.myMoneyTracker.*" />
+    <context:component-scan base-package="com.myMoneyTracker.*"/>
 
     <!--The following is needed to show which package is being scanned for JpaRepository classes-->
-    <jpa:repositories base-package="com.myMoneyTracker.dao" />
+    <jpa:repositories base-package="com.myMoneyTracker.dao"/>
 
     <!-- Spring beans definition -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="${spring.datasource.driverClassName}" />
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName"
+                  value="${spring.datasource.driverClassName}"/>
         <property name="url" value="${spring.datasource.url}"/>
-        <property name="username" value="${spring.datasource.username}" />
+        <property name="username" value="${spring.datasource.username}"/>
         <property name="password" value="${spring.datasource.password}"/>
     </bean>
 
-    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+    <bean id="jpaVendorAdapter"
+          class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
         <property name="showSql" value="true"/>
         <property name="generateDdl" value="true"/>
         <property name="database" value="POSTGRESQL"/>
     </bean>
 
-    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
         <!-- spring based scanning for entity classes>-->
         <property name="packagesToScan" value="com.myMoneyTracker.model"/>
     </bean>
 
-    <bean id="transactionManager"  class="org.springframework.orm.jpa.JpaTransactionManager">
-        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    <bean id="transactionManager"
+          class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
     <bean id="persistenceExceptionTranslationPostProcessor"
@@ -56,4 +61,5 @@
     <bean id="passwordEncrypt" class="com.myMoneyTracker.util.PasswordEncrypt">
         <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
     </bean>
+    <bean id="emailValidator" class="com.myMoneyTracker.util.EmailValidator"/>
 </beans>

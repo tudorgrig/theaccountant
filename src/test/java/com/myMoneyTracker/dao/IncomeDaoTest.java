@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import com.myMoneyTracker.model.subcategory.Subcategory;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,152 +23,188 @@ import com.myMoneyTracker.model.user.AppUser;
 
 /**
  *  This class represents the test class for the 'income' data access object
- * 
+ *
  * @author Florin, on 19.12.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/spring-config.xml"})
+@ContextConfiguration(locations = { "/spring-config.xml" })
 @Transactional
 public class IncomeDaoTest {
 
-	@Autowired
-	private IncomeDao incomeDao;
-	
-	@Autowired
-	private AppUserDao appUserDao;
-	
-	@Autowired
-	private CategoryDao categoryDao;
+    @Autowired
+    private IncomeDao incomeDao;
 
-	@Autowired
-	private SubcategoryDao subcategoryDao;
-	
-	private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
+    @Autowired
+    private AppUserDao appUserDao;
 
-	
-	@Test
-    public void shouldSaveIncome() {
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		logger.info("The income has id = " + income.getId());
-        assertTrue(income.getId() != 0);
-	}
-	
-	@Test
-    public void shouldFindIncome() {
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		income = incomeDao.findOne(income.getId());
-		assertTrue(income != null);
-	}
+    @Autowired
+    private CategoryDao categoryDao;
 
-	@Test
-	public void shouldFindIncomeByUserId(){
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getId());
-		assertEquals(1, incomeForUser.size());
-		assertEquals(income.getId(), incomeForUser.get(0).getId());
-	}
+    @Autowired
+    private SubcategoryDao subcategoryDao;
 
-	@Test
-	public void shouldFindIncomeByCategoryId(){
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		List<Income> incomeByCategory = incomeDao.findByCategoryId(income.getCategory().getId());
-		assertEquals(1, incomeByCategory.size());
-		assertEquals(income.getId(), incomeByCategory.get(0).getId());
-	}
+    private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
 
-	@Test
-	public void shouldFindIncomeBySubcategoryId(){
-		Income income = createIncome();
-		Subcategory subcategory = new Subcategory();
-		subcategory.setCategory(income.getCategory());
-		subcategory.setName("subcategory");
-		subcategory = subcategoryDao.save(subcategory);
-		income.setSubcategory(subcategory);
-		income = incomeDao.save(income);
-		List<Income> incomeByCategory = incomeDao.findBySubcategoryId(income.getSubcategory().getId());
-		assertEquals(1, incomeByCategory.size());
-		assertEquals(income.getId(), incomeByCategory.get(0).getId());
-	}
+    private static final String USERNAME = "tudorgrig";
+    private static final String EMAIL = "help.mmt@gmail.com";
 
-	@Test
-    public void shouldNotFindIncome() {
-		Income income = incomeDao.findOne(new Random().nextLong());
-		assertTrue(income == null);
-	}
-	
-	@Test
-    public void shouldUpdateIncome() {
-		String updatedName = "NameUpdated";
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		income.setName(updatedName);
-		Income result = incomeDao.save(income);
-		assertTrue(result.getName().equals(updatedName));
-	}
-	
-	@Test
-    public void shouldSaveAndFlush() {
-		Income income = createIncome();
-		income = incomeDao.saveAndFlush(income);
-		assertTrue(income.getId() > 0);
-	}
-	
-	@Test
-    public void shouldFindAll(){
-		Income income1 = createIncome();
-		Income income2 = createIncome();
-		//2 different incomes will be saved into the databes
-		// because the id for both is null
-		incomeDao.save(income1);
-		incomeDao.save(income2);
-		List<Income> incomeList = incomeDao.findAll();
-		assertEquals(2, incomeList.size());
-	}
-	
-	@Test
-	public void shouldHaveCategoryNotNull() {
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		assertTrue(income.getCategory() != null);
-	}
-	
-	@Test
-	public void shouldHaveUserNotNull() {
-		Income income = createIncome();
-		income = incomeDao.save(income);
-		assertTrue(income.getUser() != null);
-	}
-	
-	private Income createIncome() {
-		Income income = new Income();
-		income.setName("name1");
-		income.setDescription("description1");
-		income.setAmount(new Double(222.222));
-		income.setCreationDate(new Timestamp(System.currentTimeMillis()));
-		income.setUser(createAppUser());
-		income.setCategory(createCategory());
-		return income;
-	}
-	
-    private AppUser createAppUser() {
-    	AppUser appUser = new AppUser();
-    	appUser.setFirstName("Florin");
-    	appUser.setSurname("Iacob");
-		appUser.setPassword("TEST_PASS");
-    	appUser.setBirthdate(new Date());
-		appUser.setEmail("my-money-tracker@gmail.com");
-    	appUserDao.save(appUser);
-    	return appUser;
+    @Before
+    public void cleanUp() {
+
+        appUserDao.deleteAll();
+        appUserDao.flush();
+        incomeDao.deleteAll();
+        incomeDao.flush();
     }
-    
-	private Category createCategory() {
-		Category category = new Category();
-		category.setName("Florin");
-		categoryDao.save(category);
-		return category;
-	}
+
+    @Test
+    public void shouldSaveIncome() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        logger.info("The income has id = " + income.getId());
+        assertTrue(income.getId() != 0);
+    }
+
+    @Test
+    public void shouldFindIncome() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        income = incomeDao.findOne(income.getId());
+        assertTrue(income != null);
+    }
+
+    @Test
+    public void shouldFindIncomeByUserId() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getId());
+        assertEquals(1, incomeForUser.size());
+        assertEquals(income.getId(), incomeForUser.get(0).getId());
+    }
+
+    @Test
+    public void shouldFindIncomeByCategoryId() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        List<Income> incomeByCategory = incomeDao.findByCategoryId(income.getCategory().getId());
+        assertEquals(1, incomeByCategory.size());
+        assertEquals(income.getId(), incomeByCategory.get(0).getId());
+    }
+
+    @Test
+    public void shouldFindIncomeBySubcategoryId() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        Subcategory subcategory = new Subcategory();
+        subcategory.setCategory(income.getCategory());
+        subcategory.setName("subcategory");
+        subcategory = subcategoryDao.save(subcategory);
+        income.setSubcategory(subcategory);
+        income = incomeDao.save(income);
+        List<Income> incomeByCategory = incomeDao.findBySubcategoryId(income.getSubcategory().getId());
+        assertEquals(1, incomeByCategory.size());
+        assertEquals(income.getId(), incomeByCategory.get(0).getId());
+    }
+
+    @Test
+    public void shouldNotFindIncome() {
+
+        Income income = incomeDao.findOne(new Random().nextLong());
+        assertTrue(income == null);
+    }
+
+    @Test
+    public void shouldUpdateIncome() {
+
+        String updatedName = "NameUpdated";
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        income.setName(updatedName);
+        Income result = incomeDao.save(income);
+        assertTrue(result.getName().equals(updatedName));
+    }
+
+    @Test
+    public void shouldSaveAndFlush() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.saveAndFlush(income);
+        assertTrue(income.getId() > 0);
+    }
+
+    @Test
+    public void shouldFindAll() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income1 = createIncome(appUser);
+        AppUser appUser2 = createAppUser("test@test.com", "test_username");
+        Income income2 = createIncome(appUser2);
+        incomeDao.save(income1);
+        incomeDao.save(income2);
+        List<Income> incomeList = incomeDao.findAll();
+        assertEquals(2, incomeList.size());
+    }
+
+    @Test
+    public void shouldHaveCategoryNotNull() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        assertTrue(income.getCategory() != null);
+    }
+
+    @Test
+    public void shouldHaveUserNotNull() {
+
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        assertTrue(income.getUser() != null);
+    }
+
+    private Income createIncome(AppUser appUser) {
+
+        Income income = new Income();
+        income.setName("name1");
+        income.setDescription("description1");
+        income.setAmount(new Double(222.222));
+        income.setCreationDate(new Timestamp(System.currentTimeMillis()));
+        income.setUser(appUser);
+        income.setCategory(createCategory(appUser));
+        return income;
+    }
+
+    private AppUser createAppUser(String email, String username) {
+
+        AppUser appUser = new AppUser();
+        appUser.setFirstName("Florin");
+        appUser.setSurname("Iacob");
+        appUser.setPassword("TEST_PASS");
+        appUser.setUsername(username);
+        appUser.setBirthdate(new Date());
+        appUser.setEmail(email);
+        appUserDao.save(appUser);
+        return appUser;
+    }
+
+    private Category createCategory(AppUser currentUser) {
+
+        Category category = new Category();
+        category.setName("Florin");
+        category.setUser(currentUser);
+        categoryDao.save(category);
+        return category;
+    }
 }
