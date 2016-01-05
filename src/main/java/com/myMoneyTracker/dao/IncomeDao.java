@@ -15,8 +15,4 @@ public interface IncomeDao extends JpaRepository<Income, Long> {
 
     List<Income> findByUserId(Long userId);
 
-    List<Income> findByCategoryId(Long categoryId);
-
-    List<Income> findBySubcategoryId(Long subcategoryId);
-
 }

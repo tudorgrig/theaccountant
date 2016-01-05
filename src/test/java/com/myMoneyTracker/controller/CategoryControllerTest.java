@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 import java.util.List;
 
+import com.myMoneyTracker.dao.IncomeDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +40,9 @@ public class CategoryControllerTest {
     @Autowired
     AppUserDao appUserDao;
 
+    @Autowired
+    IncomeDao incomeDao;
+
     @Before
     public void initialize() {
 
@@ -50,7 +54,8 @@ public class CategoryControllerTest {
 
     @After
     public void cleanUp() {
-
+        incomeDao.deleteAll();
+        incomeDao.flush();
         categoryController.deleteAll();
         appUserDao.deleteAll();
     }

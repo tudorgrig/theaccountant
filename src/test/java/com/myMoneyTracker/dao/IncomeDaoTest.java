@@ -50,11 +50,10 @@ public class IncomeDaoTest {
 
     @Before
     public void cleanUp() {
-
-        appUserDao.deleteAll();
-        appUserDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
+        appUserDao.deleteAll();
+        appUserDao.flush();
     }
 
     @Test
@@ -86,33 +85,6 @@ public class IncomeDaoTest {
         List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getId());
         assertEquals(1, incomeForUser.size());
         assertEquals(income.getId(), incomeForUser.get(0).getId());
-    }
-
-    @Test
-    public void shouldFindIncomeByCategoryId() {
-
-        AppUser appUser = createAppUser(EMAIL, USERNAME);
-        Income income = createIncome(appUser);
-        income = incomeDao.save(income);
-        List<Income> incomeByCategory = incomeDao.findByCategoryId(income.getCategory().getId());
-        assertEquals(1, incomeByCategory.size());
-        assertEquals(income.getId(), incomeByCategory.get(0).getId());
-    }
-
-    @Test
-    public void shouldFindIncomeBySubcategoryId() {
-
-        AppUser appUser = createAppUser(EMAIL, USERNAME);
-        Income income = createIncome(appUser);
-        Subcategory subcategory = new Subcategory();
-        subcategory.setCategory(income.getCategory());
-        subcategory.setName("subcategory");
-        subcategory = subcategoryDao.save(subcategory);
-        income.setSubcategory(subcategory);
-        income = incomeDao.save(income);
-        List<Income> incomeByCategory = incomeDao.findBySubcategoryId(income.getSubcategory().getId());
-        assertEquals(1, incomeByCategory.size());
-        assertEquals(income.getId(), incomeByCategory.get(0).getId());
     }
 
     @Test
@@ -157,15 +129,6 @@ public class IncomeDaoTest {
     }
 
     @Test
-    public void shouldHaveCategoryNotNull() {
-
-        AppUser appUser = createAppUser(EMAIL, USERNAME);
-        Income income = createIncome(appUser);
-        income = incomeDao.save(income);
-        assertTrue(income.getCategory() != null);
-    }
-
-    @Test
     public void shouldHaveUserNotNull() {
 
         AppUser appUser = createAppUser(EMAIL, USERNAME);
@@ -182,7 +145,6 @@ public class IncomeDaoTest {
         income.setAmount(new Double(222.222));
         income.setCreationDate(new Timestamp(System.currentTimeMillis()));
         income.setUser(appUser);
-        income.setCategory(createCategory(appUser));
         return income;
     }
 

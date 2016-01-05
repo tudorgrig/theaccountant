@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,10 +29,15 @@ public class IncomeController {
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<Income> createAppUser(@RequestBody @Valid Income income) {
+    public ResponseEntity<?> createIncome(@RequestBody @Valid Income income) {
 
-        Income createdIncome = incomeDao.saveAndFlush(income);
-        return new ResponseEntity<Income>(createdIncome, HttpStatus.OK);
+        try {
+            Income createdIncome = incomeDao.saveAndFlush(income);
+            return new ResponseEntity<Income>(createdIncome, HttpStatus.OK);
+        }catch(ConstraintViolationException e){
+            log.log(Level.SEVERE, e.getMessage());
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
@@ -63,25 +70,6 @@ public class IncomeController {
         return new ResponseEntity<List<Income>>(incomeList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/find/category/{category_id}", method = RequestMethod.GET)
-    public ResponseEntity<?> findByCategoryId(@PathVariable("category_id") Long id) {
-
-        List<Income> incomeList = incomeDao.findByCategoryId(id);
-        if (incomeList == null || incomeList.isEmpty()) {
-            return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<List<Income>>(incomeList, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/find/subcategory/{subcategory_id}", method = RequestMethod.GET)
-    public ResponseEntity<?> findBySubcategoryId(@PathVariable("subcategory_id") Long id) {
-
-        List<Income> incomeList = incomeDao.findBySubcategoryId(id);
-        if (incomeList == null || incomeList.isEmpty()) {
-            return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<List<Income>>(incomeList, HttpStatus.OK);
-    }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateIncome(@PathVariable("id") Long id, @RequestBody @Valid Income income) {

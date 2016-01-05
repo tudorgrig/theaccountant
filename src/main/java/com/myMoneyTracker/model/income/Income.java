@@ -33,14 +33,6 @@ public class Income {
     @NotNull
     private AppUser user;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "subcategory_id")
-    private Subcategory subcategory;
-
     @NotNull
     private String name;
 
@@ -70,16 +62,6 @@ public class Income {
     public void setUser(AppUser user) {
 
         this.user = user;
-    }
-
-    public Category getCategory() {
-
-        return category;
-    }
-
-    public void setCategory(Category category) {
-
-        this.category = category;
     }
 
     public String getName() {
@@ -121,15 +103,4 @@ public class Income {
 
         this.creationDate = creationDate;
     }
-
-    public Subcategory getSubcategory() {
-
-        return subcategory;
-    }
-
-    public void setSubcategory(Subcategory subcategory) {
-
-        this.subcategory = subcategory;
-    }
-
 }
