@@ -39,12 +39,13 @@ public class AppUserController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<?> createAppUser(@RequestBody @Valid AppUser appUser) {
+
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         try {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
             return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
-        }catch(DataIntegrityViolationException dive){
+        } catch (DataIntegrityViolationException dive) {
             log.log(Level.INFO, dive.getMessage());
             return new ResponseEntity<String>(dive.getMostSpecificCause().getMessage(), HttpStatus.CONFLICT);
         }

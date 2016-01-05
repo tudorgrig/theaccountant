@@ -58,6 +58,7 @@ public class AppUserControllerTest {
 
     @Test
     public void shouldNotCreateDuplicateAppUser() {
+
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
