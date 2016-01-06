@@ -71,7 +71,7 @@ public class AppUserController {
         return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/login/{login}", method = RequestMethod.GET)
+    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.GET)
     public ResponseEntity<?> login(@PathVariable("login") String loginString) {
 
         AppUser appUser = null;

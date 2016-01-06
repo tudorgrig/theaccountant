@@ -48,7 +48,7 @@ public class CategoryController {
         return new ResponseEntity<Category>(responseCategory, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "find/{categoryName}", method = RequestMethod.GET)
+    @RequestMapping(value = "find/{categoryName.+}", method = RequestMethod.GET)
     public ResponseEntity<?> getCategory(@PathVariable("categoryName") String categoryName) {
 
         String username = ControllerUtil.getCurrentLoggedUsername();
