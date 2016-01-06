@@ -110,7 +110,7 @@ public class AppUserController {
         return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/deleteAll/", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/deleteAll", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteAll() {
 
         appUserDao.deleteAll();

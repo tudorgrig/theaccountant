@@ -47,6 +47,7 @@ public class CategoryDaoTest {
 
     @Before
     public void initialize() {
+
         categoryDao.deleteAll();
         applicationUser = createAppUser();
     }
@@ -98,7 +99,6 @@ public class CategoryDaoTest {
     @Test
     public void shouldFindAll() {
 
-
         Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
         appUserDao.save(category1.getUser());
         Category category2 = createCategory(CATEGORY_NAME + categoryCounter++);
@@ -148,7 +148,7 @@ public class CategoryDaoTest {
     }
 
     @Test
-    public void shouldDeleteAllCategoriesForUser(){
+    public void shouldDeleteAllCategoriesForUser() {
         //category to be deleted
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
         appUserDao.save(category.getUser());
@@ -168,7 +168,6 @@ public class CategoryDaoTest {
         categoryDao.deleteAllCategoriesForUser(category.getUser().getUsername());
         List<Category> categories = categoryDao.findByUsername(category.getUser().getUsername());
         assertEquals(0, categories.size());
-
 
         //check that the second category still exists
         Category foundCategory1 = categoryDao.findOne(category1.getId());

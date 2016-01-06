@@ -54,6 +54,7 @@ public class CategoryControllerTest {
 
     @After
     public void cleanUp() {
+
         incomeDao.deleteAll();
         incomeDao.flush();
         categoryController.deleteAll();

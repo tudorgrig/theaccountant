@@ -39,6 +39,7 @@ public class AppUserControllerTest {
 
     @Before
     public void deleteAllUsers() {
+
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserController.deleteAll();

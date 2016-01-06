@@ -40,6 +40,7 @@ public class AppUserDaoTest {
 
     @Before
     public void deleteData() {
+
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserDao.deleteAll();

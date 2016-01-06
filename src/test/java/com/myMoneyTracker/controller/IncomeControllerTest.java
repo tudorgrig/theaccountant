@@ -50,7 +50,11 @@ public class IncomeControllerTest {
     public void shouldCreateIncome() {
 
         Income income = createIncome();
-        ResponseEntity responseEntity = incomeController.createIncome(income);
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((Income) responseEntity.getBody()).getId() > 0);
     }
@@ -59,8 +63,12 @@ public class IncomeControllerTest {
     public void shouldNotCreateIncome() {
 
         Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
         income.setName(null);
-        ResponseEntity responseEntity = incomeController.createIncome(income);
+        responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
@@ -68,7 +76,11 @@ public class IncomeControllerTest {
     public void shouldListAllIncomes() {
 
         Income income = createIncome();
-        ResponseEntity responseEntity = incomeController.createIncome(income);
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.listAllIncomes();
         assertEquals(1, ((List<Income>) responseEntity.getBody()).size());
@@ -80,7 +92,11 @@ public class IncomeControllerTest {
     public void shouldFindById() {
 
         Income income = createIncome();
-        ResponseEntity responseEntity = incomeController.createIncome(income);
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.findIncome(((Income) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -99,7 +115,11 @@ public class IncomeControllerTest {
     public void shouldFindByUserId() {
 
         Income income = createIncome();
-        ResponseEntity responseEntity = incomeController.createIncome(income);
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.findByUserId(income.getUser().getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -113,6 +133,64 @@ public class IncomeControllerTest {
 
         ResponseEntity responseEntity = incomeController.findByUserId(new Random().nextLong());
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldUpdateIncome() {
+
+        Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Income toUpdate = createIncome();
+        toUpdate.setName("updated_income");
+        toUpdate.setUser(appUser);
+        responseEntity = incomeController.updateIncome(income.getId(), toUpdate);
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        responseEntity = incomeController.findByUserId(appUser.getId());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        List<Income> found = (List<Income>) responseEntity.getBody();
+        assertEquals("updated_income", found.get(0).getName());
+    }
+
+    @Test
+    public void shouldDeleteIncome() {
+
+        Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        responseEntity = incomeController.deleteIncome(income.getId());
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        responseEntity = incomeController.findByUserId(appUser.getId());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldDeleteAllIncomes() {
+
+        Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        responseEntity = incomeController.deleteAll();
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        responseEntity = incomeController.listAllIncomes();
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
 
     private Income createIncome() {

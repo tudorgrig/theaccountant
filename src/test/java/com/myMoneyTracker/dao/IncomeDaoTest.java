@@ -50,6 +50,7 @@ public class IncomeDaoTest {
 
     @Before
     public void cleanUp() {
+
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserDao.deleteAll();

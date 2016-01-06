@@ -34,7 +34,7 @@ public class IncomeController {
         try {
             Income createdIncome = incomeDao.saveAndFlush(income);
             return new ResponseEntity<Income>(createdIncome, HttpStatus.OK);
-        }catch(ConstraintViolationException e){
+        } catch (ConstraintViolationException e) {
             log.log(Level.SEVERE, e.getMessage());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -69,7 +69,6 @@ public class IncomeController {
         }
         return new ResponseEntity<List<Income>>(incomeList, HttpStatus.OK);
     }
-
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateIncome(@PathVariable("id") Long id, @RequestBody @Valid Income income) {
