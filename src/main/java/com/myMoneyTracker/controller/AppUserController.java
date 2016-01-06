@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  * @author Tudor Grigoriu
  * Rest Controller for AppUser entity
  */
-
 @RestController
 @RequestMapping(value = "/user")
 public class AppUserController {

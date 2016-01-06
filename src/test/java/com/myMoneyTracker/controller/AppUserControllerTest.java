@@ -1,5 +1,6 @@
 package com.myMoneyTracker.controller;
 
+import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.model.user.AppUser;
 import com.sun.media.jfxmedia.logging.Logger;
 import org.junit.After;
@@ -33,9 +34,13 @@ public class AppUserControllerTest {
     AppUserController appUserController;
     private String FIRST_NAME = "Tudor";
 
+    @Autowired
+    IncomeDao incomeDao;
+
     @Before
     public void deleteAllUsers() {
-
+        incomeDao.deleteAll();
+        incomeDao.flush();
         appUserController.deleteAll();
     }
 

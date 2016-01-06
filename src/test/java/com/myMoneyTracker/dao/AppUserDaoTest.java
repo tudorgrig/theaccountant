@@ -31,12 +31,17 @@ public class AppUserDaoTest {
 
     @Autowired
     private AppUserDao appUserDao;
+
+    @Autowired
+    private IncomeDao incomeDao;
+
     private String FIRST_NAME = "Tudor";
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
 
     @Before
     public void deleteData() {
-
+        incomeDao.deleteAll();
+        incomeDao.flush();
         appUserDao.deleteAll();
         appUserDao.flush();
     }
