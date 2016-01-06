@@ -26,8 +26,6 @@ public interface CategoryDao extends JpaRepository<Category, Long> {
     //TODO: find a way to delete all categories by username
     @Modifying
     @Query(value = "delete from category WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
-    //	@Transactional
-//    @Query("delete from Category c where c.user.username = ?1")
     void deleteAllCategoriesForUser(String username);
 
 }
