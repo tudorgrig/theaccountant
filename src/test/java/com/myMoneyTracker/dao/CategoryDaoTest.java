@@ -1,6 +1,7 @@
 package com.myMoneyTracker.dao;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -46,7 +47,7 @@ public class CategoryDaoTest {
 
     @Before
     public void initialize() {
-
+        categoryDao.deleteAll();
         applicationUser = createAppUser();
     }
 
@@ -54,6 +55,7 @@ public class CategoryDaoTest {
     public void shouldSaveCategory() {
 
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
         category = categoryDao.save(category);
         logger.info("The category has id = " + category.getId());
         assertTrue(category.getId() != 0);
@@ -63,6 +65,7 @@ public class CategoryDaoTest {
     public void shouldFindCategory() {
 
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
         category = categoryDao.save(category);
         category = categoryDao.findOne(category.getId());
         assertTrue(category != null);
@@ -73,7 +76,8 @@ public class CategoryDaoTest {
 
         String categoryName = CATEGORY_NAME + categoryCounter++;
         Category category = createCategory(categoryName);
-        category = categoryDao.save(category);
+        appUserDao.save(category.getUser());
+        categoryDao.save(category);
         category = categoryDao.findByNameAndUsername(categoryName, USERNAME);
         assertTrue(category != null);
     }
@@ -82,7 +86,9 @@ public class CategoryDaoTest {
     public void shouldFindCategoriesByUsername() {
 
         Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category1.getUser());
         Category category2 = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category2.getUser());
         categoryDao.save(category1);
         categoryDao.save(category2);
         List<Category> categoryList = categoryDao.findByUsername(USERNAME);
@@ -92,9 +98,11 @@ public class CategoryDaoTest {
     @Test
     public void shouldFindAll() {
 
-        categoryDao.deleteAll();
+
         Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category1.getUser());
         Category category2 = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category2.getUser());
         categoryDao.save(category1);
         categoryDao.save(category2);
         List<Category> categoryList = categoryDao.findAll();
@@ -104,9 +112,7 @@ public class CategoryDaoTest {
     @Test
     public void shouldNotFindCategory() {
 
-        categoryDao.deleteAll();
-        Category category = createCategory(CATEGORY_NAME + categoryCounter++);
-        category = categoryDao.findOne(new Random().nextLong());
+        Category category = categoryDao.findOne(new Random().nextLong());
         assertTrue(category == null);
     }
 
@@ -114,6 +120,7 @@ public class CategoryDaoTest {
     public void shouldDeleteCategory() {
 
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
         category = categoryDao.save(category);
         categoryDao.delete(category);
         category = categoryDao.findOne(category.getId());
@@ -124,6 +131,7 @@ public class CategoryDaoTest {
     public void shouldUpdateCategory() {
 
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
         category = categoryDao.save(category);
         category.setName("Tudor");
         Category result = categoryDao.save(category);
@@ -134,8 +142,37 @@ public class CategoryDaoTest {
     public void shouldSaveAndFlush() {
 
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
         category = categoryDao.saveAndFlush(category);
         assertTrue(category.getId() > 0);
+    }
+
+    @Test
+    public void shouldDeleteAllCategoriesForUser(){
+        //category to be deleted
+        Category category = createCategory(CATEGORY_NAME + categoryCounter++);
+        appUserDao.save(category.getUser());
+        category = categoryDao.saveAndFlush(category);
+        assertTrue(category.getId() > 0);
+
+        //category with different user
+        Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
+        AppUser appUser = createAppUser();
+        appUser.setUsername("tudorgrig");
+        appUser.setEmail("tudorgrigoriu@yahoo.com");
+        appUser = appUserDao.save(appUser);
+        category1.setUser(appUser);
+        category1 = categoryDao.saveAndFlush(category1);
+
+        //delete all categories for the first username
+        categoryDao.deleteAllCategoriesForUser(category.getUser().getUsername());
+        List<Category> categories = categoryDao.findByUsername(category.getUser().getUsername());
+        assertEquals(0, categories.size());
+
+
+        //check that the second category still exists
+        Category foundCategory1 = categoryDao.findOne(category1.getId());
+        assertNotNull(foundCategory1);
     }
 
     private Category createCategory(String categoryName) {
@@ -155,7 +192,6 @@ public class CategoryDaoTest {
         appUser.setUsername(USERNAME);
         appUser.setEmail(USERNAME + "@my-money-tracker.ro");
         appUser.setPassword("TEST_PASS");
-        appUserDao.save(appUser);
         return appUser;
     }
 }

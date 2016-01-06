@@ -100,12 +100,8 @@ public class CategoryController {
     public ResponseEntity<String> deleteAll() {
 
         String username = ControllerUtil.getCurrentLoggedUsername();
-        List<Category> categoryList = categoryDao.findByUsername(username);
-        for (Category c : categoryList) {
-            categoryDao.delete(c);
-        }
-        //    	categoryDao.deleteAllCategoriesForUser(username); TODO: investigate deletion
-        //    	categoryDao.flush();
+        categoryDao.deleteAllCategoriesForUser(username); //TODO: investigate deletion
+        categoryDao.flush();
         return new ResponseEntity<String>("Categories deleted", HttpStatus.NO_CONTENT);
     }
 }
