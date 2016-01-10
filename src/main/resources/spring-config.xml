@@ -62,7 +62,7 @@
         <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
     </bean>
     <bean id="emailValidator" class="com.myMoneyTracker.util.EmailValidator"/>
-    
+
     <bean id="emailSender" class="com.myMoneyTracker.util.EmailSender">
         <property name="senderEmail" value="${emailSender.email}"/>
         <property name="senderPassword" value="${emailSender.password}"/>
@@ -70,13 +70,14 @@
 
     <bean id="mapper" class="org.dozer.DozerBeanMapper">
         <!--<property name="mappingFiles">-->
-            <!--<list>-->
-                <!--<value>dozer/dozerBeanMapping.xml</value>-->
-                <!--&lt;!&ndash;&lt;!&ndash;<value>dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
-                <!--&lt;!&ndash;&lt;!&ndash;<value>more-dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
-            <!--</list>-->
+        <!--<list>-->
+        <!--<value>dozer/dozerBeanMapping.xml</value>-->
+        <!--&lt;!&ndash;&lt;!&ndash;<value>dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<value>more-dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
+        <!--</list>-->
         <!--</property>-->
     </bean>
 
-    <bean id="appUserConverter" class="com.myMoneyTracker.converter.AppUserConverter"/>
+    <bean id="appUserConverter"
+          class="com.myMoneyTracker.converter.AppUserConverter"/>
 </beans>

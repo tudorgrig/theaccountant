@@ -159,6 +159,7 @@ public class AppUserControllerTest {
 
     @Test
     public void shouldNotDeleteAppUser() {
+
         ResponseEntity deletedEntity = appUserController.deleteAppUser(1l);
         assertEquals(HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
     }
