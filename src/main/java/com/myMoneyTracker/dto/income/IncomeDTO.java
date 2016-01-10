@@ -13,8 +13,6 @@ public class IncomeDTO {
 
     private long id;
 
-    private AppUserDTO user;
-
     private String name;
 
     private String description;
@@ -31,16 +29,6 @@ public class IncomeDTO {
     public void setId(long id) {
 
         this.id = id;
-    }
-
-    public AppUserDTO getUser() {
-
-        return user;
-    }
-
-    public void setUser(AppUserDTO user) {
-
-        this.user = user;
     }
 
     public String getName() {

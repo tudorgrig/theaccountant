@@ -41,8 +41,8 @@ public class IncomeConverterTest {
 
     @Test
     public void shouldConvertIncomeDTOToIncome() {
-        AppUserDTO appUserDTO = createAppUserDTO();
-        IncomeDTO incomeDTO = createIncomeDTO(appUserDTO);
+
+        IncomeDTO incomeDTO = createIncomeDTO();
         Income income = incomeConverter.convertFrom(incomeDTO);
         assertEquals(incomeDTO.getAmount(), income.getAmount());
         assertEquals(incomeDTO.getId(), income.getId());
@@ -51,13 +51,13 @@ public class IncomeConverterTest {
         assertEquals(incomeDTO.getDescription(), income.getDescription());
     }
 
-    private IncomeDTO createIncomeDTO(AppUserDTO appUserDTO) {
+    private IncomeDTO createIncomeDTO() {
+
         IncomeDTO income = new IncomeDTO();
         income.setName("name1");
         income.setDescription("description1");
         income.setAmount(new Double(222.222));
         income.setCreationDate(new Timestamp(System.currentTimeMillis()));
-        income.setUser(appUserDTO);
         return income;
     }
 
@@ -85,13 +85,4 @@ public class IncomeConverterTest {
         return appUser;
     }
 
-    private AppUserDTO createAppUserDTO() {
-
-        AppUserDTO appUserDTO = new AppUserDTO();
-        appUserDTO.setSurname("SURNAME");
-        appUserDTO.setUsername("USERNAME");
-        appUserDTO.setFirstName("FIRST_NAME");
-        appUserDTO.setId(2l);
-        return appUserDTO;
-    }
 }
