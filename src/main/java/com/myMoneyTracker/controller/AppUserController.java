@@ -71,9 +71,12 @@ public class AppUserController {
         return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.GET)
-    public ResponseEntity<?> login(@PathVariable("login") String loginString) {
-
+    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.POST)
+    public ResponseEntity<?> login(@PathVariable("login") String loginString, @RequestBody AppUser userToLogin) {
+        if(userToLogin.getPassword() == null){
+            return new ResponseEntity<Object>("Invalid password", HttpStatus.BAD_REQUEST);
+        }
+        String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         AppUser appUser = null;
         if (emailValidator.validate(loginString)) {
             appUser = appUserDao.findByEmail(loginString);
@@ -83,7 +86,12 @@ public class AppUserController {
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
+        if(passwordToLogin.equals(appUser.getPassword())){
+            return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
+        } else{
+            return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)

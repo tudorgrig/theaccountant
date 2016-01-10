@@ -169,8 +169,11 @@ public class AppUserControllerTest {
     public void shouldLoginWithUsername() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
         appUserController.createAppUser(appUser);
-        ResponseEntity loginResponseEntity = appUserController.login("tudorgrig");
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        ResponseEntity loginResponseEntity = appUserController.login("tudorgrig", toLoginAppUser);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
 
@@ -178,18 +181,45 @@ public class AppUserControllerTest {
     public void shouldLoginWithEmail() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
         appUserController.createAppUser(appUser);
-        ResponseEntity loginResponseEntity = appUserController.login("my-money-tracker@gmail.com");
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        ResponseEntity loginResponseEntity = appUserController.login("my-money-tracker@gmail.com", toLoginAppUser);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
 
     @Test
-    public void shouldNotLogin() {
+    public void shouldNotLoginWrongUsername() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
         appUserController.createAppUser(appUser);
-        ResponseEntity loginResponseEntity = appUserController.login("failure");
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        ResponseEntity loginResponseEntity = appUserController.login("failure", toLoginAppUser);
         assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldNotLoginIncorrectPassword(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword("incorrect_pass");
+        ResponseEntity loginResponseEntity = appUserController.login("tudorgrig", toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
+        assertEquals("Incorrect password", loginResponseEntity.getBody());
+    }
+
+    @Test
+    public void shouldNotLoginNullPassword(){
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        AppUser toLoginAppUser = new AppUser();
+        ResponseEntity loginResponseEntity = appUserController.login("tudorgrig", toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
+        assertEquals("Invalid password", loginResponseEntity.getBody());
     }
 
     private AppUser createAppUser(String firstName) {
