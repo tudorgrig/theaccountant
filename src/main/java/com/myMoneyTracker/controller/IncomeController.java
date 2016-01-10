@@ -56,8 +56,6 @@ public class IncomeController {
         return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
 
-
-
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findIncome(@PathVariable("id") Long id) {
 
@@ -110,8 +108,9 @@ public class IncomeController {
     }
 
     private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
+
         List<IncomeDTO> incomeDTOs = new ArrayList<IncomeDTO>();
-        for(Income income : incomes){
+        for (Income income : incomes) {
             incomeDTOs.add(incomeConverter.convertTo(income));
         }
         return incomeDTOs;
