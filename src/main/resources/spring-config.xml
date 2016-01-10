@@ -80,4 +80,6 @@
 
     <bean id="appUserConverter"
           class="com.myMoneyTracker.converter.AppUserConverter"/>
+    <bean id="incomeConverter"
+          class="com.myMoneyTracker.converter.IncomeConverter"/>
 </beans>

@@ -1,6 +1,8 @@
 package com.myMoneyTracker.controller;
 
+import com.myMoneyTracker.converter.IncomeConverter;
 import com.myMoneyTracker.dao.IncomeDao;
+import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +29,9 @@ public class IncomeController {
     @Autowired
     IncomeDao incomeDao;
 
+    @Autowired
+    IncomeConverter incomeConverter;
+
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -33,7 +39,7 @@ public class IncomeController {
 
         try {
             Income createdIncome = incomeDao.saveAndFlush(income);
-            return new ResponseEntity<Income>(createdIncome, HttpStatus.OK);
+            return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             log.log(Level.SEVERE, e.getMessage());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -41,14 +47,16 @@ public class IncomeController {
     }
 
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
-    public ResponseEntity<List<Income>> listAllIncomes() {
+    public ResponseEntity<List<IncomeDTO>> listAllIncomes() {
 
         List<Income> incomes = incomeDao.findAll();
         if (incomes.isEmpty()) {
-            return new ResponseEntity<List<Income>>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<List<IncomeDTO>>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<List<Income>>(incomes, HttpStatus.OK);
+        return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
+
+
 
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findIncome(@PathVariable("id") Long id) {
@@ -57,7 +65,7 @@ public class IncomeController {
         if (income == null) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Income>(income, HttpStatus.OK);
+        return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(income), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/find/user/{user_id}", method = RequestMethod.GET)
@@ -67,7 +75,7 @@ public class IncomeController {
         if (incomeList == null || incomeList.isEmpty()) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<List<Income>>(incomeList, HttpStatus.OK);
+        return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomeList), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
@@ -99,5 +107,13 @@ public class IncomeController {
 
         incomeDao.deleteAll();
         return new ResponseEntity<String>("Incomes deleted", HttpStatus.NO_CONTENT);
+    }
+
+    private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
+        List<IncomeDTO> incomeDTOs = new ArrayList<IncomeDTO>();
+        for(Income income : incomes){
+            incomeDTOs.add(incomeConverter.convertTo(income));
+        }
+        return incomeDTOs;
     }
 }
