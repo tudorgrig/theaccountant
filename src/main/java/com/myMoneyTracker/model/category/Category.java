@@ -19,40 +19,46 @@ import com.myMoneyTracker.model.user.AppUser;
  */
 @Entity
 public class Category {
-	
-	@Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-	@NotNull
-	@Length(min=3, message="Category name should have at least 3 characters")
-	private String name;
+    @NotNull
+    @Length(min = 3, message = "Category name should have at least 3 characters")
+    private String name;
 
-	@ManyToOne(fetch = FetchType.EAGER, optional = false)
-	@JoinColumn(name="user_id")
-	private AppUser user;
-	
-	public long getId() {
-		return id;
-	}
-	
-	public void setId(long id) {
-		this.id = id;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public AppUser getUser() {
-	return user;
-	}
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "user_id")
+    private AppUser user;
 
-	public void setUser(AppUser user) {
-		this.user = user;
-	}
+    public long getId() {
+
+        return id;
+    }
+
+    public void setId(long id) {
+
+        this.id = id;
+    }
+
+    public String getName() {
+
+        return name;
+    }
+
+    public void setName(String name) {
+
+        this.name = name;
+    }
+
+    public AppUser getUser() {
+
+        return user;
+    }
+
+    public void setUser(AppUser user) {
+
+        this.user = user;
+    }
 }

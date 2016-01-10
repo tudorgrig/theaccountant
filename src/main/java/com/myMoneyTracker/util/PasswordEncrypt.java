@@ -15,11 +15,12 @@ public class PasswordEncrypt {
 
     private String algorithm;
 
-    public String encryptPassword(String password){
+    public String encryptPassword(String password) {
+
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance(algorithm);
-        }catch (NoSuchAlgorithmException noSuchAlgorithmException){
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             Logger.getLogger(PasswordEncrypt.class.getName()).log(Level.SEVERE, noSuchAlgorithmException.getMessage());
         }
         if (password == null || password.length() == 0) {
@@ -31,8 +32,7 @@ public class PasswordEncrypt {
         for (int i = 0; i < hash.length; i++) {
             if ((0xff & hash[i]) < 0x10) {
                 hexString.append("0" + Integer.toHexString((0xFF & hash[i])));
-            }
-            else {
+            } else {
                 hexString.append(Integer.toHexString(0xFF & hash[i]));
             }
         }
@@ -40,10 +40,12 @@ public class PasswordEncrypt {
     }
 
     public String getAlgorithm() {
+
         return algorithm;
     }
 
     public void setAlgorithm(String algorithm) {
+
         this.algorithm = algorithm;
     }
 }
