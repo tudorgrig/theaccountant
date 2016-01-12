@@ -1,26 +1,25 @@
 package com.myMoneyTracker.controller;
 
-import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.model.user.AppUser;
-import com.sun.media.jfxmedia.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import javax.validation.ConstraintViolationException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.List;
+
+import javax.validation.ConstraintViolationException;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.myMoneyTracker.dao.IncomeDao;
+import com.myMoneyTracker.dao.UserRegistrationDao;
+import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * @author Tudor Grigoriu
@@ -35,11 +34,16 @@ public class AppUserControllerTest {
     private String FIRST_NAME = "Tudor";
 
     @Autowired
-    IncomeDao incomeDao;
+    private IncomeDao incomeDao;
+    
+    @Autowired
+    private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void deleteAllUsers() {
 
+        userRegistrationDao.deleteAll();
+        userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserController.deleteAll();
@@ -51,6 +55,7 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        userRegistrationDao.deleteByUserId(((AppUser) responseEntity.getBody()).getId());
         assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);
     }
 
@@ -151,6 +156,7 @@ public class AppUserControllerTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        userRegistrationDao.deleteAll();
         ResponseEntity deletedEntity = appUserController.deleteAppUser(((AppUser) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("User deleted", deletedEntity.getBody());

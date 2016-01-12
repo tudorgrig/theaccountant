@@ -1,6 +1,7 @@
 package com.myMoneyTracker.dao;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import com.myMoneyTracker.model.subcategory.Subcategory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +41,9 @@ public class IncomeDaoTest {
     private CategoryDao categoryDao;
 
     @Autowired
+    private UserRegistrationDao userRegistrationDao;
+    
+    @Autowired
     private SubcategoryDao subcategoryDao;
 
     private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
@@ -51,6 +54,8 @@ public class IncomeDaoTest {
     @Before
     public void cleanUp() {
 
+        userRegistrationDao.deleteAll();
+        userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserDao.deleteAll();

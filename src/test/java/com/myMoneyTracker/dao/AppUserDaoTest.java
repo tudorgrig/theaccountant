@@ -34,6 +34,9 @@ public class AppUserDaoTest {
 
     @Autowired
     private IncomeDao incomeDao;
+    
+    @Autowired
+    private UserRegistrationDao userRegistrationDao;
 
     private String FIRST_NAME = "Tudor";
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
@@ -41,6 +44,8 @@ public class AppUserDaoTest {
     @Before
     public void deleteData() {
 
+        userRegistrationDao.deleteAll();
+        userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserDao.deleteAll();
