@@ -1,6 +1,7 @@
 package com.myMoneyTracker.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -17,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.model.user.UserRegistration;
 
 /**
  * @author Tudor Grigoriu
@@ -35,6 +38,9 @@ public class AppUserControllerTest {
 
     @Autowired
     private IncomeDao incomeDao;
+    
+    @Autowired
+    private AppUserDao appUserDao;
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
@@ -196,6 +202,19 @@ public class AppUserControllerTest {
         appUserController.createAppUser(appUser);
         ResponseEntity loginResponseEntity = appUserController.login("failure");
         assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
+    }
+    
+    @Test
+    public void shouldRegisterAndActivateUser() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUserController.createAppUser(appUser);
+        assertFalse("User should NOT be activated!", appUser.isActivated());
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        appUser = appUserDao.findOne(appUser.getId());
+        assertTrue("User should be activated!", appUser.isActivated());
     }
 
     private AppUser createAppUser(String firstName) {
