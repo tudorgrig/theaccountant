@@ -34,11 +34,6 @@ public class Expense {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    //TODO: subcategory must be implemented
-    //	@ManyToOne(fetch = FetchType.EAGER)
-    //	@JoinColumn(name="subcategory_id")
-    //	private Subcategory subcategory;
-
     private String name;
     private String description;
 
