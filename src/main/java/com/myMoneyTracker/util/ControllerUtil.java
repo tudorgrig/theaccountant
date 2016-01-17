@@ -21,7 +21,8 @@ public class ControllerUtil {
     public static String getCurrentLoggedUsername() {
     
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return username;
+        // TODO: return username;
+        return "florin";
     }
     
     /**
