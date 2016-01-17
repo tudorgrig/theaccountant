@@ -2,6 +2,7 @@ package com.myMoneyTracker.controller;
 
 import com.myMoneyTracker.dao.CategoryDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
+import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
@@ -63,7 +64,7 @@ public class IncomeControllerTest {
         income.setUser(appUser);
         responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((Income) responseEntity.getBody()).getId() > 0);
+        assertTrue(((IncomeDTO) responseEntity.getBody()).getId() > 0);
     }
 
     @Test
@@ -90,8 +91,8 @@ public class IncomeControllerTest {
         responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.listAllIncomes();
-        assertEquals(1, ((List<Income>) responseEntity.getBody()).size());
-        Income result = ((List<Income>) responseEntity.getBody()).get(0);
+        assertEquals(1, ((List<IncomeDTO>) responseEntity.getBody()).size());
+        IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
         assertEquals(income.getName(), result.getName());
     }
 
@@ -105,9 +106,9 @@ public class IncomeControllerTest {
         income.setUser(appUser);
         responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = incomeController.findIncome(((Income) responseEntity.getBody()).getId());
+        responseEntity = incomeController.findIncome(((IncomeDTO) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Income found = (Income) responseEntity.getBody();
+        IncomeDTO found = (IncomeDTO) responseEntity.getBody();
         assertEquals(income.getName(), found.getName());
     }
 
@@ -130,8 +131,8 @@ public class IncomeControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.findByUserId(income.getUser().getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(1, ((List<Income>) responseEntity.getBody()).size());
-        Income result = ((List<Income>) responseEntity.getBody()).get(0);
+        assertEquals(1, ((List<IncomeDTO>) responseEntity.getBody()).size());
+        IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
         assertEquals(income.getName(), result.getName());
     }
 
@@ -160,7 +161,7 @@ public class IncomeControllerTest {
 
         responseEntity = incomeController.findByUserId(appUser.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<Income> found = (List<Income>) responseEntity.getBody();
+        List<IncomeDTO> found = (List<IncomeDTO>) responseEntity.getBody();
         assertEquals("updated_income", found.get(0).getName());
     }
 
@@ -221,13 +222,5 @@ public class IncomeControllerTest {
         appUser.setUsername("florin.e.iacob");
         appUser.setEmail("my-money-tracker@gmail.com");
         return appUser;
-    }
-
-    private Category createCategory() {
-
-        Category category = new Category();
-        category.setName("Florin");
-        categoryDao.saveAndFlush(category);
-        return category;
     }
 }

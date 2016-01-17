@@ -16,30 +16,30 @@ import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * Test class for EmailSender
- * 
+ *
  * @author Florin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
 @Transactional
 public class EmailSenderTest {
-    
+
     @Autowired
     EmailSender emailSender;
-    
+
     @Test
     public void shouldSendEmail() {
-    
+
         try {
             emailSender.sendEmail("rampageflo@gmail.com", "Test Subject", "Test Messagge");
         } catch (MessagingException e) {
             Assert.fail("Error on sending email: " + e.getMessage());
         }
     }
-    
+
     @Test(expected = javax.mail.MessagingException.class)
     public void shouldNotSendEmail() throws MessagingException {
-    
+
         emailSender.sendEmail("user@test_host.test", "Test Subject", "Test Messagge");
     }
     

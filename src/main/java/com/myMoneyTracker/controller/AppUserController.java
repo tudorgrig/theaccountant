@@ -1,5 +1,6 @@
 package com.myMoneyTracker.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myMoneyTracker.converter.AppUserConverter;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
+import com.myMoneyTracker.dto.user.AppUserDTO;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 import com.myMoneyTracker.util.EmailValidator;
@@ -49,6 +52,9 @@ public class AppUserController {
     @Autowired
     private UserUtil userUtil;
     
+    @Autowired
+    private AppUserConverter appUserConverter;
+    
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -59,7 +65,7 @@ public class AppUserController {
         try {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
             userUtil.generateAccountRegistration(createdAppUser);
-            return new ResponseEntity<AppUser>(createdAppUser, HttpStatus.OK);
+            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(createdAppUser), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
             log.log(Level.INFO, dive.getMessage());
             return new ResponseEntity<String>(dive.getMostSpecificCause().getMessage(), HttpStatus.CONFLICT);
@@ -70,13 +76,13 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
-    public ResponseEntity<List<AppUser>> listAllUsers() {
+    public ResponseEntity<List<AppUserDTO>> listAllUsers() {
     
         List<AppUser> users = appUserDao.findAll();
         if (users.isEmpty()) {
-            return new ResponseEntity<List<AppUser>>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<List<AppUserDTO>>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<List<AppUser>>(users, HttpStatus.OK);
+        return new ResponseEntity<List<AppUserDTO>>(getListOfAppUserDTOs(users), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
@@ -86,10 +92,10 @@ public class AppUserController {
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
+        return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
-    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.GET)
+    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> login(@PathVariable("login") String loginString) {
     
         AppUser appUser = null;
@@ -101,7 +107,7 @@ public class AppUserController {
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<AppUser>(appUser, HttpStatus.OK);
+        return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
@@ -148,5 +154,14 @@ public class AppUserController {
             userRegistrationDao.delete(userRegistration);
             return new ResponseEntity<AppUser>(user, HttpStatus.OK);
         }
+    }
+    
+    private List<AppUserDTO> getListOfAppUserDTOs(List<AppUser> users) {
+    
+        List<AppUserDTO> appUserDTOs = new ArrayList<AppUserDTO>();
+        for (AppUser appUser : users) {
+            appUserDTOs.add(appUserConverter.convertTo(appUser));
+        }
+        return appUserDTOs;
     }
 }

@@ -16,11 +16,11 @@ import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * Class that can be used to send automatic mails.
- * 
+ *
  * @author Florin
  */
 public class EmailSender {
-    
+
     private String senderEmail;
     private String senderPassword;
     private String baseRegistrationUrl;
@@ -42,29 +42,30 @@ public class EmailSender {
         messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
         sendEmail(user.getEmail(), subject, messageBuilder.toString());
     }
-    
+
     /**
      * Method used to send an email to the specified receiver.
-     * 
+     *
      * @param receiverEmail: email address of the receiver
      * @param subject: subject of the message
      * @param message: the message content of the mail
-     * 
+     *
      * @throws MessagingException: exception thrown in case of issues
      */
-    public void sendEmail(String receiverEmail, String subject, String message) throws MessagingException {
-    
+    public void sendEmail(String receiverEmail, String subject, String message)
+            throws MessagingException {
+
         Properties props = buildProperties();
         Session session = Session.getDefaultInstance(props, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-            
+
                 return new PasswordAuthentication(senderEmail, senderPassword);
             }
         });
-        
+
         // -- Create a new message --
         Message msg = new MimeMessage(session);
-        
+
         // -- Set the FROM and TO fields --
         msg.setFrom(new InternetAddress(senderEmail));
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiverEmail, false));
@@ -73,14 +74,14 @@ public class EmailSender {
         msg.setSentDate(new Date());
         Transport.send(msg);
     }
-    
+
     public void setSenderEmail(String senderEmail) {
-    
+
         this.senderEmail = senderEmail;
     }
-    
+
     public void setSenderPassword(String senderPassword) {
-    
+
         this.senderPassword = senderPassword;
     }
     
@@ -93,9 +94,9 @@ public class EmailSender {
     
         this.baseRegistrationUrl = baseRegistrationUrl;
     }
-    
+
     private Properties buildProperties() {
-    
+
         Properties props = System.getProperties();
         props.setProperty("mail.smtp.host", "smtp.gmail.com");
         props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");

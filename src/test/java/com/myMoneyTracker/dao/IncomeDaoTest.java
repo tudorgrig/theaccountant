@@ -166,13 +166,4 @@ public class IncomeDaoTest {
         appUserDao.save(appUser);
         return appUser;
     }
-
-    private Category createCategory(AppUser currentUser) {
-
-        Category category = new Category();
-        category.setName("Florin");
-        category.setUser(currentUser);
-        categoryDao.save(category);
-        return category;
-    }
 }

@@ -9,6 +9,10 @@ import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
+import com.myMoneyTracker.dao.IncomeDao;
+import com.myMoneyTracker.dto.user.AppUserDTO;
+import com.myMoneyTracker.model.user.AppUser;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,9 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.myMoneyTracker.dao.AppUserDao;
-import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
-import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 
 /**
@@ -61,8 +63,8 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        userRegistrationDao.deleteByUserId(((AppUser) responseEntity.getBody()).getId());
-        assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);
+        userRegistrationDao.deleteByUserId(((AppUserDTO) responseEntity.getBody()).getId());
+        assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -79,7 +81,7 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);
+        assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         appUser = createAppUser(FIRST_NAME);
         responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
@@ -94,7 +96,7 @@ public class AppUserControllerTest {
             appUser.setUsername("tudorgrig" + i);
             ResponseEntity responseEntity = appUserController.createAppUser(appUser);
             assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-            assertTrue(((AppUser) responseEntity.getBody()).getId() > 0);
+            assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         }
         ResponseEntity responseEntity = appUserController.listAllUsers();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -114,7 +116,7 @@ public class AppUserControllerTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUser) responseEntity.getBody()).getId();
+        long id = ((AppUserDTO) responseEntity.getBody()).getId();
         ResponseEntity<?> found = appUserController.findAppUser(id);
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
@@ -125,7 +127,7 @@ public class AppUserControllerTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUser) responseEntity.getBody()).getId();
+        long id = ((AppUserDTO) responseEntity.getBody()).getId();
         ResponseEntity<?> found = appUserController.findAppUser(id + 1);
         assertEquals(HttpStatus.NOT_FOUND, found.getStatusCode());
         assertTrue(found.getBody().equals("User not found"));
@@ -136,13 +138,13 @@ public class AppUserControllerTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUser) responseEntity.getBody()).getId();
+        long id = ((AppUserDTO) responseEntity.getBody()).getId();
         AppUser toUpdateAppUser = createAppUser("Florin");
         ResponseEntity updated = appUserController.updateAppUser(id, toUpdateAppUser);
         assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
         assertEquals("User updated", updated.getBody());
         ResponseEntity updatedUser = appUserController.findAppUser(id);
-        assertEquals("Florin", ((AppUser) updatedUser.getBody()).getFirstName());
+        assertEquals("Florin", ((AppUserDTO) updatedUser.getBody()).getFirstName());
     }
 
     @Test
@@ -150,7 +152,7 @@ public class AppUserControllerTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUser) responseEntity.getBody()).getId();
+        long id = ((AppUserDTO) responseEntity.getBody()).getId();
         AppUser toUpdateAppUser = createAppUser("Florin");
         ResponseEntity updated = appUserController.updateAppUser(id + 1, toUpdateAppUser);
         assertEquals(HttpStatus.NOT_FOUND, updated.getStatusCode());
@@ -163,7 +165,7 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         userRegistrationDao.deleteAll();
-        ResponseEntity deletedEntity = appUserController.deleteAppUser(((AppUser) responseEntity.getBody()).getId());
+        ResponseEntity deletedEntity = appUserController.deleteAppUser(((AppUserDTO) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("User deleted", deletedEntity.getBody());
     }
@@ -171,9 +173,7 @@ public class AppUserControllerTest {
     @Test
     public void shouldNotDeleteAppUser() {
 
-        AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
-        ResponseEntity deletedEntity = appUserController.deleteAppUser(((AppUser) responseEntity.getBody()).getId() + 1);
+        ResponseEntity deletedEntity = appUserController.deleteAppUser(1l);
         assertEquals(HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
     }
 

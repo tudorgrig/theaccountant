@@ -70,4 +70,19 @@
         <property name="senderPassword" value="${emailSender.password}"/>
         <property name="baseRegistrationUrl" value="${emailSender.base_registration_url}"/>
     </bean>
+
+    <bean id="mapper" class="org.dozer.DozerBeanMapper">
+        <!--<property name="mappingFiles">-->
+        <!--<list>-->
+        <!--<value>dozer/dozerBeanMapping.xml</value>-->
+        <!--&lt;!&ndash;&lt;!&ndash;<value>dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<value>more-dozer-bean-mappings.xml</value>&ndash;&gt;&ndash;&gt;-->
+        <!--</list>-->
+        <!--</property>-->
+    </bean>
+
+    <bean id="appUserConverter"
+          class="com.myMoneyTracker.converter.AppUserConverter"/>
+    <bean id="incomeConverter"
+          class="com.myMoneyTracker.converter.IncomeConverter"/>
 </beans>
