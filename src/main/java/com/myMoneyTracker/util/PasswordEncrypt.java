@@ -16,15 +16,14 @@ public class PasswordEncrypt {
     private String algorithm;
 
     public String encryptPassword(String password) {
-
+        if (password == null || password.length() == 0) {
+            throw new IllegalArgumentException("Invalid password");
+        }
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance(algorithm);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             Logger.getLogger(PasswordEncrypt.class.getName()).log(Level.SEVERE, noSuchAlgorithmException.getMessage());
-        }
-        if (password == null || password.length() == 0) {
-            throw new IllegalArgumentException("Invalid password");
         }
         md.update(password.getBytes());
         byte[] hash = md.digest();
