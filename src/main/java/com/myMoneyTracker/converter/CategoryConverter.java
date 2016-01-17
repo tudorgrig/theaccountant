@@ -22,7 +22,7 @@ public class CategoryConverter {
         
     }
     
-    public Category convertFrom(Category categoryDTO) {
+    public Category convertFrom(CategoryDTO categoryDTO) {
     
         Category category = new Category();
         Mapper mapper = DozerBeanMapperSingletonWrapper.getInstance();

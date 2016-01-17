@@ -85,8 +85,8 @@
           class="com.myMoneyTracker.converter.AppUserConverter"/>
     <bean id="incomeConverter"
           class="com.myMoneyTracker.converter.IncomeConverter"/>
-  	<bean id="incomeConverter"
-          class="com.myMoneyTracker.converter.IncomeConverter"/>
+  	<bean id="expenseConverter"
+          class="com.myMoneyTracker.converter.ExpenseConverter"/>
   	<bean id="categoryConverter"
           class="com.myMoneyTracker.converter.CategoryConverter"/>
 </beans>

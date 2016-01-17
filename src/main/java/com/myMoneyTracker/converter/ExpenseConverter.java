@@ -23,9 +23,9 @@ public class ExpenseConverter {
     
     public Expense convertFrom(ExpenseDTO expenseDTO) {
     
-        Expense destObject = new Expense();
+        Expense expense = new Expense();
         Mapper mapper = DozerBeanMapperSingletonWrapper.getInstance();
-        mapper.map(expenseDTO, destObject);
-        return destObject;
+        mapper.map(expenseDTO, expense);
+        return expense;
     }
 }
