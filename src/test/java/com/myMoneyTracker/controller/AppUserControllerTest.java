@@ -9,10 +9,6 @@ import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
-import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.dto.user.AppUserDTO;
-import com.myMoneyTracker.model.user.AppUser;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +19,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.myMoneyTracker.dao.AppUserDao;
+import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
+import com.myMoneyTracker.dto.user.AppUserDTO;
+import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 
 /**
@@ -33,11 +32,11 @@ import com.myMoneyTracker.model.user.UserRegistration;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
 public class AppUserControllerTest {
-
+    
     @Autowired
     AppUserController appUserController;
     private String FIRST_NAME = "Tudor";
-
+    
     @Autowired
     private IncomeDao incomeDao;
     
@@ -46,38 +45,38 @@ public class AppUserControllerTest {
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
-
+    
     @Before
     public void deleteAllUsers() {
-
+    
         userRegistrationDao.deleteAll();
         userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
         appUserController.deleteAll();
     }
-
+    
     @Test
     public void shouldCreateAppUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         userRegistrationDao.deleteByUserId(((AppUserDTO) responseEntity.getBody()).getId());
         assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
     }
-
+    
     @Test(expected = ConstraintViolationException.class)
     public void shouldNotCreateAppUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         appUser.setEmail("wrongFormat");
         appUserController.createAppUser(appUser);
     }
-
+    
     @Test
     public void shouldNotCreateDuplicateAppUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -86,10 +85,10 @@ public class AppUserControllerTest {
         responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
     }
-
+    
     @Test
     public void shouldFindAllUsers() {
-
+    
         for (int i = 0; i < 5; i++) {
             AppUser appUser = createAppUser(FIRST_NAME);
             appUser.setEmail("email" + i + "@gmail.com");
@@ -102,18 +101,18 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(5, ((List) responseEntity.getBody()).size());
     }
-
+    
     @Test
     public void shouldFindEmptyListOfUsers() {
-
+    
         ResponseEntity responseEntity = appUserController.listAllUsers();
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
         assertEquals(null, responseEntity.getBody());
     }
-
+    
     @Test
     public void shouldFindOneUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
@@ -121,10 +120,10 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
     }
-
+    
     @Test
     public void shouldNotFindOneUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
@@ -132,10 +131,10 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, found.getStatusCode());
         assertTrue(found.getBody().equals("User not found"));
     }
-
+    
     @Test
     public void shouldUpdateUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
@@ -146,10 +145,10 @@ public class AppUserControllerTest {
         ResponseEntity updatedUser = appUserController.findAppUser(id);
         assertEquals("Florin", ((AppUserDTO) updatedUser.getBody()).getFirstName());
     }
-
+    
     @Test
     public void shouldNotUpdateUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
@@ -158,10 +157,10 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, updated.getStatusCode());
         assertEquals("User not found", updated.getBody());
     }
-
+    
     @Test
     public void shouldDeleteAppUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         ResponseEntity responseEntity = appUserController.createAppUser(appUser);
         userRegistrationDao.deleteAll();
@@ -169,35 +168,35 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("User deleted", deletedEntity.getBody());
     }
-
+    
     @Test
     public void shouldNotDeleteAppUser() {
-
+    
         ResponseEntity deletedEntity = appUserController.deleteAppUser(1l);
         assertEquals(HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
     }
-
+    
     @Test
     public void shouldLoginWithUsername() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
         ResponseEntity loginResponseEntity = appUserController.login("tudorgrig");
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
-
+    
     @Test
     public void shouldLoginWithEmail() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
         ResponseEntity loginResponseEntity = appUserController.login("my-money-tracker@gmail.com");
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
-
+    
     @Test
     public void shouldNotLogin() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
         ResponseEntity loginResponseEntity = appUserController.login("failure");
@@ -206,7 +205,7 @@ public class AppUserControllerTest {
     
     @Test
     public void shouldRegisterAndActivateUser() {
-
+    
         AppUser appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
         assertFalse("User should NOT be activated!", appUser.isActivated());
@@ -216,9 +215,9 @@ public class AppUserControllerTest {
         appUser = appUserDao.findOne(appUser.getId());
         assertTrue("User should be activated!", appUser.isActivated());
     }
-
+    
     private AppUser createAppUser(String firstName) {
-
+    
         AppUser appUser = new AppUser();
         appUser.setFirstName(firstName);
         appUser.setSurname("Grigoriu");

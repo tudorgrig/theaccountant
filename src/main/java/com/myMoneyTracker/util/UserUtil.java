@@ -32,6 +32,7 @@ public class UserUtil {
      *              exception that is thrown in case of an invalid email address.
      */
     public void generateAccountRegistration(AppUser user) throws MessagingException {
+    
         String code = UUID.randomUUID().toString();
         UserRegistration userRegistration = new UserRegistration();
         userRegistration.setCode(code);

@@ -1,8 +1,5 @@
 package com.myMoneyTracker.dto.income;
 
-import com.myMoneyTracker.dto.user.AppUserDTO;
-import com.myMoneyTracker.model.user.AppUser;
-
 import java.sql.Timestamp;
 
 /**

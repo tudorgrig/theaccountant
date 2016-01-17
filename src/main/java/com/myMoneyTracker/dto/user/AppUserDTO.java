@@ -1,6 +1,5 @@
 package com.myMoneyTracker.dto.user;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * Created by tudor.grigoriu on 10.01.2016.

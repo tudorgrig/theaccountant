@@ -1,11 +1,10 @@
 package com.myMoneyTracker.converter;
 
+import org.dozer.DozerBeanMapperSingletonWrapper;
+import org.dozer.Mapper;
+
 import com.myMoneyTracker.dto.user.AppUserDTO;
 import com.myMoneyTracker.model.user.AppUser;
-import org.dozer.DozerBeanMapper;
-import org.dozer.DozerBeanMapperSingletonWrapper;
-import org.dozer.DozerConverter;
-import org.dozer.Mapper;
 
 /**
  * Dozer converter class between AppUser and AppUserDTO
