@@ -31,7 +31,7 @@ import com.myMoneyTracker.util.UserUtil;
 
 /**
  * @author Tudor Grigoriu
- * Rest Controller for AppUser entity
+ *         Rest Controller for AppUser entity
  */
 @RestController
 @RequestMapping(value = "/user")
@@ -96,18 +96,28 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.POST)
-    public ResponseEntity<?> login(@PathVariable("login") String loginString) {
-    
+    public ResponseEntity<?> login(@RequestBody AppUser userToLogin) {
+        if (userToLogin.getUsername() == null) {
+            return new ResponseEntity<Object>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
+        }
+        if (userToLogin.getPassword() == null) {
+            return new ResponseEntity<Object>("Invalid password", HttpStatus.BAD_REQUEST);
+        }
+        String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         AppUser appUser = null;
-        if (emailValidator.validate(loginString)) {
-            appUser = appUserDao.findByEmail(loginString);
+        if (emailValidator.validate(userToLogin.getUsername())) {
+            appUser = appUserDao.findByEmail(userToLogin.getUsername());
         } else {
-            appUser = appUserDao.findByUsername(loginString);
+            appUser = appUserDao.findByUsername(userToLogin.getUsername());
         }
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
+        if (passwordToLogin.equals(appUser.getPassword())) {
+            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
+        }
     }
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)

@@ -20,10 +20,8 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @NotNull
     private String firstName;
 
-    @NotNull
     private String surname;
 
     private Date birthdate;
