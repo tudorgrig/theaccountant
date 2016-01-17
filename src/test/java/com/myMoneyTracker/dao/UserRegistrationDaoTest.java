@@ -41,13 +41,23 @@ public class UserRegistrationDaoTest {
     public void shouldFindAndDeleteByUser() {
 
         AppUser appUser = createAppUser("Florin");
-        appUserController.createAppUser(appUser);
+        appUser = appUserDao.save(appUser);
+        UserRegistration userRegistration = createUserRegistration("code-test", appUser);
+        userRegistrationDao.save(userRegistration);
         List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
         assertFalse("Could not find userRegistration!", regList.isEmpty());
-        UserRegistration userRegistration = regList.get(0);
+        userRegistration = regList.get(0);
         userRegistrationDao.delete(userRegistration);
         regList = userRegistrationDao.findByUserId(appUser.getId());
         assertTrue("userRegistration should be deleted!", regList.isEmpty());
+    }
+    
+    private UserRegistration createUserRegistration(String code, AppUser user) {
+
+        UserRegistration userRegistration = new UserRegistration();
+        userRegistration.setCode(code);
+        userRegistration.setUser(user);
+        return userRegistration;
     }
     
     private AppUser createAppUser(String firstName) {
