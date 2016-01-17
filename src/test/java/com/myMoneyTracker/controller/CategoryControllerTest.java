@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.myMoneyTracker.dao.IncomeDao;
+import com.myMoneyTracker.dao.UserRegistrationDao;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,9 @@ public class CategoryControllerTest {
 
     @Autowired
     IncomeDao incomeDao;
+    
+    @Autowired
+    private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void initialize() {
@@ -55,6 +60,8 @@ public class CategoryControllerTest {
     @After
     public void cleanUp() {
 
+        userRegistrationDao.deleteAll();
+        userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
         categoryController.deleteAll();

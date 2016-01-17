@@ -12,6 +12,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import com.myMoneyTracker.model.user.AppUser;
+
 /**
  * Class that can be used to send automatic mails.
  *
@@ -21,6 +23,25 @@ public class EmailSender {
 
     private String senderEmail;
     private String senderPassword;
+    private String baseRegistrationUrl;
+    
+    /**
+     * Send an email to the specified user to require the account registration using an URL containing 
+     * the received generated code.
+     * 
+     * @param user : the user that will receive the registration mail
+     * @param code : generated code to be sent by mail
+     * @throws MessagingException
+     */
+    public void sendUserRegistrationEmail(AppUser user, String code) throws MessagingException {
+    
+        String subject = "[My Money Tracker] Account registration";
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append("<h2 style='color:red;'>Hello, " + user.getUsername() + "!</h2>");
+        messageBuilder.append("<br><br><pre style='font-size: 160%;'>Please confirm your registration by following the " + "link: " + "<a href='" + baseRegistrationUrl + code + "'>REGISTRATION LINK</a></pre>");
+        messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
+        sendEmail(user.getEmail(), subject, messageBuilder.toString());
+    }
 
     /**
      * Method used to send an email to the specified receiver.
@@ -49,7 +70,7 @@ public class EmailSender {
         msg.setFrom(new InternetAddress(senderEmail));
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiverEmail, false));
         msg.setSubject(subject);
-        msg.setText(message);
+        msg.setContent(message, "text/html; charset=utf-8");
         msg.setSentDate(new Date());
         Transport.send(msg);
     }
@@ -62,6 +83,16 @@ public class EmailSender {
     public void setSenderPassword(String senderPassword) {
 
         this.senderPassword = senderPassword;
+    }
+    
+    public String getBaseRegistrationUrl() {
+    
+        return baseRegistrationUrl;
+    }
+    
+    public void setBaseRegistrationUrl(String baseRegistrationUrl) {
+    
+        this.baseRegistrationUrl = baseRegistrationUrl;
     }
 
     private Properties buildProperties() {
@@ -78,5 +109,4 @@ public class EmailSender {
         props.put("mail.transport.protocol", "smtp");
         return props;
     }
-
 }

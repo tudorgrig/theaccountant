@@ -1,10 +1,12 @@
 package com.myMoneyTracker.controller;
 
 import com.myMoneyTracker.dao.CategoryDao;
+import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +40,15 @@ public class IncomeControllerTest {
 
     @Autowired
     CategoryDao categoryDao;
+    
+    @Autowired
+    private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void deleteAllIncomes() {
 
+        userRegistrationDao.deleteAll();
+        userRegistrationDao.flush();
         incomeController.deleteAll();
         appUserController.deleteAll();
 

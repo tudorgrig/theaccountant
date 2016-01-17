@@ -62,10 +62,13 @@
         <property name="algorithm" value="${passwordEncrypt.algorithm}"/>
     </bean>
     <bean id="emailValidator" class="com.myMoneyTracker.util.EmailValidator"/>
-
+    
+	<bean id="userUtil" class="com.myMoneyTracker.util.UserUtil"/>    
+    
     <bean id="emailSender" class="com.myMoneyTracker.util.EmailSender">
         <property name="senderEmail" value="${emailSender.email}"/>
         <property name="senderPassword" value="${emailSender.password}"/>
+        <property name="baseRegistrationUrl" value="${emailSender.base_registration_url}"/>
     </bean>
 
     <bean id="mapper" class="org.dozer.DozerBeanMapper">
