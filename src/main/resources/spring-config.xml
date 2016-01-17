@@ -37,7 +37,7 @@
 
     <bean id="jpaVendorAdapter"
           class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-        <property name="showSql" value="true"/>
+        <!--<property name="showSql" value="true"/>-->
         <property name="generateDdl" value="true"/>
         <property name="database" value="POSTGRESQL"/>
     </bean>
