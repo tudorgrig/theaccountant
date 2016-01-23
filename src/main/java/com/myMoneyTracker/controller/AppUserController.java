@@ -95,7 +95,7 @@ public class AppUserController {
         return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
-    @RequestMapping(value = "/login/{login:.+}", method = RequestMethod.POST)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody AppUser userToLogin) {
         if (userToLogin.getUsername() == null) {
             return new ResponseEntity<Object>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
