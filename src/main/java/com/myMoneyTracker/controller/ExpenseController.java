@@ -9,6 +9,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,7 +78,8 @@ public class ExpenseController {
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<ExpenseDTO>> listAllExpenses() {
     
-        List<Expense> expenses = expenseDao.findAll();
+        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        List<Expense> expenses = expenseDao.findByUsername(loggedUsername);
         if (expenses.isEmpty()) {
             return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
         }
@@ -95,8 +97,60 @@ public class ExpenseController {
         return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(expense), HttpStatus.OK);
     }
     
+    @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
+    public ResponseEntity<String> updateExpense(@PathVariable("id") Long id, @RequestBody @Valid Expense expense) {
+    
+        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        Expense oldExpense = expenseDao.findOne(id);
+        Category oldCategory = oldExpense.getCategory();
+        String newExpenseCategoryName = expense.getCategory().getName();
+        if (!oldCategory.getName().equals(newExpenseCategoryName)) {
+            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, loggedUsername);
+            if (category == null) {
+                Category categoryToBeInserted = new Category();
+                categoryToBeInserted.setName(newExpenseCategoryName);
+                categoryToBeInserted.setUser(oldExpense.getUser());
+                category = categoryDao.saveAndFlush(categoryToBeInserted);
+            }
+            expense.setCategory(category);
+        }
+        if (oldExpense == null || !(loggedUsername.equals(oldExpense.getUser().getUsername()))) {
+            return new ResponseEntity<String>("Expense not found", HttpStatus.NOT_FOUND);
+        }
+        expense.setId(id);
+        expense.setUser(oldExpense.getUser());
+        expenseDao.saveAndFlush(expense);
+        return new ResponseEntity<String>("Expense updated", HttpStatus.NO_CONTENT);
+    }
+    
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteExpense(@PathVariable("id") Long id) {
+    
+        try {
+            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+            Expense expenseToBeDeleted = expenseDao.findOne(id);
+            if (expenseToBeDeleted == null || !(loggedUsername.equals(expenseToBeDeleted.getUser().getUsername()))) {
+                throw new EmptyResultDataAccessException("Expense not found", 1);
+            }
+            expenseDao.delete(id);
+        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
+            log.info(emptyResultDataAccessException.getMessage());
+            return new ResponseEntity<String>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<String>("Expense deleted", HttpStatus.NO_CONTENT);
+    }
+    
+    @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteAll() {
+    
+        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        expenseDao.deleteAllByUsername(loggedUsername);
+        expenseDao.flush();
+        return new ResponseEntity<String>("Incomes deleted", HttpStatus.NO_CONTENT);
+    }
+    
     private List<ExpenseDTO> createExpenseDTOs(List<Expense> expenses) {
-        
+    
         List<ExpenseDTO> expenseDTOs = new ArrayList<ExpenseDTO>();
         for (Expense expense : expenses) {
             expenseDTOs.add(expenseConverter.convertTo(expense));
