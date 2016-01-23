@@ -103,7 +103,6 @@ public class AppUserController {
         if (userToLogin.getPassword() == null) {
             return new ResponseEntity<Object>("Invalid password", HttpStatus.BAD_REQUEST);
         }
-        String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         AppUser appUser = null;
         if (emailValidator.validate(userToLogin.getUsername())) {
             appUser = appUserDao.findByEmail(userToLogin.getUsername());
@@ -113,6 +112,10 @@ public class AppUserController {
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
+        if(!appUser.isActivated()){
+            return new ResponseEntity<String>("User not activated", HttpStatus.BAD_REQUEST);
+        }
+        String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         if (passwordToLogin.equals(appUser.getPassword())) {
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
         } else {

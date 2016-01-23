@@ -181,6 +181,7 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String password = appUser.getPassword();
+        appUser.setActivated(true);
         appUserController.createAppUser(appUser);
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
@@ -190,10 +191,24 @@ public class AppUserControllerTest {
     }
     
     @Test
+    public void shouldNotLoginNonActivatedUser() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserController.createAppUser(appUser);
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        toLoginAppUser.setUsername("tudorgrig");
+        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
+    }
+
+    @Test
     public void shouldLoginWithEmail() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String password = appUser.getPassword();
+        appUser.setActivated(true);
         appUserController.createAppUser(appUser);
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
@@ -206,6 +221,7 @@ public class AppUserControllerTest {
     public void shouldNotLoginWrongUsername() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
+        appUser.setActivated(true);
         String password = appUser.getPassword();
         appUserController.createAppUser(appUser);
         AppUser toLoginAppUser = new AppUser();
@@ -232,6 +248,7 @@ public class AppUserControllerTest {
     public void shouldNotLoginIncorrectPassword() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
+        appUser.setActivated(true);
         appUserController.createAppUser(appUser);
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword("incorrect_pass");
