@@ -26,7 +26,7 @@ import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 
 /**
- * @author Tudor Grigoriu
+ * @author Floryn
  * Test class for the AppUserController
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -60,7 +60,7 @@ public class AppUserControllerTest {
     public void shouldCreateAppUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         userRegistrationDao.deleteByUserId(((AppUserDTO) responseEntity.getBody()).getId());
         assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
@@ -75,10 +75,19 @@ public class AppUserControllerTest {
     }
     
     @Test
+    public void shouldNotCreateAppUserWithInvalidMail() {
+    
+        AppUser appUser = createAppUser(FIRST_NAME);
+        appUser.setEmail("invalid_user@invalid_host.com");
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
+    @Test
     public void shouldNotCreateDuplicateAppUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         appUser = createAppUser(FIRST_NAME);
@@ -93,19 +102,19 @@ public class AppUserControllerTest {
             AppUser appUser = createAppUser(FIRST_NAME);
             appUser.setEmail("email" + i + "@gmail.com");
             appUser.setUsername("tudorgrig" + i);
-            ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+            ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
             assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
             assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         }
-        ResponseEntity responseEntity = appUserController.listAllUsers();
+        ResponseEntity<?> responseEntity = appUserController.listAllUsers();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(5, ((List) responseEntity.getBody()).size());
+        assertEquals(5, ((List<?>) responseEntity.getBody()).size());
     }
     
     @Test
     public void shouldFindEmptyListOfUsers() {
     
-        ResponseEntity responseEntity = appUserController.listAllUsers();
+        ResponseEntity<?> responseEntity = appUserController.listAllUsers();
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
         assertEquals(null, responseEntity.getBody());
     }
@@ -114,7 +123,7 @@ public class AppUserControllerTest {
     public void shouldFindOneUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
         ResponseEntity<?> found = appUserController.findAppUser(id);
         assertEquals(HttpStatus.OK, found.getStatusCode());
@@ -125,7 +134,7 @@ public class AppUserControllerTest {
     public void shouldNotFindOneUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
         ResponseEntity<?> found = appUserController.findAppUser(id + 1);
         assertEquals(HttpStatus.NOT_FOUND, found.getStatusCode());
@@ -136,13 +145,13 @@ public class AppUserControllerTest {
     public void shouldUpdateUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
         AppUser toUpdateAppUser = createAppUser("Florin");
-        ResponseEntity updated = appUserController.updateAppUser(id, toUpdateAppUser);
+        ResponseEntity<?> updated = appUserController.updateAppUser(id, toUpdateAppUser);
         assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
         assertEquals("User updated", updated.getBody());
-        ResponseEntity updatedUser = appUserController.findAppUser(id);
+        ResponseEntity<?> updatedUser = appUserController.findAppUser(id);
         assertEquals("Florin", ((AppUserDTO) updatedUser.getBody()).getFirstName());
     }
     
@@ -150,10 +159,10 @@ public class AppUserControllerTest {
     public void shouldNotUpdateUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         long id = ((AppUserDTO) responseEntity.getBody()).getId();
         AppUser toUpdateAppUser = createAppUser("Florin");
-        ResponseEntity updated = appUserController.updateAppUser(id + 1, toUpdateAppUser);
+        ResponseEntity<?> updated = appUserController.updateAppUser(id + 1, toUpdateAppUser);
         assertEquals(HttpStatus.NOT_FOUND, updated.getStatusCode());
         assertEquals("User not found", updated.getBody());
     }
@@ -162,9 +171,9 @@ public class AppUserControllerTest {
     public void shouldDeleteAppUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity responseEntity = appUserController.createAppUser(appUser);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
         userRegistrationDao.deleteAll();
-        ResponseEntity deletedEntity = appUserController.deleteAppUser(((AppUserDTO) responseEntity.getBody()).getId());
+        ResponseEntity<?> deletedEntity = appUserController.deleteAppUser(((AppUserDTO) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("User deleted", deletedEntity.getBody());
     }
@@ -172,7 +181,7 @@ public class AppUserControllerTest {
     @Test
     public void shouldNotDeleteAppUser() {
     
-        ResponseEntity deletedEntity = appUserController.deleteAppUser(1l);
+        ResponseEntity<?> deletedEntity = appUserController.deleteAppUser(1l);
         assertEquals(HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
     }
     
@@ -185,7 +194,7 @@ public class AppUserControllerTest {
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
         toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
     
@@ -198,7 +207,7 @@ public class AppUserControllerTest {
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
         toLoginAppUser.setUsername("my-money-tracker@gmail.com");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
     }
     
@@ -211,8 +220,12 @@ public class AppUserControllerTest {
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
         toLoginAppUser.setUsername("failure");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
+        
+        toLoginAppUser.setUsername(null);
+        loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
     }
     
     @Test
@@ -229,6 +242,13 @@ public class AppUserControllerTest {
     }
     
     @Test
+    public void shouldNotRegisterAndActivateUser() {
+    
+        ResponseEntity<?> responseEntity = appUserController.registerUser("invalid_code");
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
+    @Test
     public void shouldNotLoginIncorrectPassword() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
@@ -236,7 +256,7 @@ public class AppUserControllerTest {
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword("incorrect_pass");
         toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
         assertEquals("Incorrect password", loginResponseEntity.getBody());
     }
@@ -248,7 +268,7 @@ public class AppUserControllerTest {
         appUserController.createAppUser(appUser);
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
         assertEquals("Invalid password", loginResponseEntity.getBody());
     }

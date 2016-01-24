@@ -148,6 +148,7 @@ public class AppUserController {
     public ResponseEntity<String> deleteAll() {
     
         appUserDao.deleteAll();
+        appUserDao.flush();
         return new ResponseEntity<String>("Users deleted", HttpStatus.NO_CONTENT);
     }
     

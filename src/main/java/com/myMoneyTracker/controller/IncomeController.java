@@ -77,8 +77,11 @@ public class IncomeController {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
         Income income = incomeDao.findOne(id);
-        if (income == null || !(loggedUsername.equals(income.getUser().getUsername()))) {
+        if (income == null) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
+        }
+        if (!(loggedUsername.equals(income.getUser().getUsername()))) {
+            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(income), HttpStatus.OK);
     }
@@ -88,8 +91,11 @@ public class IncomeController {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
         Income oldIncome = incomeDao.findOne(id);
-        if (oldIncome == null || !(loggedUsername.equals(oldIncome.getUser().getUsername()))) {
+        if (oldIncome == null) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
+        }
+        if (!(loggedUsername.equals(oldIncome.getUser().getUsername()))) {
+            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
         income.setId(id);
         income.setUser(oldIncome.getUser());
@@ -103,8 +109,11 @@ public class IncomeController {
         try {
             String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
             Income incomeToBeDeleted = incomeDao.findOne(id);
-            if (incomeToBeDeleted == null || !(loggedUsername.equals(incomeToBeDeleted.getUser().getUsername()))) {
+            if (incomeToBeDeleted == null) {
                 throw new EmptyResultDataAccessException("Income not found", 1);
+            }
+            if (!(loggedUsername.equals(incomeToBeDeleted.getUser().getUsername()))) {
+                return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
             }
             incomeDao.delete(id);
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {

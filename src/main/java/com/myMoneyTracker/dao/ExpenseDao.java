@@ -21,7 +21,15 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
     @Query("SELECT e FROM Expense e WHERE e.user.username = ?1")
     List<Expense> findByUsername(String username);
     
+    @Query("SELECT e FROM Expense e WHERE e.category.name = ?1 AND e.user.username = ?2")
+    List<Expense> findByCategoryNameAndUsername(String categoryName, String username);
+    
     @Modifying
     @Query(value = "DELETE FROM expense WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
+    
+    @Modifying
+    @Query(value = "DELETE FROM expense WHERE category_id IN (SELECT category.id FROM category WHERE category.name= ?1)"
+            + "AND user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?2)", nativeQuery = true)
+    void deleteAllByCategoryNameAndUsername(String categoryName, String username);
 }

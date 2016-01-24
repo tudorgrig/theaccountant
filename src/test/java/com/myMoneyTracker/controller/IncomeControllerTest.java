@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.myMoneyTracker.dao.CategoryDao;
+import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
@@ -36,13 +36,13 @@ public class IncomeControllerTest {
     private static final String LOGGED_USERNAME = "florin.e.iacob";
 
     @Autowired
-    IncomeController incomeController;
+    private IncomeController incomeController;
 
     @Autowired
-    AppUserController appUserController;
+    private AppUserController appUserController;
 
     @Autowired
-    CategoryDao categoryDao;
+    private IncomeDao incomeDao;
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
@@ -52,7 +52,8 @@ public class IncomeControllerTest {
 
         userRegistrationDao.deleteAll();
         userRegistrationDao.flush();
-        incomeController.deleteAll();
+        incomeDao.deleteAll();
+        incomeDao.flush();
         appUserController.deleteAll();
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
 
@@ -121,6 +122,10 @@ public class IncomeControllerTest {
 
         ResponseEntity<?> responseEntity = incomeController.findIncome(new Random().nextLong());
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        Income income = createAndSaveIncomeForAnotherUser();
+        responseEntity = incomeController.findIncome(income.getId());
+        assertEquals("Should not find another user's income!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
     @Test
@@ -146,6 +151,18 @@ public class IncomeControllerTest {
     }
 
     @Test
+    public void shouldNotUpdateIncome() {
+    
+        Income income = createIncome();
+        ResponseEntity<?> responseEntity = incomeController.updateIncome(111L, income);
+        assertEquals("Should not update non-existent income!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        income = createAndSaveIncomeForAnotherUser();
+        responseEntity = incomeController.updateIncome(income.getId(), income);
+        assertEquals("Should not update income for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
+    @Test
     public void shouldDeleteIncome() {
 
         Income income = createIncome();
@@ -163,6 +180,17 @@ public class IncomeControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
+    @Test
+    public void shouldNotDeleteIncome() {
+    
+        ResponseEntity<?> responseEntity = incomeController.deleteIncome(111L);
+        assertEquals("Should not delete non-existent income!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        Income income = createAndSaveIncomeForAnotherUser();
+        responseEntity = incomeController.deleteIncome(income.getId());
+        assertEquals("Should not delete income for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
     @Test
     public void shouldDeleteAllIncomes() {
 
@@ -191,6 +219,19 @@ public class IncomeControllerTest {
         return income;
     }
 
+    private Income createAndSaveIncomeForAnotherUser() {
+        
+        AppUser anotherUser = createAppUser();
+        anotherUser.setUsername("another_user");
+        anotherUser.setEmail("another_user@email.com");
+        appUserController.createAppUser(anotherUser);
+        Income income = createIncome();
+        income.setName("another_income");
+        income.setUser(anotherUser);
+        income = incomeDao.saveAndFlush(income);
+        return income;
+    }
+    
     private AppUser createAppUser() {
     
         AppUser appUser = new AppUser();

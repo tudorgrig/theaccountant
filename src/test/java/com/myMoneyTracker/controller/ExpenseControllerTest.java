@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.CategoryDao;
+import com.myMoneyTracker.dao.ExpenseDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.expense.ExpenseDTO;
 import com.myMoneyTracker.model.category.Category;
@@ -28,7 +29,7 @@ import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.util.ControllerUtil;
 
 /**
- * est class for the expense controller
+ * Test class for the expense controller
  * 
  * @author Florin
  */
@@ -50,12 +51,15 @@ public class ExpenseControllerTest {
     private AppUserDao appUserDao;
     
     @Autowired
+    private ExpenseDao expenseDao;
+    
+    @Autowired
     private UserRegistrationDao userRegistrationDao;
     
     @Before
     public void setup() {
     
-        applicationUser = createAndSaveAppUser(LOGGED_USERNAME);
+        applicationUser = createAndSaveAppUser(LOGGED_USERNAME, "florin.iacob.expense@gmail.com");
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
     }
     
@@ -64,7 +68,8 @@ public class ExpenseControllerTest {
     
         userRegistrationDao.deleteAll();
         userRegistrationDao.flush();
-        expenseController.deleteAll();
+        expenseDao.deleteAll();
+        expenseDao.flush();
         categoryDao.deleteAll();
         categoryDao.flush();
         appUserDao.deleteAll();
@@ -74,7 +79,18 @@ public class ExpenseControllerTest {
     @Test
     public void shouldCreateExpense() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+    }
+    
+    @Test
+    public void shouldCreateExpenseWithANewCategory() {
+    
+        Category category = new Category();
+        category.setName("new_created_category");
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -84,7 +100,7 @@ public class ExpenseControllerTest {
     @Test
     public void shouldNotCreateExpense() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);;
         expense.setName(null);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
@@ -95,7 +111,7 @@ public class ExpenseControllerTest {
     @Test
     public void shouldListAllExpense() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -105,10 +121,25 @@ public class ExpenseControllerTest {
         assertEquals(expense.getName(), result.getName());
     }
     
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldListAllExpenseByCategoryName() {
+    
+        String categoryName = "category1";
+        Category category = createAndSaveCategory(categoryName, applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        responseEntity = expenseController.listAllExpensesByCategoryName(categoryName);
+        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
+        ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
+        assertEquals(expense.getName(), result.getName());
+    }
+    
     @Test
     public void shouldFindById() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -122,32 +153,54 @@ public class ExpenseControllerTest {
     public void shouldNotFindById() {
     
         ResponseEntity<?> responseEntity = expenseController.findExpense(new Random().nextLong());
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals("Should not find invalid expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        Expense expense = createAndSaveExpenseForAnotherUser();
+        responseEntity = expenseController.findExpense(expense.getId());
+        assertEquals("Should not find another user's expense!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
     
     @Test
     public void shouldUpdateExpense() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        
+        category = new Category();
+        category.setName("another_category");
+        toUpdate.setCategory(category);;
+        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
+        assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
         
         responseEntity = expenseController.listAllExpenses();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        @SuppressWarnings("unchecked")
-        List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
+        @SuppressWarnings("unchecked") List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
         assertEquals("updated_expense", found.get(0).getName());
+    }
+    
+    @Test
+    public void shouldNotUpdateExpense() {
+    
+        Category category = createAndSaveCategory("category1", applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.updateExpense(111L, expense);
+        assertEquals("Should not update non-existent expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        expense = createAndSaveExpenseForAnotherUser();
+        responseEntity = expenseController.updateExpense(expense.getId(), expense);
+        assertEquals("Should not update expense for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
     
     @Test
     public void shouldDeleteExpense() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -160,9 +213,20 @@ public class ExpenseControllerTest {
     }
     
     @Test
+    public void shouldNotDeleteExpense() {
+    
+        ResponseEntity<?> responseEntity = expenseController.deleteExpense(111L);
+        assertEquals("Should not delete non-existent expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        
+        Expense expense = createAndSaveExpenseForAnotherUser();
+        responseEntity = expenseController.deleteExpense(expense.getId());
+        assertEquals("Should not delete expense for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
+    @Test
     public void shouldDeleteAllExpenses() {
     
-        Category category = createAndSaveCategory(applicationUser);
+        Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -171,6 +235,22 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
         
         responseEntity = expenseController.listAllExpenses();
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+    }
+    
+    @Test
+    public void shouldDeleteAllExpensesByCategoryName() {
+    
+        String categoryName = "category1";
+        Category category = createAndSaveCategory(categoryName, applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        responseEntity = expenseController.deleteAllByCategoryName(categoryName);
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        
+        responseEntity = expenseController.listAllExpensesByCategoryName(categoryName);
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
     
@@ -186,24 +266,33 @@ public class ExpenseControllerTest {
         return expense;
     }
     
-    private Category createAndSaveCategory(AppUser user) {
+    private Expense createAndSaveExpenseForAnotherUser() {
+    
+        AppUser anotherUser = createAndSaveAppUser("another_username", "another_mail@mail.com");
+        Category category = createAndSaveCategory("another_category", anotherUser);
+        Expense expense = createExpense(category, anotherUser);
+        expense = expenseDao.saveAndFlush(expense);
+        return expense;
+    }
+    
+    private Category createAndSaveCategory(String categoryName, AppUser user) {
     
         Category category = new Category();
-        category.setName("category1");
+        category.setName(categoryName);
         category.setUser(user);
         categoryDao.saveAndFlush(category);
         return category;
     }
     
-    private AppUser createAndSaveAppUser(String username) {
+    private AppUser createAndSaveAppUser(String username, String email) {
     
         AppUser appUser = new AppUser();
         appUser.setFirstName("Florin");
         appUser.setSurname("Iacob");
         appUser.setPassword("TEST_PASS");
         appUser.setBirthdate(new Date());
-        appUser.setUsername(LOGGED_USERNAME);
-        appUser.setEmail("florin.iacob@gmail.com");
+        appUser.setUsername(username);
+        appUser.setEmail(email);
         appUser = appUserDao.saveAndFlush(appUser);
         return appUser;
     }
