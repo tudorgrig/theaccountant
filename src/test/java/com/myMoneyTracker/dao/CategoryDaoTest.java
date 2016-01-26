@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import com.myMoneyTracker.dao.CategoryDao;
 
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
@@ -165,7 +166,7 @@ public class CategoryDaoTest {
         category1 = categoryDao.saveAndFlush(category1);
 
         //delete all categories for the first username
-        categoryDao.deleteAllCategoriesForUser(category.getUser().getUsername());
+        categoryDao.deleteAllByUsername(category.getUser().getUsername());
         List<Category> categories = categoryDao.findByUsername(category.getUser().getUsername());
         assertEquals(0, categories.size());
 

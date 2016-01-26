@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
@@ -34,6 +35,7 @@ public class Expense {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @NotNull
     private String name;
     private String description;
 
