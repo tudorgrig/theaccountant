@@ -2,6 +2,7 @@ package com.myMoneyTracker.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,12 +14,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myMoneyTracker.app.service.SessionAuthentication;
 import com.myMoneyTracker.converter.AppUserConverter;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
@@ -30,8 +33,8 @@ import com.myMoneyTracker.util.PasswordEncrypt;
 import com.myMoneyTracker.util.UserUtil;
 
 /**
- * @author Tudor Grigoriu
- *         Rest Controller for AppUser entity
+ * Rest Controller for AppUser entity.
+ * @author Floryn
  */
 @RestController
 @RequestMapping(value = "/user")
@@ -95,8 +98,9 @@ public class AppUserController {
         return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @RequestMapping(value = "/login/", method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody AppUser userToLogin) {
+        
         if (userToLogin.getUsername() == null) {
             return new ResponseEntity<Object>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
         }
@@ -117,12 +121,13 @@ public class AppUserController {
         }
         String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         if (passwordToLogin.equals(appUser.getPassword())) {
-            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
+            String sessionToken = handleSuccessfulLogin(appUser);
+            return new ResponseEntity<String>(sessionToken, HttpStatus.OK);
         } else {
             return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser) {
     
@@ -168,6 +173,21 @@ public class AppUserController {
             userRegistrationDao.delete(userRegistration);
             return new ResponseEntity<AppUser>(user, HttpStatus.OK);
         }
+    }
+    
+    /**
+     * Register session details for the current user logged.
+     * 
+     * @param appUser : currently user logged.
+     * @return : generated session token
+     */
+    private String handleSuccessfulLogin(AppUser appUser) {
+    
+        String sessionToken = UUID.randomUUID().toString();
+        SessionAuthentication authentication = new SessionAuthentication(appUser, sessionToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return sessionToken;
+        
     }
     
     private List<AppUserDTO> getListOfAppUserDTOs(List<AppUser> users) {

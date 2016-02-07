@@ -208,7 +208,7 @@ public class AppUserControllerTest {
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword(password);
         toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
         assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
     }
 
