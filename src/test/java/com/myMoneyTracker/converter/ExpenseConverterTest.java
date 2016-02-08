@@ -38,6 +38,7 @@ public class ExpenseConverterTest {
         assertEquals(expense.getAmount(), expenseDTO.getAmount());
         assertEquals(expense.getId(), expenseDTO.getId());
         assertEquals(expense.getName(), expenseDTO.getName());
+        assertEquals(expense.getCurrency(), expenseDTO.getCurrency());
         assertEquals(expense.getCreationDate(), expenseDTO.getCreationDate());
         assertEquals(expense.getDescription(), expenseDTO.getDescription());
     }
@@ -51,6 +52,7 @@ public class ExpenseConverterTest {
         assertEquals(expenseDTO.getId(), expense.getId());
         assertEquals(expenseDTO.getName(), expense.getName());
         assertEquals(expenseDTO.getCreationDate(), expense.getCreationDate());
+        assertEquals(expenseDTO.getCurrency(), expense.getCurrency());
         assertEquals(expenseDTO.getDescription(), expense.getDescription());
     }
     
@@ -61,6 +63,7 @@ public class ExpenseConverterTest {
         expense.setName("ExpenseName1");
         expense.setDescription("Description1");
         expense.setAmount(new Double(222.222));
+        expense.setCurrency("USD");
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
         expense.setUser(appUser);
         return expense;
@@ -73,6 +76,7 @@ public class ExpenseConverterTest {
         expense.setCategory(createCategoryDTO());
         expense.setDescription("Description1");
         expense.setAmount(new Double(222.222));
+        expense.setCurrency("USD");
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
         return expense;
     }

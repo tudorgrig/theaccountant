@@ -18,6 +18,8 @@ public class IncomeDTO {
 
     private Timestamp creationDate;
 
+    private String currency;
+
     public long getId() {
 
         return id;
@@ -66,5 +68,13 @@ public class IncomeDTO {
     public void setCreationDate(Timestamp creationDate) {
 
         this.creationDate = creationDate;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

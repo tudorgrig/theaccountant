@@ -40,6 +40,9 @@ public class Income {
     
     @NotNull
     private Timestamp creationDate;
+
+    @NotNull
+    private String currency;
     
     public long getId() {
     
@@ -99,5 +102,13 @@ public class Income {
     public void setCreationDate(Timestamp creationDate) {
     
         this.creationDate = creationDate;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

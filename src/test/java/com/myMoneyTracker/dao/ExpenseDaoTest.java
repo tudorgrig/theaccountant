@@ -128,6 +128,7 @@ public class ExpenseDaoTest {
     
         Expense expense = new Expense();
         expense.setName("name1");
+        expense.setCurrency("USD");
         expense.setDescription("description1");
         expense.setAmount(new Double(222.222));
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));

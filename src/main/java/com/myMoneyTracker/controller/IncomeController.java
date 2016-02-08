@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.util.CurrencyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -53,6 +54,9 @@ public class IncomeController {
             String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
             AppUser user = appUserDao.findByUsername(loggedUsername);
             income.setUser(user);
+            if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
+                return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+            }
             Income createdIncome = incomeDao.saveAndFlush(income);
             return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
@@ -96,6 +100,9 @@ public class IncomeController {
         }
         if (!(loggedUsername.equals(oldIncome.getUser().getUsername()))) {
             return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+        }
+        if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
+            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
         }
         income.setId(id);
         income.setUser(oldIncome.getUser());

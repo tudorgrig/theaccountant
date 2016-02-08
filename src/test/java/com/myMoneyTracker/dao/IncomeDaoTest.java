@@ -145,6 +145,7 @@ public class IncomeDaoTest {
         income.setName("name1");
         income.setDescription("description1");
         income.setAmount(new Double(222.222));
+        income.setCurrency("USD");
         income.setCreationDate(new Timestamp(System.currentTimeMillis()));
         income.setUser(appUser);
         return income;
