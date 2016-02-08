@@ -34,7 +34,7 @@ public class CategoryDaoTest {
 
     private static final String USERNAME = "Username";
     private static final String CATEGORY_NAME = "Category";
-
+    private static final String TEST_COLOUR = "#8B8386";
     private static int categoryCounter = 0;
 
     @Autowired
@@ -60,6 +60,7 @@ public class CategoryDaoTest {
         category = categoryDao.save(category);
         logger.info("The category has id = " + category.getId());
         assertTrue(category.getId() != 0);
+        assertEquals(TEST_COLOUR, category.getColour());
     }
 
     @Test
@@ -179,6 +180,7 @@ public class CategoryDaoTest {
         Category category = new Category();
         category.setName(categoryName);
         category.setUser(applicationUser);
+        category.setColour(TEST_COLOUR);
         return category;
     }
 

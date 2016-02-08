@@ -36,6 +36,7 @@ import com.myMoneyTracker.util.ControllerUtil;
 public class CategoryControllerTest {
     
     private static final String CATEGORY_NAME = "Category1";
+    private static final String TEST_COLOUR = "#8B8386";
     
     @Autowired
     CategoryController categoryController;
@@ -76,6 +77,7 @@ public class CategoryControllerTest {
         ResponseEntity responseEntity = categoryController.createCategory(category);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
+        assertEquals(TEST_COLOUR, ((CategoryDTO) responseEntity.getBody()).getColour());
     }
     
     @Test
@@ -171,6 +173,7 @@ public class CategoryControllerTest {
     
         Category category = new Category();
         category.setName(categoryName);
+        category.setColour(TEST_COLOUR);
         return category;
     }
     

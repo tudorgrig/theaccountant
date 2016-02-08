@@ -32,6 +32,10 @@ public class Category {
     @JoinColumn(name = "user_id")
     private AppUser user;
 
+    @NotNull
+    @Length(min = 7, max = 7)
+    private String colour = "#FFF0F5";
+
     public long getId() {
 
         return id;
@@ -60,5 +64,13 @@ public class Category {
     public void setUser(AppUser user) {
 
         this.user = user;
+    }
+
+    public String getColour() {
+        return colour;
+    }
+
+    public void setColour(String colour) {
+        this.colour = colour;
     }
 }
