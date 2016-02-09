@@ -45,6 +45,9 @@ public class Expense {
     @Column(nullable = false)
     private Timestamp creationDate;
 
+    @NotNull
+    private String currency;
+
     public long getId() {
 
         return id;
@@ -113,5 +116,13 @@ public class Expense {
     public void setCreationDate(Timestamp creationDate) {
 
         this.creationDate = creationDate;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

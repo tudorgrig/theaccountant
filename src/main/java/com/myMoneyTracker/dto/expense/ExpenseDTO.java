@@ -12,6 +12,7 @@ public class ExpenseDTO {
     private String description;
     private Double amount;
     private Timestamp creationDate;
+    private String currency;
     
 
     public long getId() {
@@ -73,5 +74,12 @@ public class ExpenseDTO {
 
         this.creationDate = creationDate;
     }
-    
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 }

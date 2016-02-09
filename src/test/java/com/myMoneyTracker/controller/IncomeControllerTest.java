@@ -73,6 +73,20 @@ public class IncomeControllerTest {
     }
 
     @Test
+    public void shouldNotCreateIncomeWithWrongCurrency() {
+
+        Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        income.setCurrency("IAC");
+        responseEntity = incomeController.createIncome(income);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+    }
+
+    @Test
     public void shouldNotCreateIncome() {
 
         Income income = createIncome();
@@ -151,6 +165,25 @@ public class IncomeControllerTest {
     }
 
     @Test
+    public void shouldNotUpdateIncomeWithWrongCurrency() {
+
+        Income income = createIncome();
+        AppUser appUser = createAppUser();
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        income.setUser(appUser);
+        responseEntity = incomeController.createIncome(income);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Income toUpdate = createIncome();
+        toUpdate.setName("updated_income");
+        toUpdate.setCurrency("IAC");
+        toUpdate.setUser(appUser);
+        responseEntity = incomeController.updateIncome(income.getId(), toUpdate);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+    }
+
+    @Test
     public void shouldNotUpdateIncome() {
     
         Income income = createIncome();
@@ -214,6 +247,7 @@ public class IncomeControllerTest {
         Income income = new Income();
         income.setName("name1");
         income.setDescription("description1");
+        income.setCurrency("USD");
         income.setAmount(new Double(222.222));
         income.setCreationDate(new Timestamp(System.currentTimeMillis()));
         return income;
@@ -227,6 +261,7 @@ public class IncomeControllerTest {
         appUserController.createAppUser(anotherUser);
         Income income = createIncome();
         income.setName("another_income");
+        income.setCurrency("USD");
         income.setUser(anotherUser);
         income = incomeDao.saveAndFlush(income);
         return income;

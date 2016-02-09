@@ -85,6 +85,17 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
     }
+
+    @Test
+    public void shouldNotCreateExpenseWithBadCurrency() {
+
+        Category category = createAndSaveCategory("category1", applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        expense.setCurrency("IAC");
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+    }
     
     @Test
     public void shouldCreateExpenseWithANewCategory() {
@@ -162,7 +173,7 @@ public class ExpenseControllerTest {
     
     @Test
     public void shouldUpdateExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
@@ -171,17 +182,39 @@ public class ExpenseControllerTest {
         toUpdate.setName("updated_expense");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        
+
         category = new Category();
         category.setName("another_category");
         toUpdate.setCategory(category);;
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.listAllExpenses();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         @SuppressWarnings("unchecked") List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
         assertEquals("updated_expense", found.get(0).getName());
+    }
+
+    @Test
+    public void shouldNotUpdateExpenseWithWrongCurrency() {
+
+        Category category = createAndSaveCategory("category1", applicationUser);
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Expense toUpdate = createExpense(category, applicationUser);
+        toUpdate.setName("updated_expense");
+        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
+        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        category = new Category();
+        category.setName("another_category");
+        toUpdate.setCategory(category);
+        toUpdate.setCurrency("IAC");
+        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+
     }
     
     @Test
@@ -260,6 +293,7 @@ public class ExpenseControllerTest {
         expense.setName("name1");
         expense.setCategory(category);
         expense.setUser(user);
+        expense.setCurrency("USD");
         expense.setDescription("description1");
         expense.setAmount(new Double(222.222));
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));

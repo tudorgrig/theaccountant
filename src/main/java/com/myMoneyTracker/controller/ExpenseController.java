@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.util.CurrencyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -64,6 +65,9 @@ public class ExpenseController {
             }
             expense.setCategory(category);
             expense.setUser(user);
+            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
+                return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+            }
             Expense createdExpense = expenseDao.saveAndFlush(expense);
             return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
@@ -127,6 +131,9 @@ public class ExpenseController {
                 category = createAndSaveCategory(newExpenseCategoryName, oldExpense.getUser());
             }
             expense.setCategory(category);
+        }
+        if(CurrencyUtil.getCurrency(expense.getCurrency()) == null){
+            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
         }
         expense.setId(id);
         expense.setUser(oldExpense.getUser());
