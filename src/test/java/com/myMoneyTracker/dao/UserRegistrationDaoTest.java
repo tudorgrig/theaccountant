@@ -19,7 +19,7 @@ import com.myMoneyTracker.model.user.UserRegistration;
 
 /**
  * 
- * Test class for user refostration dao.
+ * Test class for user registration dao.
  * 
  * @author Florin
  */

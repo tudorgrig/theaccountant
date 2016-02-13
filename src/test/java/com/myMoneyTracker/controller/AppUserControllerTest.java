@@ -186,65 +186,6 @@ public class AppUserControllerTest {
     }
     
     @Test
-    public void shouldLoginWithUsername() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
-        appUser.setActivated(true);
-        appUserController.createAppUser(appUser);
-        AppUser toLoginAppUser = new AppUser();
-        toLoginAppUser.setPassword(password);
-        toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
-        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
-    }
-    
-    @Test
-    public void shouldNotLoginNonActivatedUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
-        appUserController.createAppUser(appUser);
-        AppUser toLoginAppUser = new AppUser();
-        toLoginAppUser.setPassword(password);
-        toLoginAppUser.setUsername("tudorgrig");
-        ResponseEntity loginResponseEntity = appUserController.login(toLoginAppUser);
-        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
-    }
-
-    @Test
-    public void shouldLoginWithEmail() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
-        appUser.setActivated(true);
-        appUserController.createAppUser(appUser);
-        AppUser toLoginAppUser = new AppUser();
-        toLoginAppUser.setPassword(password);
-        toLoginAppUser.setUsername("my-money-tracker@gmail.com");
-        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
-        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
-    }
-    
-    @Test
-    public void shouldNotLoginWrongUsername() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        appUser.setActivated(true);
-        String password = appUser.getPassword();
-        appUserController.createAppUser(appUser);
-        AppUser toLoginAppUser = new AppUser();
-        toLoginAppUser.setPassword(password);
-        toLoginAppUser.setUsername("failure");
-        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
-        assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
-        
-        toLoginAppUser.setUsername(null);
-        loginResponseEntity = appUserController.login(toLoginAppUser);
-        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
-    }
-    
-    @Test
     public void shouldRegisterAndActivateUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
@@ -258,6 +199,78 @@ public class AppUserControllerTest {
     }
     
     @Test
+    public void shouldLoginWithUsername() {
+    
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        toLoginAppUser.setUsername("tudorgrig");
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+    }
+    
+    @Test
+    public void shouldNotLoginNonActivatedUser() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserController.createAppUser(appUser);
+        
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        toLoginAppUser.setUsername("tudorgrig");
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
+    }
+
+    @Test
+    public void shouldLoginWithEmail() {
+    
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        toLoginAppUser.setUsername("my-money-tracker@gmail.com");
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+    }
+    
+    @Test
+    public void shouldNotLoginWrongUsername() {
+    
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
+        AppUser toLoginAppUser = new AppUser();
+        toLoginAppUser.setPassword(password);
+        toLoginAppUser.setUsername("failure");
+        ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.NOT_FOUND, loginResponseEntity.getStatusCode());
+        
+        toLoginAppUser.setUsername(null);
+        loginResponseEntity = appUserController.login(toLoginAppUser);
+        assertEquals(HttpStatus.BAD_REQUEST, loginResponseEntity.getStatusCode());
+    }
+    
+    @Test
     public void shouldNotRegisterAndActivateUser() {
     
         ResponseEntity<?> responseEntity = appUserController.registerUser("invalid_code");
@@ -268,8 +281,12 @@ public class AppUserControllerTest {
     public void shouldNotLoginIncorrectPassword() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        appUser.setActivated(true);
         appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setPassword("incorrect_pass");
         toLoginAppUser.setUsername("tudorgrig");
@@ -283,6 +300,11 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
         AppUser toLoginAppUser = new AppUser();
         toLoginAppUser.setUsername("tudorgrig");
         ResponseEntity<?> loginResponseEntity = appUserController.login(toLoginAppUser);

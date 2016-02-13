@@ -6,31 +6,20 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.myMoneyTracker.app.filter.StatelessAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
+    
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // TODO : setup configuration security
+    
         http.authorizeRequests().antMatchers("/*").permitAll().anyRequest().permitAll();
         http.csrf().disable();
-        //        http
-        //                .formLogin()
-        //                .defaultSuccessUrl("/")
-        //                .loginPage("/login")
-        //                .permitAll()
-        //                .and()
-        //                .logout()
-        //                .permitAll();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder authManagerBuilder)
-            throws Exception {
-
-        authManagerBuilder.inMemoryAuthentication().withUser("user").password("password").roles("USER");
+        http.addFilterBefore(new StatelessAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }
