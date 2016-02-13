@@ -126,6 +126,7 @@ public class AppUserController {
         if (passwordToLogin.equals(appUser.getPassword())) {
             String sessionToken = handleSuccessfulLogin(appUser);
             HttpHeaders headers = new HttpHeaders();
+            headers.add("Access-Control-Expose-Headers", "mmtlt");
             headers.add("mmtlt", sessionToken);
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), headers, HttpStatus.OK);
         } else {
