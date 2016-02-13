@@ -22,10 +22,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.addFilterBefore(new StatelessAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
-    
-    @Override
-    protected void configure(AuthenticationManagerBuilder authManagerBuilder) throws Exception {
-    
-        authManagerBuilder.inMemoryAuthentication().withUser("user").password("password").roles("USER");
-    }
 }

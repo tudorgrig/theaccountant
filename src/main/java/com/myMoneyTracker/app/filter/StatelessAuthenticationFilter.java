@@ -26,19 +26,23 @@ public class StatelessAuthenticationFilter implements Filter {
     
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+        boolean isUnauthorizedAttempt = true;
         
         if (isAllowedURL(httpRequest.getRequestURI())) {
-            chain.doFilter(request, response);
-        } else {
+            isUnauthorizedAttempt = false;
+        } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
             String headerToken = httpRequest.getHeader("mmtlt");
             SessionAuthentication sessionAuthentication = (SessionAuthentication) SecurityContextHolder.getContext().getAuthentication();
-            String sessionToken = sessionAuthentication == null ? null : sessionAuthentication.getSessionToken();
+            String sessionToken = sessionAuthentication.getSessionToken();
             if (headerToken != null && headerToken.equals(sessionToken)) {
-                chain.doFilter(request, response);
-            } else {
-                httpResponse.setStatus(401);
-                response.getOutputStream().print("Unauthorized access!");
-            }
+                isUnauthorizedAttempt = false;
+            } 
+        } 
+        if (isUnauthorizedAttempt) {
+            httpResponse.setStatus(401);
+            response.getOutputStream().print("Unauthorized access!");
+        } else {
+            chain.doFilter(request, response);
         }
     }
     
@@ -49,7 +53,7 @@ public class StatelessAuthenticationFilter implements Filter {
             if (url.contains("?")) {
                 url = url.substring(0, url.indexOf('?'));
             }
-            if (url.contains("/login/") || url.contains("/registration/") || url.contains("/user/add")) {
+            if (url.contains("/login") || url.contains("/registration/") || url.contains("/user/add")) {
                 isAllowed = true;
             }
         }

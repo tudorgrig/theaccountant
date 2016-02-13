@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,6 +66,7 @@ public class AppUserController {
     
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
+        appUser.setActivated(false);
         try {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
             userUtil.generateAccountRegistration(createdAppUser);
@@ -98,15 +100,16 @@ public class AppUserController {
         return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
-    @RequestMapping(value = "/login/", method = RequestMethod.POST)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody AppUser userToLogin) {
-        
+    
         if (userToLogin.getUsername() == null) {
-            return new ResponseEntity<Object>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
         }
         if (userToLogin.getPassword() == null) {
-            return new ResponseEntity<Object>("Invalid password", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Invalid password", HttpStatus.BAD_REQUEST);
         }
+        
         AppUser appUser = null;
         if (emailValidator.validate(userToLogin.getUsername())) {
             appUser = appUserDao.findByEmail(userToLogin.getUsername());
@@ -116,18 +119,20 @@ public class AppUserController {
         if (appUser == null) {
             return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
         }
-        if(!appUser.isActivated()){
+        if (!appUser.isActivated()) {
             return new ResponseEntity<String>("User not activated", HttpStatus.BAD_REQUEST);
         }
         String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
         if (passwordToLogin.equals(appUser.getPassword())) {
             String sessionToken = handleSuccessfulLogin(appUser);
-            return new ResponseEntity<String>(sessionToken, HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("mmtlt", sessionToken);
+            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), headers, HttpStatus.OK);
         } else {
             return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
         }
     }
-
+    
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser) {
     
@@ -152,7 +157,7 @@ public class AppUserController {
         return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
     }
     
-    @RequestMapping(value = "/deleteAll", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteAll() {
     
         appUserDao.deleteAll();
@@ -171,7 +176,7 @@ public class AppUserController {
             user.setActivated(true);
             appUserDao.saveAndFlush(user);
             userRegistrationDao.delete(userRegistration);
-            return new ResponseEntity<AppUser>(user, HttpStatus.OK);
+            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(user), HttpStatus.OK);
         }
     }
     
