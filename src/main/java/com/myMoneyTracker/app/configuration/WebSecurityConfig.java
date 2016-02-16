@@ -20,6 +20,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
         http.authorizeRequests().antMatchers("/*").permitAll().anyRequest().permitAll();
         http.csrf().disable();
+        http.requiresChannel().anyRequest().requiresSecure();
         http.addFilterBefore(new StatelessAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }
