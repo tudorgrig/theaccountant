@@ -14,7 +14,7 @@
 
     <!-- Used to inform spring framework that the application is using annotations
     to create components -->
-    <tx:annotation-driven/>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
     <context:annotation-config/>
     <!-- Used to search for the properties file -->
     <context:property-placeholder location="classpath:application.properties"/>

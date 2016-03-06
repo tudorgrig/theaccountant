@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 import java.util.List;
 
+import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 
@@ -13,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -113,13 +115,10 @@ public class CategoryControllerTest {
         assertTrue(found.getBody() != null);
     }
     
-    @Test
+    @Test(expected = NotFoundException.class)
     public void shouldNotFindOneCategory() {
     
-        Category category = createCategory(CATEGORY_NAME);
-        categoryController.createCategory(category);
-        ResponseEntity<?> found = categoryController.getCategory(CATEGORY_NAME + "extra");
-        assertEquals(HttpStatus.NOT_FOUND, found.getStatusCode());
+       categoryController.getCategory(CATEGORY_NAME + "extra");
     }
     
     @Test
@@ -137,17 +136,12 @@ public class CategoryControllerTest {
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
     }
     
-    @Test
+    @Test(expected = NotFoundException.class)
     public void shouldNotUpdateCategory() {
     
         String updatedName = "updatedCategoryName";
-        Category category = createCategory(CATEGORY_NAME);
-        ResponseEntity responseEntity = categoryController.createCategory(category);
-        long id = ((CategoryDTO) responseEntity.getBody()).getId();
         Category toUpdatecategory = createCategory(updatedName);
-        ResponseEntity updated = categoryController.updateCategory(id + 1, toUpdatecategory);
-        assertEquals(HttpStatus.NOT_FOUND, updated.getStatusCode());
-        assertEquals("Category not found", updated.getBody());
+        ResponseEntity updated = categoryController.updateCategory(-1l, toUpdatecategory);
     }
     
     @Test
@@ -160,13 +154,10 @@ public class CategoryControllerTest {
         assertEquals("Category deleted", deletedEntity.getBody());
     }
     
-    @Test
+    @Test(expected = NotFoundException.class)
     public void shouldNotDeleteCategory() {
-    
-        Category category = createCategory(CATEGORY_NAME);
-        ResponseEntity responseEntity = categoryController.createCategory(category);
-        ResponseEntity deletedEntity = categoryController.deleteCategory((((CategoryDTO) responseEntity.getBody()).getId() + 1));
-        assertEquals(HttpStatus.NOT_FOUND, deletedEntity.getStatusCode());
+
+        ResponseEntity deletedEntity = categoryController.deleteCategory(-1l);
     }
     
     private Category createCategory(String categoryName) {
