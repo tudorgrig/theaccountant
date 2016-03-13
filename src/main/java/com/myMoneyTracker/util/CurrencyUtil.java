@@ -1,7 +1,5 @@
 package com.myMoneyTracker.util;
 
-import com.sun.media.jfxmedia.logging.Logger;
-
 import java.util.Currency;
 
 /**

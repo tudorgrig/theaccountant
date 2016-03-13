@@ -1,4 +1,4 @@
-package com.myMoneyTracker.app.service;
+package com.myMoneyTracker.app.authentication;
 
 import java.util.Collection;
 
@@ -17,13 +17,9 @@ public class SessionAuthentication implements Authentication {
     
     private static final long serialVersionUID = -7906839299823126986L;
     
-    private static final long SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7;
-    
     private String name;
     private boolean isAuthenticated;
     private AppUser user;
-    private String sessionToken;
-    private long tokenExpirationTimeMs;
     
     public SessionAuthentication(AppUser appUser, String sessionToken) {
     
@@ -31,10 +27,13 @@ public class SessionAuthentication implements Authentication {
             this.user = appUser;
             this.name = appUser.getUsername();
             this.isAuthenticated = true;
-            this.setSessionToken(sessionToken);
         }
     }
 
+    public SessionAuthentication(String username) {
+        this.name = username;
+    }
+    
     /**
      * Get the user name for the current session.
      * Returns null if the current session doesn't have a registered user.
@@ -99,28 +98,6 @@ public class SessionAuthentication implements Authentication {
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
     
         this.isAuthenticated = isAuthenticated;
-    }
-
-    /**
-     * 
-     * @return : the session token for the current user logged.
-     */
-    public String getSessionToken() {
-    
-        if (System.currentTimeMillis() > tokenExpirationTimeMs) {
-            this.sessionToken = null;
-        }
-        return this.sessionToken;
-    }
-
-    /**
-     * 
-     * @param sessionToken : the session token for the current user logged.
-     */
-    public void setSessionToken(String sessionToken) {
-    
-        tokenExpirationTimeMs = System.currentTimeMillis() + SEVEN_DAYS;
-        this.sessionToken = sessionToken;
     }
     
 }
