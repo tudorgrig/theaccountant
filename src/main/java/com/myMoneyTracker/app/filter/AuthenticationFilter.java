@@ -29,35 +29,33 @@ class AuthenticationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         
-        final String authorization = httpRequest.getHeader("Authorization");
-        String loginUsername = sessionService.extractUsernameAndPassword(authorization).length == 0 ?
-                "" : sessionService.extractUsernameAndPassword(authorization)[0];
-        
         if (httpRequest.getMethod().equals("OPTIONS")) {
             return;
         }
+        
+        final String authorization = httpRequest.getHeader("Authorization");
+        String[] credentials = sessionService.extractUsernameAndPassword(authorization);
+        String loginUsername = credentials.length == 0 ? null : credentials[0];
+        String clientIpAddress = extractClientIpAddress(httpRequest);
+        SecurityContextHolder.getContext().setAuthentication(new SessionAuthentication(loginUsername, clientIpAddress));
+        
         if (isAllowedURL(httpRequest.getRequestURI())) {
             chain.doFilter(request, response);
-        } else if ((authorization != null && sessionService.isAValidAuthenticationString(authorization))) {
-            SecurityContextHolder.getContext().setAuthentication(
-                    new SessionAuthentication(loginUsername));
+        } else if ((authorization != null && sessionService.isAValidAuthenticationString(authorization, clientIpAddress))) {
             chain.doFilter(request, response);
         } else {
             httpResponse.setStatus(401);
         }
     }
-     
+    
     private boolean isAllowedURL(String url) {
-        
+    
         boolean isAllowed = false;
         if (url != null) {
             if (url.contains("?")) {
                 url = url.substring(0, url.indexOf('?'));
             }
-            if (url.contains("/user/login") 
-                    || url.contains("/user/registration/") 
-                    || url.contains("/user/add")
-                    || url.contains("/descriprion")) {
+            if (url.contains("/user/login") || url.contains("/user/logout") || url.contains("/user/registration/") || url.contains("/user/add") || url.contains("/description")) {
                 isAllowed = true;
             }
         }
@@ -70,6 +68,15 @@ class AuthenticationFilter implements Filter {
     
     public void destroy() {
     
+    }
+    
+    private String extractClientIpAddress(HttpServletRequest request) {
+      //is client behind something?
+        String ipAddress = request.getHeader("X-FORWARDED-FOR");  
+        if (ipAddress == null) {  
+            ipAddress = request.getRemoteAddr();  
+        }
+        return ipAddress;
     }
     
 }

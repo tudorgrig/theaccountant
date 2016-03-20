@@ -1,39 +1,31 @@
 package com.myMoneyTracker.controller;
 
-import java.security.Principal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.myMoneyTracker.app.authentication.AuthenticatedUser;
-import com.myMoneyTracker.app.authentication.SessionAuthentication;
 import com.myMoneyTracker.converter.AppUserConverter;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.user.AppUserDTO;
+import com.myMoneyTracker.model.session.AuthenticatedSession;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 import com.myMoneyTracker.service.SessionService;
@@ -75,7 +67,7 @@ public class AppUserController {
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<?> createAppUser(@RequestBody @Valid AppUser appUser) {
-        
+    
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         appUser.setActivated(false);
@@ -112,8 +104,28 @@ public class AppUserController {
         return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization") String authorization) {
+    
+        boolean removed = false;
+        String clientIpAddress = ControllerUtil.getRequestClienIpAddress();
+        if (clientIpAddress != null) {
+            removed = sessionService.removeAuthenticatedSession(authorization, clientIpAddress);
+        }
+        if (removed) {
+            return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<String>("User is not logged in", HttpStatus.BAD_REQUEST);
+        }
+    }
+    
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public ResponseEntity<?> login(@RequestHeader(value="Authorization") String authorization) {
+    public ResponseEntity<?> login(@RequestHeader(value = "Authorization") String authorization) {
+    
+        String clientIpAddress = ControllerUtil.getRequestClienIpAddress();
+        if (clientIpAddress == null) {
+            return new ResponseEntity<String>("Invalid request IP address", HttpStatus.BAD_REQUEST);
+        }
         
         String authenticationUsername = null;
         String authenticationPassword = null;
@@ -146,37 +158,7 @@ public class AppUserController {
         }
         String passwordToLogin = passwordEncrypt.encryptPassword(authenticationPassword);
         if (passwordToLogin.equals(appUser.getPassword())) {
-            handleSuccessfulLogin(appUser, authorization);
-            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> login(@RequestBody AppUser userToLogin) {
-    
-        if (userToLogin.getUsername() == null) {
-            return new ResponseEntity<String>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
-        }
-        if (userToLogin.getPassword() == null) {
-            return new ResponseEntity<String>("Invalid password", HttpStatus.BAD_REQUEST);
-        }
-        
-        AppUser appUser = null;
-        if (emailValidator.validate(userToLogin.getUsername())) {
-            appUser = appUserDao.findByEmail(userToLogin.getUsername());
-        } else {
-            appUser = appUserDao.findByUsername(userToLogin.getUsername());
-        }
-        if (appUser == null) {
-            return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
-        }
-        if (!appUser.isActivated()) {
-            return new ResponseEntity<String>("User not activated", HttpStatus.BAD_REQUEST);
-        }
-        String passwordToLogin = passwordEncrypt.encryptPassword(userToLogin.getPassword());
-        if (passwordToLogin.equals(appUser.getPassword())) {
+            handleSuccessfulLogin(appUser, authorization, clientIpAddress);
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
         } else {
             return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
@@ -234,12 +216,16 @@ public class AppUserController {
      * Register session details for the current user logged.
      * 
      * @param appUser : currently user logged.
+     * @param clientIpAddress
+     *      the HTTP request IP address
      * @param authenticationString
      *      the basic authentication string for the current user
      */
-    private void handleSuccessfulLogin(AppUser appUser, String authenticationString) {
-
-        sessionService.addAuthenticatedUser(new AuthenticatedUser(appUser.getUsername(), authenticationString, null));
+    private void handleSuccessfulLogin(AppUser appUser, String authorizationString, String clientIpAddress) {
+    
+        Timestamp expirationTime = sessionService.calculateExpirationTimeStartingFromNow();
+        sessionService.addAuthenticatedSession(new AuthenticatedSession(authorizationString, appUser.getUsername(), 
+                clientIpAddress, expirationTime));
         
     }
     

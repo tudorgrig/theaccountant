@@ -20,8 +20,9 @@ public class SessionAuthentication implements Authentication {
     private String name;
     private boolean isAuthenticated;
     private AppUser user;
+    private String clientIpAddress;
     
-    public SessionAuthentication(AppUser appUser, String sessionToken) {
+    public SessionAuthentication(AppUser appUser) {
     
         if (appUser != null) {
             this.user = appUser;
@@ -29,11 +30,13 @@ public class SessionAuthentication implements Authentication {
             this.isAuthenticated = true;
         }
     }
-
-    public SessionAuthentication(String username) {
-        this.name = username;
-    }
     
+    public SessionAuthentication(String loginUsername, String clientIpAddress) {
+    
+        this.name = loginUsername;
+        this.clientIpAddress = clientIpAddress;
+    }
+
     /**
      * Get the user name for the current session.
      * Returns null if the current session doesn't have a registered user.
@@ -98,6 +101,16 @@ public class SessionAuthentication implements Authentication {
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
     
         this.isAuthenticated = isAuthenticated;
+    }
+
+    public String getClientIpAddress() {
+    
+        return clientIpAddress;
+    }
+
+    public void setClientIpAddress(String clientIpAddress) {
+    
+        this.clientIpAddress = clientIpAddress;
     }
     
 }

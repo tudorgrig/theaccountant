@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.myMoneyTracker.app.authentication.SessionAuthentication;
+
 /**
  * Class that contains useful methods for REST controllers.
  *
@@ -22,6 +24,17 @@ public class ControllerUtil {
     
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return username;
+    }
+    
+    public static String getRequestClienIpAddress() {
+        
+        SessionAuthentication sessionAuthentication = 
+                (SessionAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        String clientIpAddress = null;
+        if (sessionAuthentication != null) {
+            clientIpAddress = sessionAuthentication.getClientIpAddress();
+        }
+        return clientIpAddress;
     }
     
     /**
