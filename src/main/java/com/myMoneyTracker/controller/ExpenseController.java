@@ -2,12 +2,13 @@ package com.myMoneyTracker.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
+import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.util.CurrencyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -49,11 +50,11 @@ public class ExpenseController {
     
     @Autowired
     private ExpenseConverter expenseConverter;
-    
-    private static final Logger log = Logger.getLogger(AppUserController.class.getName());
+
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<?> createExpense(@RequestBody @Valid Expense expense) {
+    @Transactional
+    public ResponseEntity<ExpenseDTO> createExpense(@RequestBody @Valid Expense expense) {
     
         try {
             String categoryName = expense.getCategory().getName();
@@ -66,13 +67,12 @@ public class ExpenseController {
             expense.setCategory(category);
             expense.setUser(user);
             if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
-                return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+                throw new BadRequestException("Wrong currency code!");
             }
             Expense createdExpense = expenseDao.saveAndFlush(expense);
             return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
-            log.log(Level.SEVERE, e.getMessage());
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new BadRequestException(e.getMessage());
         }
     }
     
@@ -88,7 +88,7 @@ public class ExpenseController {
     }
     
     @RequestMapping(value = "/find/category/{category_name:.+}", method = RequestMethod.GET)
-    public ResponseEntity<?> listAllExpensesByCategoryName(@PathVariable("category_name") String categoryName) {
+    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryName(@PathVariable("category_name") String categoryName) {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
         List<Expense> expenses = expenseDao.findByCategoryNameAndUsername(categoryName, loggedUsername);
@@ -99,29 +99,30 @@ public class ExpenseController {
     }
     
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
-    public ResponseEntity<?> findExpense(@PathVariable("id") Long id) {
+    public ResponseEntity<ExpenseDTO> findExpense(@PathVariable("id") Long id) {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
         Expense expense = expenseDao.findOne(id);
         if (expense == null) {
-            return new ResponseEntity<String>("Expense not found", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Expense not found");
         }
         if (!(loggedUsername.equals(expense.getUser().getUsername()))) {
-            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Unauthorized access");
         }
         return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(expense), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<String> updateExpense(@PathVariable("id") Long id, @RequestBody @Valid Expense expense) {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
         Expense oldExpense = expenseDao.findOne(id);
         if (oldExpense == null) {
-            return new ResponseEntity<String>("Expense not found", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Expense not found");
         }
         if (!(loggedUsername.equals(expense.getUser().getUsername()))) {
-            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Unauthorized access");
         }
         Category oldCategory = oldExpense.getCategory();
         String newExpenseCategoryName = expense.getCategory().getName();
@@ -133,7 +134,7 @@ public class ExpenseController {
             expense.setCategory(category);
         }
         if(CurrencyUtil.getCurrency(expense.getCurrency()) == null){
-            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Wrong currency code");
         }
         expense.setId(id);
         expense.setUser(oldExpense.getUser());
@@ -142,6 +143,7 @@ public class ExpenseController {
     }
     
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    @Transactional
     public ResponseEntity<String> deleteExpense(@PathVariable("id") Long id) {
     
         try {
@@ -155,13 +157,13 @@ public class ExpenseController {
             }
             expenseDao.delete(id);
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
-            log.info(emptyResultDataAccessException.getMessage());
-            return new ResponseEntity<String>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Expense not found");
         }
         return new ResponseEntity<String>("Expense deleted", HttpStatus.NO_CONTENT);
     }
     
     @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
+    @Transactional
     public ResponseEntity<String> deleteAll() {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
@@ -171,6 +173,7 @@ public class ExpenseController {
     }
     
     @RequestMapping(value = "/delete_all/{category_name:.+}", method = RequestMethod.DELETE)
+    @Transactional
     public ResponseEntity<String> deleteAllByCategoryName(@PathVariable("category_name") String categoryName) {
     
         String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
