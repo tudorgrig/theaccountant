@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import com.myMoneyTracker.dao.CategoryDao;
 
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;

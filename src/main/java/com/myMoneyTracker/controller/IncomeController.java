@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
-import com.myMoneyTracker.util.CurrencyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,7 @@ import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.util.ControllerUtil;
+import com.myMoneyTracker.util.CurrencyUtil;
 
 /**
  * @author Floryn

@@ -1,6 +1,12 @@
 package com.myMoneyTracker.dao;
 
-import com.myMoneyTracker.model.user.AppUser;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Logger;
 
 import javax.validation.ConstraintViolationException;
 
@@ -12,13 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * @author Tudor Grigoriu

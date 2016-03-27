@@ -1,11 +1,10 @@
 package com.myMoneyTracker.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Created by tudor.grigoriu on 08.02.2016.
