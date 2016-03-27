@@ -42,6 +42,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     
         this.method = method;
         this.requestUri = requestUri;
+        this.clientIpAddress = clientIpAddress;
     }
     
     public AsyncContext getAsyncContext() {
