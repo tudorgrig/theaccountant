@@ -3,10 +3,9 @@ package com.myMoneyTracker.controller;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
+import com.myMoneyTracker.controller.exception.ConflictException;
+import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.converter.AppUserConverter;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
@@ -36,6 +38,7 @@ import com.myMoneyTracker.util.UserUtil;
 
 /**
  * Rest Controller for AppUser entity.
+ *
  * @author Floryn
  */
 @RestController
@@ -63,10 +66,9 @@ public class AppUserController {
     @Autowired
     private SessionService sessionService;
     
-    private static final Logger log = Logger.getLogger(AppUserController.class.getName());
-    
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<?> createAppUser(@RequestBody @Valid AppUser appUser) {
+    @Transactional
+    public ResponseEntity<AppUserDTO> createAppUser(@RequestBody @Valid AppUser appUser) {
     
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
@@ -76,11 +78,9 @@ public class AppUserController {
             userUtil.generateAccountRegistration(createdAppUser);
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(createdAppUser), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
-            log.log(Level.INFO, dive.getMessage());
-            return new ResponseEntity<String>(dive.getMostSpecificCause().getMessage(), HttpStatus.CONFLICT);
+            throw new ConflictException(dive.getMostSpecificCause().getMessage());
         } catch (MessagingException me) {
-            log.log(Level.INFO, me.getMessage());
-            return new ResponseEntity<String>(me.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new BadRequestException(me.getMessage());
         }
     }
     
@@ -95,11 +95,11 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
-    public ResponseEntity<?> findAppUser(@PathVariable("id") Long id) {
+    public ResponseEntity<AppUserDTO> findAppUser(@PathVariable("id") Long id) {
     
         AppUser appUser = appUserDao.findOne(id);
         if (appUser == null) {
-            return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("User not found");
         }
         return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
@@ -143,7 +143,6 @@ public class AppUserController {
         if (authenticationPassword == null) {
             return new ResponseEntity<String>("Invalid password", HttpStatus.BAD_REQUEST);
         }
-        
         AppUser appUser = null;
         if (emailValidator.validate(authenticationUsername)) {
             appUser = appUserDao.findByEmail(authenticationUsername);
@@ -151,26 +150,27 @@ public class AppUserController {
             appUser = appUserDao.findByUsername(authenticationUsername);
         }
         if (appUser == null) {
-            return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("User not found");
         }
         if (!appUser.isActivated()) {
-            return new ResponseEntity<String>("User not activated", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("User not activated");
         }
         String passwordToLogin = passwordEncrypt.encryptPassword(authenticationPassword);
         if (passwordToLogin.equals(appUser.getPassword())) {
             handleSuccessfulLogin(appUser, authorization, clientIpAddress);
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
         } else {
-            return new ResponseEntity<String>("Incorrect password", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Incorrect password");
         }
     }
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser) {
     
         AppUser oldAppUser = appUserDao.findOne(id);
         if (oldAppUser == null) {
-            return new ResponseEntity<String>("User not found", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("User not found");
         }
         appUser.setId(id);
         appUserDao.saveAndFlush(appUser);
@@ -178,18 +178,20 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    @Transactional
     public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id) {
     
         try {
             appUserDao.delete(id);
+            appUserDao.flush();
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
-            log.info(emptyResultDataAccessException.getMessage());
-            return new ResponseEntity<String>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
+            throw new NotFoundException(emptyResultDataAccessException.getMessage());
         }
         return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
     }
     
     @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
+    @Transactional
     public ResponseEntity<String> deleteAll() {
     
         appUserDao.deleteAll();
@@ -198,11 +200,12 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
-    public ResponseEntity<?> registerUser(@PathVariable("code") String code) {
+    @Transactional
+    public ResponseEntity<AppUserDTO> registerUser(@PathVariable("code") String code) {
     
         UserRegistration userRegistration = userRegistrationDao.findByCode(code);
         if (userRegistration == null) {
-            return new ResponseEntity<String>("Invalid registration code", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Invalid registration code");
         } else {
             AppUser user = userRegistration.getUser();
             user.setActivated(true);
@@ -214,7 +217,7 @@ public class AppUserController {
     
     /**
      * Register session details for the current user logged.
-     * 
+     *
      * @param appUser : currently user logged.
      * @param clientIpAddress
      *      the HTTP request IP address
@@ -224,9 +227,7 @@ public class AppUserController {
     private void handleSuccessfulLogin(AppUser appUser, String authorizationString, String clientIpAddress) {
     
         Timestamp expirationTime = sessionService.calculateExpirationTimeStartingFromNow();
-        sessionService.addAuthenticatedSession(new AuthenticatedSession(authorizationString, appUser.getUsername(), 
-                clientIpAddress, expirationTime));
-        
+        sessionService.addAuthenticatedSession(new AuthenticatedSession(authorizationString, appUser.getUsername(), clientIpAddress, expirationTime));
     }
     
     private List<AppUserDTO> getListOfAppUserDTOs(List<AppUser> users) {

@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
+import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.CategoryDao;
 import com.myMoneyTracker.dao.ExpenseDao;
@@ -30,42 +32,42 @@ import com.myMoneyTracker.util.ControllerUtil;
 
 /**
  * Test class for the expense controller
- * 
+ *
  * @author Florin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/spring-config.xml" })
+@ContextConfiguration(locations = {"/spring-config.xml"})
 public class ExpenseControllerTest {
-    
+
     private static final String LOGGED_USERNAME = "florin.iacob";
-    
+
     private AppUser applicationUser;
-    
+
     @Autowired
     private ExpenseController expenseController;
-    
+
     @Autowired
     private CategoryDao categoryDao;
-    
+
     @Autowired
     private AppUserDao appUserDao;
-    
+
     @Autowired
     private ExpenseDao expenseDao;
-    
+
     @Autowired
     private UserRegistrationDao userRegistrationDao;
-    
+
     @Before
     public void setup() {
-    
+
         applicationUser = createAndSaveAppUser(LOGGED_USERNAME, "florin.iacob.expense@gmail.com");
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
     }
-    
+
     @After
     public void cleanUp() {
-    
+
         userRegistrationDao.deleteAll();
         userRegistrationDao.flush();
         expenseDao.deleteAll();
@@ -75,10 +77,10 @@ public class ExpenseControllerTest {
         appUserDao.deleteAll();
         appUserDao.flush();
     }
-    
+
     @Test
     public void shouldCreateExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
@@ -86,20 +88,18 @@ public class ExpenseControllerTest {
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void shouldNotCreateExpenseWithBadCurrency() {
 
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         expense.setCurrency("IAC");
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
     }
-    
+
     @Test
     public void shouldCreateExpenseWithANewCategory() {
-    
+
         Category category = new Category();
         category.setName("new_created_category");
         Expense expense = createExpense(category, applicationUser);
@@ -107,21 +107,21 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
     }
-    
-    @Test
+
+    @Test(expected = BadRequestException.class)
     public void shouldNotCreateExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
-        Expense expense = createExpense(category, applicationUser);;
+        Expense expense = createExpense(category, applicationUser);
+        ;
         expense.setName(null);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        expenseController.createExpense(expense);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldListAllExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
@@ -131,11 +131,11 @@ public class ExpenseControllerTest {
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldListAllExpenseByCategoryName() {
-    
+
         String categoryName = "category1";
         Category category = createAndSaveCategory(categoryName, applicationUser);
         Expense expense = createExpense(category, applicationUser);
@@ -146,10 +146,10 @@ public class ExpenseControllerTest {
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
     }
-    
+
     @Test
     public void shouldFindById() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
@@ -159,18 +159,13 @@ public class ExpenseControllerTest {
         ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
         assertEquals(expense.getName(), found.getName());
     }
-    
-    @Test
+
+    @Test(expected = NotFoundException.class)
     public void shouldNotFindById() {
-    
+
         ResponseEntity<?> responseEntity = expenseController.findExpense(new Random().nextLong());
-        assertEquals("Should not find invalid expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
-        Expense expense = createAndSaveExpenseForAnotherUser();
-        responseEntity = expenseController.findExpense(expense.getId());
-        assertEquals("Should not find another user's expense!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
-    
+
     @Test
     public void shouldUpdateExpense() {
 
@@ -185,7 +180,8 @@ public class ExpenseControllerTest {
 
         category = new Category();
         category.setName("another_category");
-        toUpdate.setCategory(category);;
+        toUpdate.setCategory(category);
+        ;
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
@@ -195,7 +191,7 @@ public class ExpenseControllerTest {
         assertEquals("updated_expense", found.get(0).getName());
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void shouldNotUpdateExpenseWithWrongCurrency() {
 
         Category category = createAndSaveCategory("category1", applicationUser);
@@ -211,84 +207,70 @@ public class ExpenseControllerTest {
         category.setName("another_category");
         toUpdate.setCategory(category);
         toUpdate.setCurrency("IAC");
-        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+        expenseController.updateExpense(expense.getId(), toUpdate);
 
     }
-    
-    @Test
+
+    @Test(expected = NotFoundException.class)
     public void shouldNotUpdateExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.updateExpense(111L, expense);
-        assertEquals("Should not update non-existent expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
-        expense = createAndSaveExpenseForAnotherUser();
-        responseEntity = expenseController.updateExpense(expense.getId(), expense);
-        assertEquals("Should not update expense for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
-    
-    @Test
+
+    @Test(expected = NotFoundException.class)
     public void shouldDeleteExpense() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.deleteExpense(expense.getId());
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        
-        responseEntity = expenseController.findExpense(expense.getId());
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        expenseController.findExpense(expense.getId());
     }
-    
-    @Test
+
+    @Test(expected = NotFoundException.class)
     public void shouldNotDeleteExpense() {
-    
-        ResponseEntity<?> responseEntity = expenseController.deleteExpense(111L);
-        assertEquals("Should not delete non-existent expense!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
-        Expense expense = createAndSaveExpenseForAnotherUser();
-        responseEntity = expenseController.deleteExpense(expense.getId());
-        assertEquals("Should not delete expense for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        expenseController.deleteExpense(111L);
     }
-    
+
     @Test
     public void shouldDeleteAllExpenses() {
-    
+
         Category category = createAndSaveCategory("category1", applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.deleteAll();
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.listAllExpenses();
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
-    
+
     @Test
     public void shouldDeleteAllExpensesByCategoryName() {
-    
+
         String categoryName = "category1";
         Category category = createAndSaveCategory(categoryName, applicationUser);
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.deleteAllByCategoryName(categoryName);
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        
+
         responseEntity = expenseController.listAllExpensesByCategoryName(categoryName);
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
-    
+
     private Expense createExpense(Category category, AppUser user) {
-    
+
         Expense expense = new Expense();
         expense.setName("name1");
         expense.setCategory(category);
@@ -299,27 +281,27 @@ public class ExpenseControllerTest {
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
         return expense;
     }
-    
+
     private Expense createAndSaveExpenseForAnotherUser() {
-    
+
         AppUser anotherUser = createAndSaveAppUser("another_username", "another_mail@mail.com");
         Category category = createAndSaveCategory("another_category", anotherUser);
         Expense expense = createExpense(category, anotherUser);
         expense = expenseDao.saveAndFlush(expense);
         return expense;
     }
-    
+
     private Category createAndSaveCategory(String categoryName, AppUser user) {
-    
+
         Category category = new Category();
         category.setName(categoryName);
         category.setUser(user);
         categoryDao.saveAndFlush(category);
         return category;
     }
-    
+
     private AppUser createAndSaveAppUser(String username, String email) {
-    
+
         AppUser appUser = new AppUser();
         appUser.setFirstName("Florin");
         appUser.setSurname("Iacob");
