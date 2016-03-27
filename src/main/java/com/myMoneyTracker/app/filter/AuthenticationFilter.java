@@ -71,10 +71,11 @@ public class AuthenticationFilter implements Filter {
     }
     
     private String extractClientIpAddress(HttpServletRequest request) {
-      //is client behind something?
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");  
-        if (ipAddress == null) {  
-            ipAddress = request.getRemoteAddr();  
+    
+        //is client behind something?
+        String ipAddress = request.getHeader("X-FORWARDED-FOR");
+        if (ipAddress == null) {
+            ipAddress = request.getRemoteAddr();
         }
         return ipAddress;
     }

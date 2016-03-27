@@ -7,6 +7,9 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
@@ -15,11 +18,14 @@ import com.myMoneyTracker.dao.AuthenticatedSessionDao;
 import com.myMoneyTracker.model.session.AuthenticatedSession;
 import com.myMoneyTracker.service.SessionService;
 
+@EnableAsync
+@EnableScheduling
 @Service
 @Transactional
 public class SessionServiceImpl implements SessionService {
     
     private static final long FIVE_DAYS_IN_MILLISECONDS = 5 * 24 * 60 * 60 * 1000;
+    private static final long TWELVE_HOURS_IN_MILLISECONDS = 12 * 60 * 60 * 1000;
     
     @Autowired
     private AuthenticatedSessionDao authenticatedSessionDao;
@@ -58,7 +64,7 @@ public class SessionServiceImpl implements SessionService {
         }
         boolean found = authenticatedSession != null;
         if (found) {
-            boolean isExpired = authenticatedSession.getExpirationTime().before(new Timestamp(System.currentTimeMillis()));
+            boolean isExpired = isSessionExpired(authenticatedSession);
             if (isExpired) {
                 removeAuthenticatedSession(authorizationString, clientIpAddress);
                 found = false;
@@ -91,5 +97,22 @@ public class SessionServiceImpl implements SessionService {
     public Timestamp calculateExpirationTimeStartingFromNow() {
     
         return new Timestamp(System.currentTimeMillis() + FIVE_DAYS_IN_MILLISECONDS);
+    }
+    
+    @Scheduled(fixedDelay = TWELVE_HOURS_IN_MILLISECONDS)
+    public void scheduleAuthenticatedSessionsCleanUp() {
+    
+        List<AuthenticatedSession> authenticatedSessions = authenticatedSessionDao.findAll();
+        for (AuthenticatedSession authenticatedSession : authenticatedSessions) {
+            
+            if (isSessionExpired(authenticatedSession)) {
+                authenticatedSessionDao.delete(authenticatedSession.getId());
+            }
+        }
+    }
+    
+    private boolean isSessionExpired(AuthenticatedSession authenticatedSession) {
+    
+        return authenticatedSession.getExpirationTime().before(new Timestamp(System.currentTimeMillis()));
     }
 }

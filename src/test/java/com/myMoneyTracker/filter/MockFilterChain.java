@@ -13,6 +13,7 @@ public class MockFilterChain implements FilterChain {
     boolean shouldThrowExceptionOnDoFilter = false;
     
     public MockFilterChain(boolean shouldThrowExceptionOnDoFilter) {
+    
         this.shouldThrowExceptionOnDoFilter = shouldThrowExceptionOnDoFilter;
     }
     

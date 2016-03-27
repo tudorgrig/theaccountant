@@ -27,7 +27,7 @@ import com.myMoneyTracker.model.user.UserRegistration;
 @ContextConfiguration(locations = { "/spring-config.xml" })
 @Transactional
 public class UserRegistrationDaoTest {
-
+    
     @Autowired
     private UserRegistrationDao userRegistrationDao;
     
@@ -39,7 +39,7 @@ public class UserRegistrationDaoTest {
     
     @Test
     public void shouldFindAndDeleteByUser() {
-
+    
         AppUser appUser = createAppUser("Florin");
         appUser = appUserDao.save(appUser);
         UserRegistration userRegistration = createUserRegistration("code-test", appUser);
@@ -53,7 +53,7 @@ public class UserRegistrationDaoTest {
     }
     
     private UserRegistration createUserRegistration(String code, AppUser user) {
-
+    
         UserRegistration userRegistration = new UserRegistration();
         userRegistration.setCode(code);
         userRegistration.setUser(user);
@@ -61,7 +61,7 @@ public class UserRegistrationDaoTest {
     }
     
     private AppUser createAppUser(String firstName) {
-
+    
         AppUser appUser = new AppUser();
         appUser.setFirstName(firstName);
         appUser.setSurname("Iacob");

@@ -80,4 +80,8 @@ public interface SessionService {
      */
     String encodeUsernameAndPassword(String username, String password);
     
+    /**
+     * Method that will be scheduled in order to clean up expired sessions from the database.
+     */
+    void scheduleAuthenticatedSessionsCleanUp();
 }
