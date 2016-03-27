@@ -312,12 +312,38 @@ public class AppUserControllerTest {
         assertEquals("Incorrect password", loginResponseEntity.getBody());
     }
     
-    
     @Test
     public void shouldNotRegisterAndActivateUser() {
     
         ResponseEntity<?> responseEntity = appUserController.registerUser("invalid_code");
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+    
+    @Test
+    public void shouldLogoutUser() {
+        
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        String username = appUser.getUsername();
+        appUserController.createAppUser(appUser);
+        
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        assertFalse("Could not find userRegistration!", regList.isEmpty());
+        appUserController.registerUser(regList.get(0).getCode());
+        
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, password);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+        
+        ResponseEntity<?> logoutResponse = appUserController.logout(authorizationString);
+        assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
+    }
+    
+    public void shouldNotLogoutUser() {
+        
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, "invalid_password");
+        ResponseEntity<?> logoutResponse = appUserController.logout(authorizationString);
+        assertEquals(HttpStatus.BAD_REQUEST, logoutResponse.getStatusCode());
     }
     
     private AppUser createAppUser(String firstName) {

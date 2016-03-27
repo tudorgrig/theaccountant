@@ -19,7 +19,7 @@ import com.myMoneyTracker.app.authentication.SessionAuthentication;
 import com.myMoneyTracker.service.SessionService;
 
 @Component
-class AuthenticationFilter implements Filter {
+public class AuthenticationFilter implements Filter {
     
     @Autowired
     private SessionService sessionService;

@@ -34,8 +34,16 @@ import javax.servlet.http.Part;
 public class MockHttpServletRequest implements HttpServletRequest {
     
     private String requestUri;
+    private String method;
+    private String clientIpAddress;
     private Map<String, String> headers = new HashMap<String, String>();
-
+    
+    public MockHttpServletRequest(String method, String requestUri, String clientIpAddress) {
+    
+        this.method = method;
+        this.requestUri = requestUri;
+    }
+    
     public AsyncContext getAsyncContext() {
     
         // TODO Auto-generated method stub
@@ -164,8 +172,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     
     public String getRemoteAddr() {
     
-        // TODO Auto-generated method stub
-        return null;
+        return this.clientIpAddress;
     }
     
     public String getRemoteHost() {
@@ -300,7 +307,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
     
     public void putHeader(String headerName, String headerValue) {
-        
+    
         headers.put(headerName, headerValue);
     }
     
@@ -324,8 +331,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     
     public String getMethod() {
     
-        // TODO Auto-generated method stub
-        return null;
+        return this.method;
     }
     
     public Part getPart(String arg0) throws IOException, ServletException {
@@ -370,7 +376,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
     
     public void setRequestURI(String requestUri) {
-        
+    
         this.requestUri = requestUri;
     }
     
