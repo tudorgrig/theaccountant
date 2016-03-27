@@ -10,10 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MockFilterChain implements FilterChain {
     
-    boolean shouldThorowExceptionOnDoFilter = false;
+    boolean shouldThrowExceptionOnDoFilter = false;
     
-    public MockFilterChain(boolean shouldThorowExceptionOnDoFilter) {
-        this.shouldThorowExceptionOnDoFilter = shouldThorowExceptionOnDoFilter;
+    public MockFilterChain(boolean shouldThrowExceptionOnDoFilter) {
+        this.shouldThrowExceptionOnDoFilter = shouldThrowExceptionOnDoFilter;
     }
     
     /**
@@ -22,7 +22,7 @@ public class MockFilterChain implements FilterChain {
      */
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
     
-        if (shouldThorowExceptionOnDoFilter) {
+        if (shouldThrowExceptionOnDoFilter) {
             throw new ServletException("MockFilterChain .doFilter() method should not be called!");
         }
         

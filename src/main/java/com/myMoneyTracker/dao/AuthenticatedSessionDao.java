@@ -18,8 +18,6 @@ import com.myMoneyTracker.model.session.AuthenticatedSession;
 @Repository
 public interface AuthenticatedSessionDao extends JpaRepository<AuthenticatedSession, Long> {
     
-    List<AuthenticatedSession> findByAuthorizationString(String authorization);
-    
     List<AuthenticatedSession> findByAuthorizationStringAndIpAddress(String authorization, String ipAddress);
     
 }
