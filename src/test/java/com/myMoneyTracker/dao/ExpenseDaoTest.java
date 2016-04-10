@@ -43,11 +43,14 @@ public class ExpenseDaoTest {
     private static final Logger logger = Logger.getLogger(ExpenseDaoTest.class.getName());
     
     private AppUser applicationUser = null;
+
+    private Category category = null;
     
     @Before
     public void initialize() {
     
         applicationUser = createAppUser("test@my-money-tracker.ro", "user1");
+        category = createCategory(applicationUser);
     }
     
     @Test
@@ -97,7 +100,6 @@ public class ExpenseDaoTest {
     
     @Test
     public void shouldFindAll() {
-    
         Expense expense1 = createExpense();
         Expense expense2 = createExpense();
         //2 different expenses will be saved into the database
@@ -133,7 +135,7 @@ public class ExpenseDaoTest {
         expense.setAmount(new Double(222.222));
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
         expense.setUser(applicationUser);
-        expense.setCategory(createCategory(applicationUser));
+        expense.setCategory(category);
         return expense;
     }
     

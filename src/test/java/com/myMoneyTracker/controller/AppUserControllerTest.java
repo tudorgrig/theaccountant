@@ -68,7 +68,8 @@ public class AppUserControllerTest {
         userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
-        appUserController.deleteAll();
+        appUserDao.deleteAll();
+        appUserDao.flush();
         authenticatedSessionDao.deleteAllInBatch();
         SecurityContextHolder.getContext().setAuthentication(new SessionAuthentication(username, "1.1.1.1"));
     }
@@ -109,30 +110,6 @@ public class AppUserControllerTest {
         assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         appUser = createAppUser(FIRST_NAME);
         appUserController.createAppUser(appUser);
-    }
-    
-    @Test
-    public void shouldFindAllUsers() {
-    
-        for (int i = 0; i < 5; i++) {
-            AppUser appUser = createAppUser(FIRST_NAME);
-            appUser.setEmail("email" + i + "@gmail.com");
-            appUser.setUsername("tudorgrig" + i);
-            ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-            assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-            assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
-        }
-        ResponseEntity<?> responseEntity = appUserController.listAllUsers();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(5, ((List<?>) responseEntity.getBody()).size());
-    }
-    
-    @Test
-    public void shouldFindEmptyListOfUsers() {
-    
-        ResponseEntity<?> responseEntity = appUserController.listAllUsers();
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        assertEquals(null, responseEntity.getBody());
     }
     
     @Test

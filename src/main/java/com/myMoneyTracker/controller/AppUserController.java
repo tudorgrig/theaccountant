@@ -84,16 +84,6 @@ public class AppUserController {
         }
     }
     
-    @RequestMapping(value = "/find_all", method = RequestMethod.GET)
-    public ResponseEntity<List<AppUserDTO>> listAllUsers() {
-    
-        List<AppUser> users = appUserDao.findAll();
-        if (users.isEmpty()) {
-            return new ResponseEntity<List<AppUserDTO>>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<List<AppUserDTO>>(getListOfAppUserDTOs(users), HttpStatus.OK);
-    }
-    
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<AppUserDTO> findAppUser(@PathVariable("id") Long id) {
     
@@ -176,8 +166,7 @@ public class AppUserController {
         appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
     }
-    
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+
     @Transactional
     public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id) {
     
@@ -188,15 +177,6 @@ public class AppUserController {
             throw new NotFoundException(emptyResultDataAccessException.getMessage());
         }
         return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
-    }
-    
-    @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
-    @Transactional
-    public ResponseEntity<String> deleteAll() {
-    
-        appUserDao.deleteAll();
-        appUserDao.flush();
-        return new ResponseEntity<String>("Users deleted", HttpStatus.NO_CONTENT);
     }
     
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
@@ -221,7 +201,7 @@ public class AppUserController {
      * @param appUser : currently user logged.
      * @param clientIpAddress
      *      the HTTP request IP address
-     * @param authenticationString
+     * @param authorizationString
      *      the basic authentication string for the current user
      */
     private void handleSuccessfulLogin(AppUser appUser, String authorizationString, String clientIpAddress) {

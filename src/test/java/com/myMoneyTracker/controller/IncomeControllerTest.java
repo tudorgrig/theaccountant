@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.myMoneyTracker.dao.AppUserDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,10 @@ public class IncomeControllerTest {
 
     @Autowired
     private IncomeDao incomeDao;
-    
+
+    @Autowired
+    private AppUserDao appUserDao;
+
     @Autowired
     private UserRegistrationDao userRegistrationDao;
 
@@ -54,7 +58,8 @@ public class IncomeControllerTest {
         userRegistrationDao.flush();
         incomeDao.deleteAll();
         incomeDao.flush();
-        appUserController.deleteAll();
+        appUserDao.deleteAll();
+        appUserDao.flush();
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
 
     }
