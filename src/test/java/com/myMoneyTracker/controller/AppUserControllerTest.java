@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
@@ -355,6 +356,7 @@ public class AppUserControllerTest {
         appUser.setUsername(username);
         appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
+        appUser.setDefaultCurrency(Currency.getInstance("RON"));
         return appUser;
     }
 }
