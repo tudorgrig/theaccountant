@@ -73,9 +73,7 @@ public class ExpenseDaoTest {
     
     @Test
     public void shouldNotFindExpense() {
-    
-        Expense expense = createExpense();
-        expense = expenseDao.findOne(new Random().nextLong());
+        Expense expense = expenseDao.findOne(new Random().nextLong());
         assertTrue(expense == null);
     }
     

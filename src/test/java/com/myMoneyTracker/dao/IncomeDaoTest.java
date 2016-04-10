@@ -44,19 +44,9 @@ public class IncomeDaoTest {
     
     private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
     
-    private static final String USERNAME = "tudorgrig";
+    private static final String USERNAME = "DerbedeiidinBacau";
     private static final String EMAIL = "help.mmt@gmail.com";
-    
-    @Before
-    public void cleanUp() {
-    
-        userRegistrationDao.deleteAll();
-        userRegistrationDao.flush();
-        incomeDao.deleteAll();
-        incomeDao.flush();
-        appUserDao.deleteAll();
-        appUserDao.flush();
-    }
+
     
     @Test
     public void shouldSaveIncome() {
@@ -154,9 +144,9 @@ public class IncomeDaoTest {
     private AppUser createAppUser(String email, String username) {
     
         AppUser appUser = new AppUser();
-        appUser.setFirstName("Florin");
-        appUser.setSurname("Iacob");
-        appUser.setPassword("TEST_PASS");
+        appUser.setFirstName("DerbedeiidinBacau");
+        appUser.setSurname("DerbedeiidinBacau");
+        appUser.setPassword("DerbedeiidinBacau");
         appUser.setUsername(username);
         appUser.setBirthdate(new Date());
         appUser.setEmail(email);

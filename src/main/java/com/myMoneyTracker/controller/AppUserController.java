@@ -166,18 +166,6 @@ public class AppUserController {
         appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
     }
-
-    @Transactional
-    public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id) {
-    
-        try {
-            appUserDao.delete(id);
-            appUserDao.flush();
-        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
-            throw new NotFoundException(emptyResultDataAccessException.getMessage());
-        }
-        return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
-    }
     
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
     @Transactional

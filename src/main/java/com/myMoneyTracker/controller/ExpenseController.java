@@ -156,6 +156,7 @@ public class ExpenseController {
                 return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
             }
             expenseDao.delete(id);
+            expenseDao.flush();
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
             throw new NotFoundException("Expense not found");
         }

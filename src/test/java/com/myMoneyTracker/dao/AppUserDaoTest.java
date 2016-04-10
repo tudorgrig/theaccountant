@@ -38,19 +38,8 @@ public class AppUserDaoTest {
     @Autowired
     private UserRegistrationDao userRegistrationDao;
 
-    private String FIRST_NAME = "Tudor";
+    private String FIRST_NAME = "DerbedeiidinBacau";
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
-
-    @Before
-    public void deleteData() {
-
-        userRegistrationDao.deleteAll();
-        userRegistrationDao.flush();
-        incomeDao.deleteAll();
-        incomeDao.flush();
-        appUserDao.deleteAll();
-        appUserDao.flush();
-    }
 
     @Test
     public void shouldSaveAppUser() {
@@ -69,6 +58,7 @@ public class AppUserDaoTest {
 
         AppUser appUser1 = createAppUser(FIRST_NAME);
         appUserDao.saveAndFlush(appUser1);
+        appUserDao.delete(appUser);
     }
 
     @Test
@@ -115,11 +105,13 @@ public class AppUserDaoTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.saveAndFlush(appUser);
         assertTrue(appUser.getId() > 0);
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
     public void shouldFindAll() {
-
+        int count = appUserDao.findAll().size();
         AppUser appUser = createAppUser(FIRST_NAME);
         AppUser appUser2 = createAppUser("Florin");
         appUser2.setUsername("florin");
@@ -127,7 +119,7 @@ public class AppUserDaoTest {
         appUserDao.save(appUser);
         appUserDao.save(appUser2);
         List<AppUser> appUserList = appUserDao.findAll();
-        assertEquals(appUserList.size(), 2);
+        assertEquals(appUserList.size(), count + 2);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -135,16 +127,16 @@ public class AppUserDaoTest {
 
         AppUser appUser = createAppUser(FIRST_NAME);
         appUser.setEmail("wrongEmailFormat");
-        appUser = appUserDao.saveAndFlush(appUser);
+        appUserDao.saveAndFlush(appUser);
     }
 
     private AppUser createAppUser(String firstName) {
 
         AppUser appUser = new AppUser();
         appUser.setFirstName(firstName);
-        appUser.setSurname("Grigoriu");
+        appUser.setSurname("DerbedeiidinBacau");
         appUser.setPassword("TEST_PASS");
-        appUser.setUsername("tudorgrig");
+        appUser.setUsername("DerbedeiidinBacau");
         appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
         return appUser;
