@@ -34,16 +34,16 @@ public class AppUser {
 
     @NotNull
     @NotEmpty
-    @Length(min = 5)
+    @Length(min = 5, message = "Username should have at least 5 characters!")
     private String username;
 
     @NotNull
-    @Length(min = 8, message = "Password should have at least 8 characters")
+    @Length(min = 8, message = "Password should have at least 8 characters!")
     private String password;
 
     @NotNull
     @NotEmpty
-    @Email(message = "Please provide a valid email address")
+    @Email(message = "Please provide a valid email address!")
     private String email;
 
     private boolean activated;

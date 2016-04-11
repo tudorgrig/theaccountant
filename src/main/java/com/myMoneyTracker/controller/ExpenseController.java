@@ -121,7 +121,7 @@ public class ExpenseController {
         if (oldExpense == null) {
             throw new NotFoundException("Expense not found");
         }
-        if (!(loggedUsername.equals(expense.getUser().getUsername()))) {
+        if (!(loggedUsername.equals(oldExpense.getUser().getUsername()))) {
             throw new BadRequestException("Unauthorized access");
         }
         Category oldCategory = oldExpense.getCategory();
