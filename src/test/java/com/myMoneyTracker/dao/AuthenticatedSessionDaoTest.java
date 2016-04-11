@@ -31,14 +31,7 @@ public class AuthenticatedSessionDaoTest {
     
     @Autowired
     private SessionService sessionService;
-    
-    @Before
-    public void cleanUp() {
-    
-        authenticatedSessionDao.deleteAll();
-        authenticatedSessionDao.flush();
-    }
-    
+
     @Test
     public void shouldSaveAuthenticatedSession() {
     
@@ -52,7 +45,7 @@ public class AuthenticatedSessionDaoTest {
     
         AuthenticatedSession authenticatedSession = createAuthenticatedSession(USERNAME, PASSWORD);
         authenticatedSession.setUsername(null);
-        authenticatedSession = authenticatedSessionDao.save(authenticatedSession);
+        authenticatedSessionDao.save(authenticatedSession);
     }
     
     @Test(expected = org.springframework.transaction.TransactionSystemException.class)
@@ -60,7 +53,7 @@ public class AuthenticatedSessionDaoTest {
     
         AuthenticatedSession authenticatedSession = createAuthenticatedSession(USERNAME, PASSWORD);
         authenticatedSession.setAuthorization(null);
-        authenticatedSession = authenticatedSessionDao.save(authenticatedSession);
+        authenticatedSessionDao.save(authenticatedSession);
     }
     
     @Test(expected = org.springframework.transaction.TransactionSystemException.class)
@@ -68,7 +61,7 @@ public class AuthenticatedSessionDaoTest {
     
         AuthenticatedSession authenticatedSession = createAuthenticatedSession(USERNAME, PASSWORD);
         authenticatedSession.setIpAddress(null);
-        authenticatedSession = authenticatedSessionDao.save(authenticatedSession);
+        authenticatedSessionDao.save(authenticatedSession);
     }
     
     @Test(expected = org.springframework.transaction.TransactionSystemException.class)
@@ -76,7 +69,7 @@ public class AuthenticatedSessionDaoTest {
     
         AuthenticatedSession authenticatedSession = createAuthenticatedSession(USERNAME, PASSWORD);
         authenticatedSession.setExpirationTime(null);
-        authenticatedSession = authenticatedSessionDao.save(authenticatedSession);
+        authenticatedSessionDao.save(authenticatedSession);
     }
     
     @Test

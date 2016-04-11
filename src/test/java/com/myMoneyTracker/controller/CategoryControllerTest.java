@@ -3,11 +3,14 @@ package com.myMoneyTracker.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.myMoneyTracker.dao.CategoryDao;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +39,7 @@ import com.myMoneyTracker.util.ControllerUtil;
 public class CategoryControllerTest {
     
     private static final String CATEGORY_NAME = "Category1";
-    private static final String TEST_COLOUR = "#8B8386";
+    private static final String TEST_COLOUR = "stable";
     
     @Autowired
     CategoryController categoryController;
@@ -46,28 +49,31 @@ public class CategoryControllerTest {
     
     @Autowired
     IncomeDao incomeDao;
+
+    @Autowired
+    CategoryDao categoryDao;
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
+
+    private AppUser appUser;
     
     @Before
     public void initialize() {
     
         String username = "Florin";
         String email = "test@my-money-tracker.ro";
-        createAppUser(username, email);
+        appUser = createAppUser(username, email);
         ControllerUtil.setCurrentLoggedUser(username);
     }
-    
+
     @After
     public void cleanUp() {
-    
-        userRegistrationDao.deleteAll();
+
+        userRegistrationDao.deleteByUserId(appUser.getId());
         userRegistrationDao.flush();
-        incomeDao.deleteAll();
-        incomeDao.flush();
-        categoryController.deleteAll();
-        appUserDao.deleteAll();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
     
     @Test
@@ -78,6 +84,8 @@ public class CategoryControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
         assertEquals(TEST_COLOUR, ((CategoryDTO) responseEntity.getBody()).getColour());
+        categoryDao.delete(category.getId());
+        categoryDao.flush();
     }
     
     @Test
@@ -91,16 +99,21 @@ public class CategoryControllerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void shouldFindAllCategeories() {
-    
+        List<Category> categories = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Category category = createCategory(CATEGORY_NAME + i);
             ResponseEntity responseEntity = categoryController.createCategory(category);
             assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
             assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
+            categories.add(category);
         }
         ResponseEntity responseEntity = categoryController.getAllCategories();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(5, ((List<CategoryDTO>) responseEntity.getBody()).size());
+        categories.parallelStream().forEach(category -> {
+            categoryDao.delete(category.getId());
+        });
+        categoryDao.flush();
     }
     
     @Test
@@ -111,6 +124,8 @@ public class CategoryControllerTest {
         ResponseEntity<?> found = categoryController.getCategory(CATEGORY_NAME);
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
+        categoryDao.delete(category.getId());
+        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)
@@ -132,6 +147,8 @@ public class CategoryControllerTest {
         assertEquals("Category updated", updated.getBody());
         ResponseEntity updatedCategory = categoryController.getCategory(updatedName);
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
+        categoryDao.delete(category.getId());
+        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)

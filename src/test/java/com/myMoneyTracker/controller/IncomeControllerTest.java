@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.myMoneyTracker.dao.AppUserDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,20 +44,16 @@ public class IncomeControllerTest {
 
     @Autowired
     private IncomeDao incomeDao;
-    
+
+    @Autowired
+    private AppUserDao appUserDao;
+
     @Autowired
     private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void setup() {
-
-        userRegistrationDao.deleteAll();
-        userRegistrationDao.flush();
-        incomeDao.deleteAll();
-        incomeDao.flush();
-        appUserController.deleteAll();
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
-
     }
 
     @Test
@@ -64,12 +61,15 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((IncomeDTO) responseEntity.getBody()).getId() > 0);
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -77,13 +77,14 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
         income.setCurrency("IAC");
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+        assertEquals("Wrong currency code!", responseEntity.getBody());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -91,12 +92,13 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
         income.setName(null);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -104,15 +106,18 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.listAllIncomes();
         assertEquals(1, ((List<IncomeDTO>) responseEntity.getBody()).size());
         IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
         assertEquals(income.getName(), result.getName());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -120,15 +125,18 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = incomeController.findIncome(((IncomeDTO) responseEntity.getBody()).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         IncomeDTO found = (IncomeDTO) responseEntity.getBody();
         assertEquals(income.getName(), found.getName());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -136,10 +144,18 @@ public class IncomeControllerTest {
 
         ResponseEntity<?> responseEntity = incomeController.findIncome(new Random().nextLong());
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
+    }
+
+    @Test
+    public void shouldNotFindAnotherUserIncome(){
         Income income = createAndSaveIncomeForAnotherUser();
-        responseEntity = incomeController.findIncome(income.getId());
+        ResponseEntity responseEntity = incomeController.findIncome(income.getId());
         assertEquals("Should not find another user's income!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(income.getUser().getId());
+        appUserDao.flush();
+
     }
 
     @Test
@@ -147,10 +163,9 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Income toUpdate = createIncome();
         toUpdate.setName("updated_income");
@@ -162,6 +177,11 @@ public class IncomeControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         List<IncomeDTO> found = (List<IncomeDTO>) responseEntity.getBody();
         assertEquals("updated_income", found.get(0).getName());
+
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -169,10 +189,9 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Income toUpdate = createIncome();
         toUpdate.setName("updated_income");
@@ -181,6 +200,10 @@ public class IncomeControllerTest {
         responseEntity = incomeController.updateIncome(income.getId(), toUpdate);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals("Wrong currency code!", (String) responseEntity.getBody());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -189,10 +212,18 @@ public class IncomeControllerTest {
         Income income = createIncome();
         ResponseEntity<?> responseEntity = incomeController.updateIncome(111L, income);
         assertEquals("Should not update non-existent income!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
-        income = createAndSaveIncomeForAnotherUser();
-        responseEntity = incomeController.updateIncome(income.getId(), income);
+    }
+
+    @Test
+    public void shouldNotUpdateOtherUserIncome(){
+
+        Income income = createAndSaveIncomeForAnotherUser();
+        ResponseEntity responseEntity = incomeController.updateIncome(income.getId(), income);
         assertEquals("Should not update income for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(income.getUser().getId());
+        appUserDao.flush();
     }
     
     @Test
@@ -200,10 +231,9 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = incomeController.deleteIncome(income.getId());
@@ -211,6 +241,8 @@ public class IncomeControllerTest {
 
         responseEntity = incomeController.findIncome(income.getId());
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     @Test
@@ -218,10 +250,18 @@ public class IncomeControllerTest {
     
         ResponseEntity<?> responseEntity = incomeController.deleteIncome(111L);
         assertEquals("Should not delete non-existent income!", HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        
+    }
+
+    @Test
+    public void shouldNotDeleteOtherUserIncome(){
+
         Income income = createAndSaveIncomeForAnotherUser();
-        responseEntity = incomeController.deleteIncome(income.getId());
+        ResponseEntity responseEntity = incomeController.deleteIncome(income.getId());
         assertEquals("Should not delete income for another user!", HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        incomeDao.delete(income.getId());
+        incomeDao.flush();
+        appUserDao.delete(income.getUser().getId());
+        appUserDao.flush();
     }
     
     @Test
@@ -229,10 +269,9 @@ public class IncomeControllerTest {
 
         Income income = createIncome();
         AppUser appUser = createAppUser();
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        appUserDao.saveAndFlush(appUser);
         income.setUser(appUser);
-        responseEntity = incomeController.createIncome(income);
+        ResponseEntity responseEntity = incomeController.createIncome(income);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = incomeController.deleteAll();
@@ -240,6 +279,9 @@ public class IncomeControllerTest {
 
         responseEntity = incomeController.listAllIncomes();
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
     }
 
     private Income createIncome() {
@@ -258,7 +300,7 @@ public class IncomeControllerTest {
         AppUser anotherUser = createAppUser();
         anotherUser.setUsername("another_user");
         anotherUser.setEmail("another_user@email.com");
-        appUserController.createAppUser(anotherUser);
+        appUserDao.saveAndFlush(anotherUser);
         Income income = createIncome();
         income.setName("another_income");
         income.setCurrency("USD");

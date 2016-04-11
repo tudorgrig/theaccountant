@@ -1,5 +1,6 @@
 package com.myMoneyTracker.model.user;
 
+import java.util.Currency;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -47,6 +48,8 @@ public class AppUser {
     private String email;
 
     private boolean activated;
+
+    private Currency defaultCurrency;
 
     public String getPassword() {
 
@@ -126,5 +129,22 @@ public class AppUser {
     public void setUsername(String username) {
 
         this.username = username;
+    }
+
+    public Currency getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
+    public void setDefaultCurrency(Currency defaultCurrency) {
+        this.defaultCurrency = defaultCurrency;
+    }
+
+    @Override
+    public String toString() {
+        return "AppUser{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

@@ -10,7 +10,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,16 +81,6 @@ public class AppUserController {
         } catch (MessagingException me) {
             throw new BadRequestException(me.getMessage());
         }
-    }
-    
-    @RequestMapping(value = "/find_all", method = RequestMethod.GET)
-    public ResponseEntity<List<AppUserDTO>> listAllUsers() {
-    
-        List<AppUser> users = appUserDao.findAll();
-        if (users.isEmpty()) {
-            return new ResponseEntity<List<AppUserDTO>>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<List<AppUserDTO>>(getListOfAppUserDTOs(users), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
@@ -177,28 +166,6 @@ public class AppUserController {
         return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
     }
     
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
-    @Transactional
-    public ResponseEntity<String> deleteAppUser(@PathVariable("id") Long id) {
-    
-        try {
-            appUserDao.delete(id);
-            appUserDao.flush();
-        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
-            throw new NotFoundException(emptyResultDataAccessException.getMessage());
-        }
-        return new ResponseEntity<String>("User deleted", HttpStatus.NO_CONTENT);
-    }
-    
-    @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
-    @Transactional
-    public ResponseEntity<String> deleteAll() {
-    
-        appUserDao.deleteAll();
-        appUserDao.flush();
-        return new ResponseEntity<String>("Users deleted", HttpStatus.NO_CONTENT);
-    }
-    
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
     @Transactional
     public ResponseEntity<AppUserDTO> registerUser(@PathVariable("code") String code) {
@@ -221,7 +188,7 @@ public class AppUserController {
      * @param appUser : currently user logged.
      * @param clientIpAddress
      *      the HTTP request IP address
-     * @param authenticationString
+     * @param authorizationString
      *      the basic authentication string for the current user
      */
     private void handleSuccessfulLogin(AppUser appUser, String authorizationString, String clientIpAddress) {

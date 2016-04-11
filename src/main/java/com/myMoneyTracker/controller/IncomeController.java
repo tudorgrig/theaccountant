@@ -51,12 +51,12 @@ public class IncomeController {
     public ResponseEntity<?> createIncome(@RequestBody @Valid Income income) {
     
         try {
-            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-            AppUser user = appUserDao.findByUsername(loggedUsername);
-            income.setUser(user);
             if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
                 return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
             }
+            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+            AppUser user = appUserDao.findByUsername(loggedUsername);
+            income.setUser(user);
             Income createdIncome = incomeDao.saveAndFlush(income);
             return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
         } catch (ConstraintViolationException e) {

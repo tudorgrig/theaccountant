@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
+import javax.persistence.*;
 
 import com.myMoneyTracker.model.user.AppUser;
 
@@ -18,6 +19,8 @@ import com.myMoneyTracker.model.user.AppUser;
  * Entity class for the 'category' table
  */
 @Entity
+@Table(name = "category",
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "user_id"}) })
 public class Category {
 
     @Id
@@ -33,8 +36,7 @@ public class Category {
     private AppUser user;
 
     @NotNull
-    @Length(min = 7, max = 7)
-    private String colour = "#FFF0F5";
+    private String colour = "stable";
 
     public long getId() {
 

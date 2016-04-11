@@ -37,7 +37,7 @@ public class UserUtil {
         UserRegistration userRegistration = new UserRegistration();
         userRegistration.setCode(code);
         userRegistration.setUser(user);
-        userRegistrationDao.save(userRegistration);
+        userRegistrationDao.saveAndFlush(userRegistration);
         emailSender.sendUserRegistrationEmail(user, code);
     }
 }

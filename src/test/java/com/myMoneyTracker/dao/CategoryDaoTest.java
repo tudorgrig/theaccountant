@@ -34,7 +34,7 @@ public class CategoryDaoTest {
 
     private static final String USERNAME = "Username";
     private static final String CATEGORY_NAME = "Category";
-    private static final String TEST_COLOUR = "#8B8386";
+    private static final String TEST_COLOUR = "stable";
     private static int categoryCounter = 0;
 
     @Autowired
@@ -48,7 +48,6 @@ public class CategoryDaoTest {
     @Before
     public void initialize() {
 
-        categoryDao.deleteAll();
         applicationUser = createAppUser();
     }
 
@@ -146,6 +145,8 @@ public class CategoryDaoTest {
         appUserDao.save(category.getUser());
         category = categoryDao.saveAndFlush(category);
         assertTrue(category.getId() > 0);
+        categoryDao.delete(category);
+        appUserDao.delete(category.getUser());
     }
 
     @Test
@@ -159,8 +160,8 @@ public class CategoryDaoTest {
         //category with different user
         Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
         AppUser appUser = createAppUser();
-        appUser.setUsername("tudorgrig");
-        appUser.setEmail("tudorgrigoriu@yahoo.com");
+        appUser.setUsername("DerbedeiidinBacau");
+        appUser.setEmail("DerbedeiidinBacau@yahoo.com");
         appUser = appUserDao.save(appUser);
         category1.setUser(appUser);
         category1 = categoryDao.saveAndFlush(category1);
@@ -187,12 +188,12 @@ public class CategoryDaoTest {
     private AppUser createAppUser() {
 
         AppUser appUser = new AppUser();
-        appUser.setFirstName("Florin");
-        appUser.setSurname("Iacob");
+        appUser.setFirstName("DerbedeiidinBacau");
+        appUser.setSurname("DerbedeiidinBacau");
         appUser.setBirthdate(new Date());
         appUser.setUsername(USERNAME);
         appUser.setEmail(USERNAME + "@my-money-tracker.ro");
-        appUser.setPassword("TEST_PASS");
+        appUser.setPassword("DerbedeiidinBacau");
         return appUser;
     }
 }

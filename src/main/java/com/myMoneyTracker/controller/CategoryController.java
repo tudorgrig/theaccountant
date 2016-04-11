@@ -7,7 +7,9 @@ import java.util.logging.Logger;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.controller.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,8 +58,13 @@ public class CategoryController {
             throw new NotFoundException("User not found");
         }
         category.setUser(user);
-        Category responseCategory = categoryDao.save(category);
-        return new ResponseEntity<CategoryDTO>(categoryConverter.convertTo(responseCategory), HttpStatus.OK);
+        try {
+            Category responseCategory = categoryDao.save(category);
+            return new ResponseEntity<CategoryDTO>(categoryConverter.convertTo(responseCategory), HttpStatus.OK);
+        } catch (DataIntegrityViolationException dive) {
+            throw new ConflictException(dive.getMostSpecificCause().getMessage());
+        }
+
     }
     
     @RequestMapping(value = "find/{categoryName.+}", method = RequestMethod.GET)
