@@ -35,6 +35,7 @@ public class CategoryDaoTest {
     private static final String USERNAME = "Username";
     private static final String CATEGORY_NAME = "Category";
     private static final String TEST_COLOUR = "stable";
+    private static final double TEST_THRESHOLD = 42.7;
     private static int categoryCounter = 0;
 
     @Autowired
@@ -60,6 +61,7 @@ public class CategoryDaoTest {
         logger.info("The category has id = " + category.getId());
         assertTrue(category.getId() != 0);
         assertEquals(TEST_COLOUR, category.getColour());
+//        assertEquals(TEST_THRESHOLD, category.getThreshold());
     }
 
     @Test
@@ -182,6 +184,7 @@ public class CategoryDaoTest {
         category.setName(categoryName);
         category.setUser(applicationUser);
         category.setColour(TEST_COLOUR);
+//        category.setThreshold(TEST_THRESHOLD);
         return category;
     }
 
