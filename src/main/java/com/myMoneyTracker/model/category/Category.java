@@ -1,5 +1,6 @@
 package com.myMoneyTracker.model.category;
 
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -38,6 +39,9 @@ public class Category {
     @NotNull
     private String colour = "stable";
 
+    @Nullable
+    private float threshold;
+
     public long getId() {
 
         return id;
@@ -75,4 +79,14 @@ public class Category {
     public void setColour(String colour) {
         this.colour = colour;
     }
+
+    public float getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(float threshold) {
+        this.threshold = threshold;
+    }
+
+
 }

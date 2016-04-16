@@ -59,7 +59,7 @@ public class CategoryController {
         }
         category.setUser(user);
         try {
-            Category responseCategory = categoryDao.save(category);
+            Category responseCategory = categoryDao.saveAndFlush(category);
             return new ResponseEntity<CategoryDTO>(categoryConverter.convertTo(responseCategory), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
             throw new ConflictException(dive.getMostSpecificCause().getMessage());
