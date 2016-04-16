@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,8 +115,8 @@ public class IncomeDaoTest {
         Income income2 = createIncome(appUser2);
         incomeDao.save(income1);
         incomeDao.save(income2);
-        List<Income> incomeList = incomeDao.findAll();
-        assertEquals(2, incomeList.size());
+        List<Income> incomeList = incomeDao.findByUsername(appUser.getUsername());
+        assertEquals(1, incomeList.size());
     }
     
     @Test

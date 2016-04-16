@@ -107,7 +107,7 @@ public class CategoryDaoTest {
         appUserDao.save(category2.getUser());
         categoryDao.save(category1);
         categoryDao.save(category2);
-        List<Category> categoryList = categoryDao.findAll();
+        List<Category> categoryList = categoryDao.findByUsername(USERNAME);
         assertEquals(2, categoryList.size());
     }
 
