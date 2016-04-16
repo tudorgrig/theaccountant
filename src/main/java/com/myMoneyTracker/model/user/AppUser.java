@@ -3,12 +3,7 @@ package com.myMoneyTracker.model.user;
 import java.util.Currency;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
@@ -21,7 +16,10 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @Entity
 @Table(name = "app_user",
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }), @UniqueConstraint(columnNames = { "email" }) })
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }),
+                @UniqueConstraint(columnNames = { "email" }) },
+        indexes = {@Index(name = "username_index",  columnList="username", unique = true),
+                @Index(name="email_index", columnList = "email", unique = true)})
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
