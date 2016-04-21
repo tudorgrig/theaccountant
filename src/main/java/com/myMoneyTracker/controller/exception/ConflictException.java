@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(value = HttpStatus.CONFLICT)
 public class ConflictException extends RuntimeException{
-
+    
+    private static final long serialVersionUID = 2274321605661987027L;
+   
     private static final Logger log = Logger.getLogger(ConflictException.class.getName());
 
     public ConflictException() {

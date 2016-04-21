@@ -223,15 +223,13 @@ public class ExpenseControllerTest {
             expenseDao.delete(expense.getId());
             expenseDao.flush();
         }
-
-
-
     }
 
     @Test(expected = NotFoundException.class)
     public void shouldNotUpdateExpense() {
 
         Expense expense = createExpense(category, applicationUser);
+        @SuppressWarnings("unused")
         ResponseEntity<?> responseEntity = expenseController.updateExpense(111L, expense);
     }
 
