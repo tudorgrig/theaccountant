@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +34,6 @@ public class IncomeDaoTest {
     
     @Autowired
     private AppUserDao appUserDao;
-    
-    @Autowired
-    private CategoryDao categoryDao;
-    
-    @Autowired
-    private UserRegistrationDao userRegistrationDao;
     
     private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
     

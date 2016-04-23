@@ -89,4 +89,6 @@
           class="com.myMoneyTracker.converter.ExpenseConverter"/>
   	<bean id="categoryConverter"
           class="com.myMoneyTracker.converter.CategoryConverter"/>
+    <bean id="recurrentEventService"
+          class="com.myMoneyTracker.service.impl.RecurrentEventService"/>
 </beans>
