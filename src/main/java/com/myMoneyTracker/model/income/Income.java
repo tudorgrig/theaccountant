@@ -2,13 +2,7 @@ package com.myMoneyTracker.model.income;
 
 import java.sql.Timestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.user.AppUser;
@@ -43,6 +37,17 @@ public class Income {
 
     @NotNull
     private String currency;
+
+
+    @Column(name = "start_day", nullable = true)
+    private Integer startDay;
+
+    @Column(name = "start_month", nullable = true)
+    private Integer startMonth;
+
+    @Column(name = "frequency", nullable = true)
+    private String frequency;
+
 
     public long getId() {
 
@@ -110,5 +115,44 @@ public class Income {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public Integer getStartDay() {
+        return startDay;
+    }
+
+    public void setStartDay(Integer startDay) {
+        this.startDay = startDay;
+    }
+
+    public Integer getStartMonth() {
+        return startMonth;
+    }
+
+    public void setStartMonth(Integer startMonth) {
+        this.startMonth = startMonth;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
+    }
+
+    @Override
+    public Income clone() {
+        Income income = new Income();
+        income.setUser(getUser());
+        income.setCurrency(getCurrency());
+        income.setDescription(getDescription());
+        income.setCreationDate(getCreationDate());
+        income.setAmount(getAmount());
+        income.setName(getName());
+        income.setStartDay(getStartDay());
+        income.setStartMonth(getStartMonth());
+        income.setFrequency(getFrequency());
+        return income;
     }
 }

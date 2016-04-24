@@ -98,7 +98,7 @@ public class CategoryDaoTest {
 
     @Test
     public void shouldFindAll() {
-
+        int count = categoryDao.findAll().size();
         Category category1 = createCategory(CATEGORY_NAME + categoryCounter++);
         appUserDao.save(category1.getUser());
         Category category2 = createCategory(CATEGORY_NAME + categoryCounter++);
@@ -106,7 +106,7 @@ public class CategoryDaoTest {
         categoryDao.save(category1);
         categoryDao.save(category2);
         List<Category> categoryList = categoryDao.findAll();
-        assertEquals(2, categoryList.size());
+        assertEquals(count + 2, categoryList.size());
     }
 
     @Test

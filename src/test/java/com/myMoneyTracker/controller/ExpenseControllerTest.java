@@ -90,6 +90,20 @@ public class ExpenseControllerTest {
         expenseDao.flush();
     }
 
+    @Test
+    public void shouldCreateRecurrentExpense() {
+
+        Expense expense = createExpense(category, applicationUser);
+        expense.setStartDay(14);
+        expense.setStartMonth(01);
+        expense.setFrequency("*");
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
     @Test(expected = BadRequestException.class)
     public void shouldNotCreateExpenseWithBadCurrency() {
 

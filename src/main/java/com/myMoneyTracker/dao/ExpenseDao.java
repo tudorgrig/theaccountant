@@ -32,4 +32,17 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
     @Query(value = "DELETE FROM expense WHERE category_id IN (SELECT category.id FROM category WHERE category.name= ?1)"
             + "AND user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?2)", nativeQuery = true)
     void deleteAllByCategoryNameAndUsername(String categoryName, String username);
+
+    @Query(value = "SELECT exp.* " +
+            "FROM expense exp " +
+            "WHERE " +
+            "exp.frequency IS NOT NULL " +
+            "AND (" +
+                "(exp.frequency = '*' AND exp.start_day = ?1) " +
+                "OR " +
+                "(exp.frequency != '*' AND (@(?2 - exp.start_month))%cast(exp.frequency as int) = 0 AND exp.start_day = ?1) " +
+                "OR " +
+                "(exp.frequency != '*' AND ?2 = exp.start_month AND exp.start_day = ?1)" +
+            ")", nativeQuery = true)
+    List<Expense> findRecurrentExpensesToAdd(int currentDay, int currentMonth);
 }

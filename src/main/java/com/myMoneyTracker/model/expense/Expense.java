@@ -48,6 +48,15 @@ public class Expense {
     @NotNull
     private String currency;
 
+    @Column(name = "start_day", nullable = true)
+    private Integer startDay;
+
+    @Column(name = "start_month", nullable = true)
+    private Integer startMonth;
+
+    @Column(name = "frequency", nullable = true)
+    private String frequency;
+
     public long getId() {
 
         return id;
@@ -124,5 +133,45 @@ public class Expense {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public Integer getStartDay() {
+        return startDay;
+    }
+
+    public void setStartDay(Integer startDay) {
+        this.startDay = startDay;
+    }
+
+    public Integer getStartMonth() {
+        return startMonth;
+    }
+
+    public void setStartMonth(Integer startMonth) {
+        this.startMonth = startMonth;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
+    }
+
+    @Override
+    public Expense clone(){
+        Expense expense = new Expense();
+        expense.setCurrency(getCurrency());
+        expense.setName(getName());
+        expense.setAmount(getAmount());
+        expense.setCategory(getCategory());
+        expense.setCreationDate(getCreationDate());
+        expense.setDescription(getDescription());
+        expense.setUser(getUser());
+        expense.setStartDay(getStartDay());
+        expense.setStartMonth(getStartMonth());
+        expense.setFrequency(getFrequency());
+        return expense;
     }
 }
