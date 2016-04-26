@@ -9,7 +9,7 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
- * Created by tudor.grigoriu on 08.02.2016.
+ * Created by Floryn on 08.02.2016.
  */
 public class YahooCurrencyConverter {
 

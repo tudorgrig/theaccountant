@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Tudor Grigoriu
+ * @author Floryn
  * Test class for email validator util class
  */
 @RunWith(SpringJUnit4ClassRunner.class)

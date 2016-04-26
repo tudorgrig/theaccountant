@@ -23,7 +23,6 @@ import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.CategoryDao;
 import com.myMoneyTracker.dao.ExpenseDao;
-import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.expense.ExpenseDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.expense.Expense;
@@ -56,9 +55,6 @@ public class ExpenseControllerTest {
 
     @Autowired
     private ExpenseDao expenseDao;
-
-    @Autowired
-    private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void setup() {

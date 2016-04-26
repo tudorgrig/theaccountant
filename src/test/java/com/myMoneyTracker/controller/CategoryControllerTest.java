@@ -10,7 +10,6 @@ import java.util.List;
 import com.myMoneyTracker.dao.CategoryDao;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.category.CategoryDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
@@ -52,9 +50,6 @@ public class CategoryControllerTest {
 
     @Autowired
     CategoryDao categoryDao;
-    
-    @Autowired
-    private UserRegistrationDao userRegistrationDao;
 
     private AppUser appUser;
     
@@ -69,9 +64,6 @@ public class CategoryControllerTest {
 
     @After
     public void cleanUp() {
-
-        userRegistrationDao.deleteByUserId(appUser.getId());
-        userRegistrationDao.flush();
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }

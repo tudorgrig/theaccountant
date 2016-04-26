@@ -19,7 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
@@ -40,16 +39,10 @@ public class IncomeControllerTest {
     private IncomeController incomeController;
 
     @Autowired
-    private AppUserController appUserController;
-
-    @Autowired
     private IncomeDao incomeDao;
 
     @Autowired
     private AppUserDao appUserDao;
-
-    @Autowired
-    private UserRegistrationDao userRegistrationDao;
 
     @Before
     public void setup() {

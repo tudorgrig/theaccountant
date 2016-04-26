@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.myMoneyTracker.model.user.AppUser;
 
 /**
- * @author Tudor Grigoriu
+ * @author Floryn
  * This class represents the test class for the app user data access object
  */
 @RunWith(SpringJUnit4ClassRunner.class)

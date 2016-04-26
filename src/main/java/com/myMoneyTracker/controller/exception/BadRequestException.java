@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Created by tudor.grigoriu on 06.03.2016.
+ * Created by Floryn on 06.03.2016.
  */
 @ResponseStatus(value = HttpStatus.CONFLICT)
 public class BadRequestException extends RuntimeException {

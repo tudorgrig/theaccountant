@@ -57,6 +57,9 @@ public class ExpenseController {
     public ResponseEntity<ExpenseDTO> createExpense(@RequestBody @Valid Expense expense) {
     
         try {
+            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
+                throw new BadRequestException("Wrong currency code!");
+            }
             String categoryName = expense.getCategory().getName();
             String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
             AppUser user = appUserDao.findByUsername(loggedUsername);
@@ -66,9 +69,6 @@ public class ExpenseController {
             }
             expense.setCategory(category);
             expense.setUser(user);
-            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
-                throw new BadRequestException("Wrong currency code!");
-            }
             Expense createdExpense = expenseDao.saveAndFlush(expense);
             return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
@@ -145,7 +145,6 @@ public class ExpenseController {
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
     @Transactional
     public ResponseEntity<String> deleteExpense(@PathVariable("id") Long id) {
-    
         try {
             String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
             Expense expenseToBeDeleted = expenseDao.findOne(id);
@@ -195,9 +194,9 @@ public class ExpenseController {
     private List<ExpenseDTO> createExpenseDTOs(List<Expense> expenses) {
     
         List<ExpenseDTO> expenseDTOs = new ArrayList<ExpenseDTO>();
-        for (Expense expense : expenses) {
+        expenses.parallelStream().forEach(expense -> {
             expenseDTOs.add(expenseConverter.convertTo(expense));
-        }
+        });
         return expenseDTOs;
     }
 }

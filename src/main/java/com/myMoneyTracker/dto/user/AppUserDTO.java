@@ -2,7 +2,7 @@ package com.myMoneyTracker.dto.user;
 
 
 /**
- * Created by tudor.grigoriu on 10.01.2016.
+ * Created by Floryn on 10.01.2016.
  */
 public class AppUserDTO {
 

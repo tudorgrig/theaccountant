@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 /**
- * Created by tudor.grigoriu on 08.02.2016.
+ * Created by Floryn on 08.02.2016.
  */
 public class YahooCurrencyConverterTest {
 

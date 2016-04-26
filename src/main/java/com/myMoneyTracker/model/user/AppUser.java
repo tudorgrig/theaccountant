@@ -16,7 +16,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * Created by tudor.grigoriu on 17.12.2015.
+ * Created by Floryn on 17.12.2015.
  * Entity class for the app_user table
  */
 @Entity
