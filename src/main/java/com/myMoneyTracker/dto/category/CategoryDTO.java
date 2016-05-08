@@ -13,6 +13,8 @@ public class CategoryDTO {
     private String name;
 
     private String colour;
+
+    private double threshold;
     
     public long getId() {
 
@@ -40,5 +42,13 @@ public class CategoryDTO {
 
     public void setColour(String colour) {
         this.colour = colour;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
     }
 }

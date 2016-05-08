@@ -21,7 +21,6 @@ public class Income {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id")
-    @NotNull
     private AppUser user;
 
     @NotNull

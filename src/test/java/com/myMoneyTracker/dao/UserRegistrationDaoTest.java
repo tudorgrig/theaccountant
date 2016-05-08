@@ -68,7 +68,7 @@ public class UserRegistrationDaoTest {
         appUser.setPassword("TEST_PASS");
         appUser.setUsername("florin");
         appUser.setBirthdate(new Date());
-        appUser.setEmail("rampageflo@gmail.com");
+        appUser.setEmail("rampageflo2@gmail.com");
         return appUser;
     }
 }

@@ -3,12 +3,7 @@ package com.myMoneyTracker.model.user;
 import java.util.Currency;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
@@ -21,7 +16,10 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @Entity
 @Table(name = "app_user",
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }), @UniqueConstraint(columnNames = { "email" }) })
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "username" }),
+                @UniqueConstraint(columnNames = { "email" }) },
+        indexes = {@Index(name = "username_index",  columnList="username", unique = true),
+                @Index(name="email_index", columnList = "email", unique = true)})
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,16 +33,16 @@ public class AppUser {
 
     @NotNull
     @NotEmpty
-    @Length(min = 5)
+    @Length(min = 5, message = "Username should have at least 5 characters!")
     private String username;
 
     @NotNull
-    @Length(min = 8, message = "Password should have at least 8 characters")
+    @Length(min = 8, message = "Password should have at least 8 characters!")
     private String password;
 
     @NotNull
     @NotEmpty
-    @Email(message = "Please provide a valid email address")
+    @Email(message = "Please provide a valid email address!")
     private String email;
 
     private boolean activated;

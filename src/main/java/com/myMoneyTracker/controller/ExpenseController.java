@@ -20,15 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.myMoneyTracker.controller.exception.BadRequestException;
 import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.converter.ExpenseConverter;
-import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.CategoryDao;
 import com.myMoneyTracker.dao.ExpenseDao;
 import com.myMoneyTracker.dto.expense.ExpenseDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.expense.Expense;
 import com.myMoneyTracker.model.user.AppUser;
-import com.myMoneyTracker.util.ControllerUtil;
 import com.myMoneyTracker.util.CurrencyUtil;
+import com.myMoneyTracker.util.UserUtil;
 
 /**
  * REST controller for expense entity
@@ -43,14 +42,13 @@ public class ExpenseController {
     private ExpenseDao expenseDao;
     
     @Autowired
-    private AppUserDao appUserDao;
-    
-    @Autowired
     private CategoryDao categoryDao;
     
     @Autowired
     private ExpenseConverter expenseConverter;
-
+    
+    @Autowired
+    private UserUtil userUtil;
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
@@ -58,9 +56,8 @@ public class ExpenseController {
     
         try {
             String categoryName = expense.getCategory().getName();
-            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-            AppUser user = appUserDao.findByUsername(loggedUsername);
-            Category category = categoryDao.findByNameAndUsername(categoryName, loggedUsername);
+            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+            Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
             if (category == null) {
                 category = createAndSaveCategory(categoryName, user);
             }
@@ -79,8 +76,8 @@ public class ExpenseController {
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<ExpenseDTO>> listAllExpenses() {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        List<Expense> expenses = expenseDao.findByUsername(loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Expense> expenses = expenseDao.findByUsername(user.getUsername());
         if (expenses.isEmpty()) {
             return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
         }
@@ -90,8 +87,8 @@ public class ExpenseController {
     @RequestMapping(value = "/find/category/{category_name:.+}", method = RequestMethod.GET)
     public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryName(@PathVariable("category_name") String categoryName) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        List<Expense> expenses = expenseDao.findByCategoryNameAndUsername(categoryName, loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Expense> expenses = expenseDao.findByCategoryNameAndUsername(categoryName, user.getUsername());
         if (expenses.isEmpty()) {
             return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
         }
@@ -101,12 +98,12 @@ public class ExpenseController {
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<ExpenseDTO> findExpense(@PathVariable("id") Long id) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Expense expense = expenseDao.findOne(id);
         if (expense == null) {
             throw new NotFoundException("Expense not found");
         }
-        if (!(loggedUsername.equals(expense.getUser().getUsername()))) {
+        if (!(user.getUsername().equals(expense.getUser().getUsername()))) {
             throw new BadRequestException("Unauthorized access");
         }
         return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(expense), HttpStatus.OK);
@@ -116,18 +113,18 @@ public class ExpenseController {
     @Transactional
     public ResponseEntity<String> updateExpense(@PathVariable("id") Long id, @RequestBody @Valid Expense expense) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Expense oldExpense = expenseDao.findOne(id);
         if (oldExpense == null) {
             throw new NotFoundException("Expense not found");
         }
-        if (!(loggedUsername.equals(expense.getUser().getUsername()))) {
+        if (!(user.getUsername().equals(oldExpense.getUser().getUsername()))) {
             throw new BadRequestException("Unauthorized access");
         }
         Category oldCategory = oldExpense.getCategory();
         String newExpenseCategoryName = expense.getCategory().getName();
         if (!oldCategory.getName().equals(newExpenseCategoryName)) {
-            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, loggedUsername);
+            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, user.getUsername());
             if (category == null) {
                 category = createAndSaveCategory(newExpenseCategoryName, oldExpense.getUser());
             }
@@ -147,12 +144,12 @@ public class ExpenseController {
     public ResponseEntity<String> deleteExpense(@PathVariable("id") Long id) {
     
         try {
-            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
             Expense expenseToBeDeleted = expenseDao.findOne(id);
             if (expenseToBeDeleted == null) {
                 throw new EmptyResultDataAccessException("Expense not found", 1);
             }
-            if (!(loggedUsername.equals(expenseToBeDeleted.getUser().getUsername()))) {
+            if (!(user.getUsername().equals(expenseToBeDeleted.getUser().getUsername()))) {
                 return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
             }
             expenseDao.delete(id);
@@ -167,8 +164,8 @@ public class ExpenseController {
     @Transactional
     public ResponseEntity<String> deleteAll() {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        expenseDao.deleteAllByUsername(loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        expenseDao.deleteAllByUsername(user.getUsername());
         expenseDao.flush();
         return new ResponseEntity<String>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
@@ -177,8 +174,8 @@ public class ExpenseController {
     @Transactional
     public ResponseEntity<String> deleteAllByCategoryName(@PathVariable("category_name") String categoryName) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        expenseDao.deleteAllByCategoryNameAndUsername(categoryName, loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        expenseDao.deleteAllByCategoryNameAndUsername(categoryName, user.getUsername());
         expenseDao.flush();
         return new ResponseEntity<String>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
