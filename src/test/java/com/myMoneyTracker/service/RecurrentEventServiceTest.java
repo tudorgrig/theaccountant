@@ -15,6 +15,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +72,39 @@ public class RecurrentEventServiceTest {
     }
 
     @Test
+    public void shouldAddRecurrentExpenseOnExactDayLastMonth() throws ParseException {
+        Expense expense = createExpenseWithMonthlyFrequency();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        String currentDayString = null;
+        if(currentDay < 10){
+            currentDayString = "0" + currentDay;
+        }else{
+            currentDayString = String.valueOf(currentDay);
+        }
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        int previousMonth = currentMonth - 1;
+        if(previousMonth == 0){
+            previousMonth = 12;
+        }
+        String currentMonthString = null;
+        if(currentMonth < 10){
+            currentMonthString = "0" + previousMonth;
+        }else {
+            currentMonthString = String.valueOf(previousMonth);
+        }
+        String currentYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        Date date = dateFormat.parse(currentDayString + "/" + currentMonthString + "/" + currentYear) ;
+        long time = date.getTime();
+        expense.setCreationDate(new Timestamp(time));
+        expenseDao.save(expense);
+        assertTrue(expense.getId() > 0);
+        recurrentEventService.addRecurrentExpenseEvents();
+        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        assertEquals(2, expenses.size());
+    }
+
+    @Test
     public void shouldAddRecurrentIncomeOnExactDay(){
         Income income = createIncomeWithMonthlyFrequency();
         assertTrue(income.getId() > 0);
@@ -105,21 +141,71 @@ public class RecurrentEventServiceTest {
     }
 
     @Test
-    public void shouldNotAddRecurrentExpenseOnQuarterlyFrequency(){
+    public void shouldNotAddRecurrentExpenseOnQuarterlyFrequency() throws ParseException {
         Expense expense = createExpenseWithQuarterlyFrequency();
-        expense.setStartMonth(expense.getStartMonth() + 1);
         expenseDao.save(expense);
         assertTrue(expense.getId() > 0);
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        String currentDayString = null;
+        if(currentDay < 10){
+            currentDayString = "0" + currentDay;
+        }else{
+            currentDayString = String.valueOf(currentDay);
+        }
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        int previousMonth = currentMonth - 1;
+        if(previousMonth == 0){
+            previousMonth = 12;
+        }
+        String currentMonthString = null;
+        if(currentMonth < 10){
+            currentMonthString = "0" + previousMonth;
+        }else {
+            currentMonthString = String.valueOf(previousMonth);
+        }
+        String currentYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        Date date = dateFormat.parse(currentDayString + "/" + currentMonthString + "/" + currentYear) ;
+        long time = date.getTime();
+        expense.setCreationDate(new Timestamp(time));
+        expenseDao.save(expense);
+
         recurrentEventService.addRecurrentExpenseEvents();
         List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(1, expenses.size());
     }
 
     @Test
-    public void shouldNotAddRecurrentIncomeOn2MonthFrequency(){
+    public void shouldNotAddRecurrentIncomeOn2MonthFrequency() throws ParseException {
         Income income = createIncomeWith2MonthFrequency();
-        income.setStartMonth(income.getStartMonth() + 1);
         assertTrue(income.getId() > 0);
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        String currentDayString = null;
+        if(currentDay < 10){
+            currentDayString = "0" + currentDay;
+        }else{
+            currentDayString = String.valueOf(currentDay);
+        }
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        int previousMonth = currentMonth - 1;
+        if(previousMonth == 0){
+            previousMonth = 12;
+        }
+        String currentMonthString = null;
+        if(currentMonth < 10){
+            currentMonthString = "0" + previousMonth;
+        }else {
+            currentMonthString = String.valueOf(previousMonth);
+        }
+        String currentYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        Date date = dateFormat.parse(currentDayString + "/" + currentMonthString + "/" + currentYear) ;
+        long time = date.getTime();
+        income.setCreationDate(new Timestamp(time));
+        incomeDao.save(income);
+
         recurrentEventService.addRecurrentIncomeEvents();
         List<Income> incomes = incomeDao.findByUsername(income.getUser().getUsername());
         assertEquals(1, incomes.size());
@@ -127,45 +213,35 @@ public class RecurrentEventServiceTest {
 
     private Expense createExpenseWithQuarterlyFrequency(){
         Expense expense = createBasicExpense();
-        expense.setFrequency(String.valueOf(QUARTERLY));
-        expense.setStartDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        expense.setStartMonth(Calendar.getInstance().get(Calendar.MONTH)+1);
+        expense.setFrequency(QUARTERLY);
         expenseDao.save(expense);
         return expense;
     }
 
     private Expense createExpenseWithMonthlyFrequency() {
         Expense expense = createBasicExpense();
-        expense.setFrequency("*");
-        expense.setStartDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        expense.setStartMonth(Calendar.getInstance().get(Calendar.MONTH)+1);
+        expense.setFrequency(1);
         expenseDao.save(expense);
         return expense;
     }
 
     private Expense createExpenseWith2MonthFrequency(){
         Expense expense = createBasicExpense();
-        expense.setFrequency(String.valueOf(TWO_MONTH));
-        expense.setStartDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        expense.setStartMonth(Calendar.getInstance().get(Calendar.MONTH)+1);
+        expense.setFrequency(TWO_MONTH);
         expenseDao.save(expense);
         return expense;
     }
 
     private Income createIncomeWithMonthlyFrequency() {
         Income income = createBasicIncome();
-        income.setFrequency("*");
-        income.setStartDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        income.setStartMonth(Calendar.getInstance().get(Calendar.MONTH)+1);
+        income.setFrequency(1);
         incomeDao.save(income);
         return income;
     }
 
     private Income createIncomeWith2MonthFrequency(){
         Income income = createBasicIncome();
-        income.setFrequency(String.valueOf(TWO_MONTH));
-        income.setStartDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        income.setStartMonth(Calendar.getInstance().get(Calendar.MONTH)+1);
+        income.setFrequency(TWO_MONTH);
         incomeDao.save(income);
         return income;
     }

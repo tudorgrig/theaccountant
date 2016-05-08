@@ -30,13 +30,11 @@ public interface IncomeDao extends JpaRepository<Income, Long> {
     @Query(value = "SELECT inc.* " +
             "FROM income inc " +
             "WHERE " +
-            "inc.frequency IS NOT NULL " +
-            "AND (" +
-            "(inc.frequency = '*' AND inc.start_day = ?1) " +
+            "inc.frequency != 0 " +
+            "AND " +
+            "( (@(?2 - cast(Extract(month from inc.creationDate) as int))%inc.frequency = 0 AND cast(Extract(day from inc.creationDate) as int) = ?1 ) " +
             "OR " +
-            "(inc.frequency != '*' AND (@(?2 - inc.start_month))%cast(inc.frequency as int) = 0 AND inc.start_day = ?1) " +
-            "OR " +
-            "(inc.frequency != '*' AND ?2 = inc.start_month AND inc.start_day = ?1)" +
+            "(?2 = cast(Extract(month from inc.creationDate) as int) AND cast(Extract(day from inc.creationDate) as int) = ?1) " +
             ")", nativeQuery = true)
     List<Income> findRecurrentIncomesToAdd(int startDay, int startMonth);
 

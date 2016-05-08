@@ -36,13 +36,11 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
     @Query(value = "SELECT exp.* " +
             "FROM expense exp " +
             "WHERE " +
-            "exp.frequency IS NOT NULL " +
-            "AND (" +
-                "(exp.frequency = '*' AND exp.start_day = ?1) " +
+            "exp.frequency != 0 " +
+            "AND " +
+                "( (@(?2 - cast(Extract(month from exp.creationDate) as int))%exp.frequency = 0 AND cast(Extract(day from exp.creationDate) as int) = ?1 ) " +
                 "OR " +
-                "(exp.frequency != '*' AND (@(?2 - exp.start_month))%cast(exp.frequency as int) = 0 AND exp.start_day = ?1) " +
-                "OR " +
-                "(exp.frequency != '*' AND ?2 = exp.start_month AND exp.start_day = ?1)" +
+                "(?2 = cast(Extract(month from exp.creationDate) as int) AND cast(Extract(day from exp.creationDate) as int) = ?1) " +
             ")", nativeQuery = true)
     List<Expense> findRecurrentExpensesToAdd(int currentDay, int currentMonth);
 }

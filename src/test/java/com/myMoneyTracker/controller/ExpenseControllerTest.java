@@ -94,9 +94,7 @@ public class ExpenseControllerTest {
     public void shouldCreateRecurrentExpense() {
 
         Expense expense = createExpense(category, applicationUser);
-        expense.setStartDay(14);
-        expense.setStartMonth(01);
-        expense.setFrequency("*");
+        expense.setFrequency(1);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
