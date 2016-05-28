@@ -20,6 +20,8 @@ public class IncomeDTO {
 
     private String currency;
 
+    private String frequency;
+
     public long getId() {
 
         return id;
@@ -76,5 +78,13 @@ public class IncomeDTO {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
     }
 }

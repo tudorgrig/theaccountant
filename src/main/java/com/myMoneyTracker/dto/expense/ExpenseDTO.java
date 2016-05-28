@@ -13,6 +13,7 @@ public class ExpenseDTO {
     private Double amount;
     private Timestamp creationDate;
     private String currency;
+    private String frequency;
     
 
     public long getId() {
@@ -81,5 +82,13 @@ public class ExpenseDTO {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
     }
 }

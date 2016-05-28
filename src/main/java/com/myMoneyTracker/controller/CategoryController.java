@@ -6,6 +6,8 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.dao.ExpenseDao;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -43,6 +45,9 @@ public class CategoryController {
     
     @Autowired
     private UserUtil userUtil;
+
+    @Autowired
+    private ExpenseDao expenseDao;
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
@@ -101,6 +106,12 @@ public class CategoryController {
     public ResponseEntity<String> deleteCategory(@PathVariable("id") Long id) {
     
         try {
+            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+            Category category = categoryDao.findOne(id);
+            if(category == null){
+                throw new NotFoundException("Category not found");
+            }
+            expenseDao.deleteAllByCategoryNameAndUsername(category.getName(),user.getUsername());
             categoryDao.delete(id);
             categoryDao.flush();
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {

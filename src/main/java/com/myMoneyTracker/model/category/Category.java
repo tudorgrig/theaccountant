@@ -40,7 +40,7 @@ public class Category {
     private String colour = "stable";
 
     @Nullable
-    private float threshold;
+    private float threshold = 0;
 
     public long getId() {
 
