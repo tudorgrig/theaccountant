@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
+import com.myMoneyTracker.util.PasswordEncrypt;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ import com.myMoneyTracker.service.SessionService;
 @ContextConfiguration(locations = { "/spring-config.xml" })
 public class AppUserControllerTest {
     
-    private String FIRST_NAME = "Tudor";
+    private String FIRST_NAME = "Floryn";
     private String username = "florin1234";
     
     @Autowired
@@ -59,6 +60,9 @@ public class AppUserControllerTest {
     
     @Autowired
     private AuthenticatedSessionDao authenticatedSessionDao;
+
+    @Autowired
+    private PasswordEncrypt passwordEncrypt;
     
     @Autowired
     private SessionService sessionService;
@@ -86,7 +90,7 @@ public class AppUserControllerTest {
     }
     
     @Test(expected = ConstraintViolationException.class)
-    public void shouldNotCreateAppUser() {
+    public void shouldNotCreateAppUserInvalidEmail() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         appUser.setEmail("wrongFormat");
@@ -105,16 +109,13 @@ public class AppUserControllerTest {
     public void shouldNotCreateDuplicateAppUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
+        appUserDao.save(appUser);
         long id = appUser.getId();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
         appUser = createAppUser(FIRST_NAME);
         try {
             appUserController.createAppUser(appUser);
         } catch(Exception e){
             assertTrue(e instanceof ConflictException);
-            userRegistrationDao.deleteByUserId(id);
             appUserDao.delete(id);
             appUserDao.flush();
         }
@@ -126,13 +127,11 @@ public class AppUserControllerTest {
     public void shouldFindOneUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUserDTO) responseEntity.getBody()).getId();
-        ResponseEntity<?> found = appUserController.findAppUser(id);
+        appUserDao.save(appUser);
+        ResponseEntity<?> found = appUserController.findAppUser(appUser.getId());
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
-        userRegistrationDao.deleteByUserId(id);
-        appUserDao.delete(id);
+        appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
     
@@ -145,16 +144,15 @@ public class AppUserControllerTest {
     public void shouldUpdateUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
-        long id = ((AppUserDTO) responseEntity.getBody()).getId();
+        appUserDao.save(appUser);
         AppUser toUpdateAppUser = createAppUser("Florin");
-        ResponseEntity<?> updated = appUserController.updateAppUser(id, toUpdateAppUser);
+        ResponseEntity<?> updated = appUserController.updateAppUser(appUser.getId(), toUpdateAppUser);
         assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
         assertEquals("User updated", updated.getBody());
-        ResponseEntity<?> updatedUser = appUserController.findAppUser(id);
+        ResponseEntity<?> updatedUser = appUserController.findAppUser(appUser.getId());
         assertEquals("Florin", ((AppUserDTO) updatedUser.getBody()).getFirstName());
-        userRegistrationDao.deleteByUserId(id);
-        appUserDao.delete(id);
+        userRegistrationDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
     
@@ -185,15 +183,14 @@ public class AppUserControllerTest {
     public void shouldLoginWithUsername() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
+        String uncryptedPassword = appUser.getPassword();
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(cryptedPassword);
+        appUser.setActivated(true);
         String username = appUser.getUsername();
-        appUserController.createAppUser(appUser);
-        
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
-        
-        String authorizationString = sessionService.encodeUsernameAndPassword(username, password);
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, uncryptedPassword);
         ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
         userRegistrationDao.deleteByUserId(appUser.getId());
@@ -207,14 +204,13 @@ public class AppUserControllerTest {
         AppUser appUser = createAppUser(FIRST_NAME);
         String username = appUser.getUsername();
         String password = appUser.getPassword();
-        appUserController.createAppUser(appUser);
+        appUserDao.save(appUser);
         
         String authorizationString = sessionService.encodeUsernameAndPassword(username, password);
         try {
             appUserController.login(authorizationString);
         }catch(Exception e){
             assertTrue(e instanceof BadRequestException);
-            userRegistrationDao.deleteByUserId(appUser.getId());
             appUserDao.delete(appUser.getId());
             appUserDao.flush();
         }
@@ -226,17 +222,15 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String email = appUser.getEmail();
-        String password = appUser.getPassword();
-        appUserController.createAppUser(appUser);
+        String uncryptedPassword = appUser.getPassword();
+        String password = passwordEncrypt.encryptPassword(appUser.getPassword());;
+        appUser.setPassword(password);
+        appUser.setActivated(true);
+        appUserDao.save(appUser);
         
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
-        
-        String authorizationString = sessionService.encodeUsernameAndPassword(email, password);
+        String authorizationString = sessionService.encodeUsernameAndPassword(email, uncryptedPassword);
         ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
-        userRegistrationDao.deleteByUserId(appUser.getId());
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
@@ -246,18 +240,13 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String password = appUser.getPassword();
-        appUserController.createAppUser(appUser);
-        
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
+        appUserDao.save(appUser);
         
         String authorizationString = sessionService.encodeUsernameAndPassword("WrongUsername", password);
         try{
             appUserController.login(authorizationString);
         } catch(Exception e){
             assertTrue(e instanceof NotFoundException);
-            userRegistrationDao.deleteByUserId(appUser.getId());
             appUserDao.delete(appUser.getId());
             appUserDao.flush();
         }
@@ -269,18 +258,14 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String username = appUser.getUsername();
-        appUserController.createAppUser(appUser);
-        
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
-        
+        appUser.setActivated(true);
+        appUserDao.save(appUser);
+
         String authorizationString = sessionService.encodeUsernameAndPassword(username, "wrong_pass");
         try{
             appUserController.login(authorizationString);
         }catch(Exception e){
             assertTrue(e instanceof BadRequestException);
-            userRegistrationDao.deleteByUserId(appUser.getId());
             appUserDao.delete(appUser.getId());
             appUserDao.flush();
         }
@@ -292,12 +277,9 @@ public class AppUserControllerTest {
     
         AppUser appUser = createAppUser(FIRST_NAME);
         String username = appUser.getUsername();
-        appUserController.createAppUser(appUser);
-        
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
-        
+        appUser.setActivated(true);
+        appUserDao.save(appUser);
+
         String authorizationString = sessionService.encodeUsernameAndPassword(username, null);
         try{
             appUserController.login(authorizationString);
@@ -314,21 +296,19 @@ public class AppUserControllerTest {
     public void shouldLogoutUser() {
     
         AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
+        String uncryptedPassword = appUser.getPassword();
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         String username = appUser.getUsername();
-        appUserController.createAppUser(appUser);
-        
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
-        assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
-        
-        String authorizationString = sessionService.encodeUsernameAndPassword(username, password);
+        appUser.setActivated(true);
+        appUser.setPassword(cryptedPassword);
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, uncryptedPassword);
         ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
         assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
         
         ResponseEntity<?> logoutResponse = appUserController.logout(authorizationString);
         assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
-        userRegistrationDao.deleteByUserId(appUser.getId());
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }

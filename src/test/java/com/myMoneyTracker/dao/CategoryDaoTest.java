@@ -135,9 +135,9 @@ public class CategoryDaoTest {
         Category category = createCategory(CATEGORY_NAME + categoryCounter++);
         appUserDao.save(category.getUser());
         category = categoryDao.save(category);
-        category.setName("Tudor");
+        category.setName("Floryn");
         Category result = categoryDao.save(category);
-        assertTrue(result.getName().equals("Tudor"));
+        assertTrue(result.getName().equals("Floryn"));
     }
 
     @Test

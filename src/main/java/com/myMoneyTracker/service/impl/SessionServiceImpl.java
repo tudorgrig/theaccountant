@@ -106,6 +106,7 @@ public class SessionServiceImpl implements SessionService {
 
             if (isSessionExpired(authenticatedSession)) {
                 authenticatedSessionDao.delete(authenticatedSession.getId());
+                authenticatedSessionDao.flush();
             }
         });
     }

@@ -196,13 +196,4 @@ public class AppUserController {
         Timestamp expirationTime = sessionService.calculateExpirationTimeStartingFromNow();
         sessionService.addAuthenticatedSession(new AuthenticatedSession(authorizationString, appUser.getUsername(), clientIpAddress, expirationTime));
     }
-    
-    private List<AppUserDTO> getListOfAppUserDTOs(List<AppUser> users) {
-    
-        List<AppUserDTO> appUserDTOs = new ArrayList<AppUserDTO>();
-        for (AppUser appUser : users) {
-            appUserDTOs.add(appUserConverter.convertTo(appUser));
-        }
-        return appUserDTOs;
-    }
 }

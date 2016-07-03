@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.myMoneyTracker.model.user.AppUser;
 
 /**
- * Created by tudor.grigoriu on 17.12.2015.
+ * Created by Floryn on 17.12.2015.
  * Data access object class for app_user
  */
 @Transactional

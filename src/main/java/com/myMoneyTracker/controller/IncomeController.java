@@ -140,9 +140,9 @@ public class IncomeController {
     private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
     
         List<IncomeDTO> incomeDTOs = new ArrayList<IncomeDTO>();
-        for (Income income : incomes) {
+        incomes.parallelStream().forEach(income -> {
             incomeDTOs.add(incomeConverter.convertTo(income));
-        }
+        });
         return incomeDTOs;
     }
 }
