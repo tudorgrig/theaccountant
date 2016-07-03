@@ -164,6 +164,67 @@ public class ExpenseControllerTest {
     }
 
     @Test
+    public void shouldListAllExpenseByCategoryNameAndTimeInterval() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval(category.getName(), "USD",
+                queryStartTime, queryEndTime);
+        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
+        ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
+        assertEquals(expense.getName(), result.getName());
+
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*", "USD",
+                queryStartTime, queryEndTime);
+        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
+        result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
+        assertEquals(expense.getName(), result.getName());
+
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+    @Test
+    public void shouldNotListAllExpenseByCategoryNameAndTimeIntervalForInvalidInterval() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() + 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 2000;
+
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*", "USD",
+                queryStartTime, queryEndTime);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
+                || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
+
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+    @Test
+    public void shouldNotListAllExpenseByCategoryNameAndTimeIntervalForInvalidCategory() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("Another category", "USD",
+                queryStartTime, queryEndTime);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
+                || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
+
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+    @Test
     public void shouldFindById() {
 
         Expense expense = createExpense(category, applicationUser);

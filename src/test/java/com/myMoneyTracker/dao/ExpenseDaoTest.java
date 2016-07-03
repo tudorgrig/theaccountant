@@ -123,15 +123,102 @@ public class ExpenseDaoTest {
         expense = expenseDao.save(expense);
         assertTrue(expense.getUser() != null);
     }
-    
+
+    @Test
+    public void shouldFindByTimeInterval() {
+
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Timestamp queryStartDate = new Timestamp(creationTimeMillis - 1000);
+        Timestamp queryEndDate = new Timestamp(creationTimeMillis + 1000);
+        Expense expense = createExpense(creationDate);
+        expense = expenseDao.save(expense);
+        assertTrue("Problems on creating the Expense", expense.getUser() != null);
+
+        List<Expense> expenses = expenseDao.findByTimeInterval(applicationUser.getUsername(),
+                queryStartDate, queryEndDate);
+        assertTrue("The expense list should have 1 element!", (expenses != null && expenses.size() == 1));
+    }
+
+    @Test
+    public void shouldNotFindByTimeInterval() {
+
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Timestamp queryStartDate = new Timestamp(creationTimeMillis + 1000);
+        Timestamp queryEndDate = new Timestamp(creationTimeMillis + 2000);
+        Expense expense = createExpense(creationDate);
+        expense = expenseDao.save(expense);
+        assertTrue("Problems on creating the Expense", expense.getUser() != null);
+
+        List<Expense> expenses = expenseDao.findByTimeInterval(applicationUser.getUsername(),
+                queryStartDate, queryEndDate);
+        assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
+    }
+
+    @Test
+    public void shouldFindByTimeIntervalAndCategory() {
+
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Timestamp queryStartDate = new Timestamp(creationTimeMillis - 1000);
+        Timestamp queryEndDate = new Timestamp(creationTimeMillis + 1000);
+        Expense expense = createExpense(creationDate);
+        expense = expenseDao.save(expense);
+        assertTrue("Problems on creating the Expense", expense.getUser() != null);
+
+        List<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
+                category.getName(), queryStartDate, queryEndDate);
+        assertTrue("The expense list should have 1 element!", (expenses != null && expenses.size() == 1));
+    }
+
+    @Test
+    public void shouldNotFindByTimeIntervalAndCategoryForInvalidInterval() {
+
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Timestamp queryStartDate = new Timestamp(creationTimeMillis + 1000);
+        Timestamp queryEndDate = new Timestamp(creationTimeMillis + 2000);
+        Expense expense = createExpense(creationDate);
+        expense = expenseDao.save(expense);
+        assertTrue("Problems on creating the Expense", expense.getUser() != null);
+
+        List<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
+                category.getName(), queryStartDate, queryEndDate);
+        assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
+    }
+
+    @Test
+    public void shouldNotFindByTimeIntervalAndCategoryForInvalidCategory() {
+
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Timestamp queryStartDate = new Timestamp(creationTimeMillis - 1000);
+        Timestamp queryEndDate = new Timestamp(creationTimeMillis + 1000);
+        Expense expense = createExpense(creationDate);
+        expense = expenseDao.save(expense);
+        assertTrue("Problems on creating the Expense", expense.getUser() != null);
+
+        List<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
+                "Another category", queryStartDate, queryEndDate);
+        assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
+    }
+
     private Expense createExpense() {
-    
+        return createExpense(new Timestamp(System.currentTimeMillis()));
+    }
+
+    private Expense createExpense(Timestamp creationDate) {
+        return createExpense(creationDate, category);
+    }
+
+    private Expense createExpense(Timestamp creationDate, Category category) {
         Expense expense = new Expense();
         expense.setName("name1");
         expense.setCurrency("USD");
         expense.setDescription("description1");
         expense.setAmount(new Double(222.222));
-        expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
+        expense.setCreationDate(creationDate);
         expense.setUser(applicationUser);
         expense.setCategory(category);
         return expense;

@@ -1,5 +1,6 @@
 package com.myMoneyTracker.controller;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +95,29 @@ public class ExpenseController {
         }
         return new ResponseEntity<List<ExpenseDTO>>(createExpenseDTOs(expenses), HttpStatus.OK);
     }
-    
+
+    @RequestMapping(value = "/find/{category_name:.+}/{currency}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
+    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryNameAndTimeInterval(
+            @PathVariable("category_name") String categoryName,
+            @PathVariable("currency") String currency,
+            @PathVariable("start_time_millis") long startTimeMillis,
+            @PathVariable("end_time_millis") long endTimeMillis) {
+
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Expense> expenses = null;
+        if (categoryName.equals("*")) {
+            expenses = expenseDao.findByTimeInterval(user.getUsername(), new Timestamp(startTimeMillis),
+                    new Timestamp(endTimeMillis));
+        } else {
+            expenses = expenseDao.findByTimeIntervalAndCategory(user.getUsername(), categoryName,
+                    new Timestamp(startTimeMillis), new Timestamp(endTimeMillis));
+        }
+        if (expenses.isEmpty()) {
+            return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<List<ExpenseDTO>>(createExpenseDTOs(expenses), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<ExpenseDTO> findExpense(@PathVariable("id") Long id) {
     
