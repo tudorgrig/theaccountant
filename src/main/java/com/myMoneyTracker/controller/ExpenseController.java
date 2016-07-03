@@ -1,5 +1,6 @@
 package com.myMoneyTracker.controller;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.util.YahooCurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -115,6 +117,7 @@ public class ExpenseController {
         if (expenses.isEmpty()) {
             return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
         }
+        convertExpenseCurrencies(expenses, currency);
         return new ResponseEntity<List<ExpenseDTO>>(createExpenseDTOs(expenses), HttpStatus.OK);
     }
 
@@ -202,7 +205,19 @@ public class ExpenseController {
         expenseDao.flush();
         return new ResponseEntity<String>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
-    
+
+    private void convertExpenseCurrencies(List<Expense> expenses, String currency) {
+        expenses.parallelStream().filter(expense -> !expense.getCurrency().equals(currency)).forEach(expense -> {
+            try {
+                float convertedAmount = YahooCurrencyConverter.convert(expense.getCurrency(), currency, expense.getAmount().floatValue());
+                expense.setAmount(Double.valueOf(Float.toString(convertedAmount)));
+            } catch (IOException e) {
+                   throw new BadRequestException(e);
+            }
+            expense.setCurrency(currency);
+        });
+    }
+
     private Category createAndSaveCategory(String categoryName, AppUser user) {
     
         Category category = new Category();
