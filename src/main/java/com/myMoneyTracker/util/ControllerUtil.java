@@ -26,6 +26,11 @@ public class ControllerUtil {
         return username;
     }
     
+    /**
+     * Get the client ip address that was used for logging into the application.
+     * 
+     * @return
+     */
     public static String getRequestClienIpAddress() {
         
         SessionAuthentication sessionAuthentication = 

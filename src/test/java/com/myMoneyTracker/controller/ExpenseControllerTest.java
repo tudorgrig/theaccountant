@@ -86,6 +86,18 @@ public class ExpenseControllerTest {
         expenseDao.flush();
     }
 
+    @Test
+    public void shouldCreateRecurrentExpense() {
+
+        Expense expense = createExpense(category, applicationUser);
+        expense.setFrequency(1);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
     @Test(expected = BadRequestException.class)
     public void shouldNotCreateExpenseWithBadCurrency() {
 
@@ -219,15 +231,13 @@ public class ExpenseControllerTest {
             expenseDao.delete(expense.getId());
             expenseDao.flush();
         }
-
-
-
     }
 
     @Test(expected = NotFoundException.class)
     public void shouldNotUpdateExpense() {
 
         Expense expense = createExpense(category, applicationUser);
+        @SuppressWarnings("unused")
         ResponseEntity<?> responseEntity = expenseController.updateExpense(111L, expense);
     }
 

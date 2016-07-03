@@ -27,4 +27,15 @@ public interface IncomeDao extends JpaRepository<Income, Long> {
     @Query(value = "DELETE FROM income WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
 
+    @Query(value = "SELECT inc.* " +
+            "FROM income inc " +
+            "WHERE " +
+            "inc.frequency != 0 " +
+            "AND " +
+            "( (@(?2 - cast(Extract(month from inc.creationDate) as int))%inc.frequency = 0 AND cast(Extract(day from inc.creationDate) as int) = ?1 ) " +
+            "OR " +
+            "(?2 = cast(Extract(month from inc.creationDate) as int) AND cast(Extract(day from inc.creationDate) as int) = ?1) " +
+            ")", nativeQuery = true)
+    List<Income> findRecurrentIncomesToAdd(int startDay, int startMonth);
+
 }

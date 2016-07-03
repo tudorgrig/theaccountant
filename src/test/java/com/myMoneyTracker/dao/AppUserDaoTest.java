@@ -39,12 +39,17 @@ public class AppUserDaoTest {
     private UserRegistrationDao userRegistrationDao;
 
     private String FIRST_NAME = "DerbedeiidinBacau";
+    private AppUser appUser = null;
     private static final Logger logger = Logger.getLogger(AppUserDaoTest.class.getName());
+
+    @Before
+    public void initialize() {
+
+        appUser = createAppUser(FIRST_NAME);
+    }
 
     @Test
     public void shouldSaveAppUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         logger.info("The user has id = " + appUser.getId());
         assertTrue(appUser.getId() != 0);
@@ -52,8 +57,6 @@ public class AppUserDaoTest {
 
     @Test(expected = org.springframework.dao.DataIntegrityViolationException.class)
     public void shouldNotSaveWithTheSameEmail() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUserDao.saveAndFlush(appUser);
 
         AppUser appUser1 = createAppUser(FIRST_NAME);
@@ -63,8 +66,6 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldFindAppUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser = appUserDao.findOne(appUser.getId());
         assertTrue(appUser != null);
@@ -72,8 +73,6 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldNotFindAppUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser = appUserDao.findOne(new Random().nextLong());
         assertTrue(appUser == null);
@@ -81,8 +80,6 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldDeleteAppUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUserDao.delete(appUser);
         appUser = appUserDao.findOne(appUser.getId());
@@ -91,8 +88,6 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldUpdateAppUser() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.save(appUser);
         appUser.setSurname("Florin");
         AppUser result = appUserDao.save(appUser);
@@ -101,8 +96,6 @@ public class AppUserDaoTest {
 
     @Test
     public void shouldSaveAndFlush() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser = appUserDao.saveAndFlush(appUser);
         assertTrue(appUser.getId() > 0);
         appUserDao.delete(appUser.getId());
@@ -112,7 +105,6 @@ public class AppUserDaoTest {
     @Test
     public void shouldFindAll() {
         int count = appUserDao.findAll().size();
-        AppUser appUser = createAppUser(FIRST_NAME);
         AppUser appUser2 = createAppUser("Florin");
         appUser2.setUsername("florin");
         appUser2.setEmail("test@test.com");
@@ -124,8 +116,6 @@ public class AppUserDaoTest {
 
     @Test(expected = ConstraintViolationException.class)
     public void shouldFailEmailValidation() {
-
-        AppUser appUser = createAppUser(FIRST_NAME);
         appUser.setEmail("wrongEmailFormat");
         appUserDao.saveAndFlush(appUser);
     }

@@ -19,13 +19,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.myMoneyTracker.converter.IncomeConverter;
-import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
-import com.myMoneyTracker.util.ControllerUtil;
 import com.myMoneyTracker.util.CurrencyUtil;
+import com.myMoneyTracker.util.UserUtil;
 
 /**
  * @author Floryn
@@ -40,7 +39,7 @@ public class IncomeController {
     IncomeDao incomeDao;
     
     @Autowired
-    private AppUserDao appUserDao;
+    private UserUtil userUtil;
     
     @Autowired
     IncomeConverter incomeConverter;
@@ -54,8 +53,7 @@ public class IncomeController {
             if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
                 return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
             }
-            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-            AppUser user = appUserDao.findByUsername(loggedUsername);
+            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
             income.setUser(user);
             Income createdIncome = incomeDao.saveAndFlush(income);
             return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
@@ -68,8 +66,8 @@ public class IncomeController {
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<IncomeDTO>> listAllIncomes() {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        List<Income> incomes = incomeDao.findByUsername(loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Income> incomes = incomeDao.findByUsername(user.getUsername());
         if (incomes.isEmpty()) {
             return new ResponseEntity<List<IncomeDTO>>(HttpStatus.NO_CONTENT);
         }
@@ -79,12 +77,12 @@ public class IncomeController {
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findIncome(@PathVariable("id") Long id) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Income income = incomeDao.findOne(id);
         if (income == null) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
         }
-        if (!(loggedUsername.equals(income.getUser().getUsername()))) {
+        if (!(user.getUsername().equals(income.getUser().getUsername()))) {
             return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(income), HttpStatus.OK);
@@ -93,12 +91,12 @@ public class IncomeController {
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateIncome(@PathVariable("id") Long id, @RequestBody @Valid Income income) {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Income oldIncome = incomeDao.findOne(id);
         if (oldIncome == null) {
             return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
         }
-        if (!(loggedUsername.equals(oldIncome.getUser().getUsername()))) {
+        if (!(user.getUsername().equals(oldIncome.getUser().getUsername()))) {
             return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
         if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
@@ -114,12 +112,12 @@ public class IncomeController {
     public ResponseEntity<String> deleteIncome(@PathVariable("id") Long id) {
     
         try {
-            String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
+            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
             Income incomeToBeDeleted = incomeDao.findOne(id);
             if (incomeToBeDeleted == null) {
                 throw new EmptyResultDataAccessException("Income not found", 1);
             }
-            if (!(loggedUsername.equals(incomeToBeDeleted.getUser().getUsername()))) {
+            if (!(user.getUsername().equals(incomeToBeDeleted.getUser().getUsername()))) {
                 return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
             }
             incomeDao.delete(id);
@@ -133,8 +131,8 @@ public class IncomeController {
     @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteAll() {
     
-        String loggedUsername = ControllerUtil.getCurrentLoggedUsername();
-        incomeDao.deleteAllByUsername(loggedUsername);
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        incomeDao.deleteAllByUsername(user.getUsername());
         incomeDao.flush();
         return new ResponseEntity<String>("Incomes deleted", HttpStatus.NO_CONTENT);
     }

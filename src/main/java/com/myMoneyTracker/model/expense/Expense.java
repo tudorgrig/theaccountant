@@ -48,6 +48,9 @@ public class Expense {
     @NotNull
     private String currency;
 
+    @Column(name = "frequency", nullable = true)
+    private int frequency;
+
     public long getId() {
 
         return id;
@@ -124,5 +127,27 @@ public class Expense {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
+
+    @Override
+    public Expense clone(){
+        Expense expense = new Expense();
+        expense.setCurrency(getCurrency());
+        expense.setName(getName());
+        expense.setAmount(getAmount());
+        expense.setCategory(getCategory());
+        expense.setCreationDate(getCreationDate());
+        expense.setDescription(getDescription());
+        expense.setUser(getUser());
+        expense.setFrequency(0);
+        return expense;
     }
 }

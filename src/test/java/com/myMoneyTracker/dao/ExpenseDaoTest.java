@@ -104,7 +104,7 @@ public class ExpenseDaoTest {
         // because the id for both is null
         expenseDao.save(expense1);
         expenseDao.save(expense2);
-        List<Expense> expenseList = expenseDao.findAll();
+        List<Expense> expenseList = expenseDao.findByUsername(applicationUser.getUsername());
         assertEquals(2, expenseList.size());
     }
     
