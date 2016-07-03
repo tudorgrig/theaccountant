@@ -259,6 +259,32 @@ public class IncomeControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
 
+    @Test
+    public void shouldFindAllIncomesByInterval(){
+        Timestamp fromTimestamp = new Timestamp(System.currentTimeMillis());
+
+        Income income = createIncome();
+        income.setUser(applicationUser);
+        incomeDao.save(income);
+
+        Income incomeRON = createIncome();
+        incomeRON.setUser(applicationUser);
+        incomeRON.setCurrency("RON");
+        incomeDao.save(incomeRON);
+
+        Timestamp untilTimeStamp = new Timestamp(System.currentTimeMillis());
+
+        ResponseEntity responseEntity = incomeController.findByInterval(fromTimestamp, untilTimeStamp, "USD");
+        assertEquals(2, ((List<IncomeDTO>) responseEntity.getBody()).size());
+        IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
+        assertEquals("USD",result.getCurrency());
+        result = ((List<IncomeDTO>) responseEntity.getBody()).get(1);
+        assertEquals("USD",result.getCurrency());
+        incomeDao.delete(income);
+        incomeDao.delete(incomeRON);
+        incomeDao.flush();
+    }
+
     private Income createIncome() {
 
         Income income = new Income();

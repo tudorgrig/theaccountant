@@ -1,5 +1,6 @@
 package com.myMoneyTracker.dao;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -37,5 +38,13 @@ public interface IncomeDao extends JpaRepository<Income, Long> {
             "(?2 = cast(Extract(month from inc.creationDate) as int) AND cast(Extract(day from inc.creationDate) as int) = ?1) " +
             ")", nativeQuery = true)
     List<Income> findRecurrentIncomesToAdd(int startDay, int startMonth);
+
+    @Query(value = "SELECT inc " +
+            "FROM Income inc " +
+            "WHERE " +
+             "inc.creationDate BETWEEN ?1 AND ?2 " +
+            "AND " +
+            "inc.user.username = ?3")
+    List<Income> findIncomesInTimeInterval(Timestamp fromDate, Timestamp untilDate, String username);
 
 }

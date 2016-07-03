@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -120,6 +121,28 @@ public class IncomeDaoTest {
         Income income = createIncome(appUser);
         income = incomeDao.save(income);
         assertTrue(income.getUser() != null);
+    }
+
+    @Test
+    public void shouldFindIncomeInInterval(){
+        Timestamp nowTimeStamp = new Timestamp(System.currentTimeMillis());
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        Timestamp untilTimeStamp = new Timestamp(System.currentTimeMillis());
+        List<Income> incomes = incomeDao.findIncomesInTimeInterval(nowTimeStamp, untilTimeStamp, appUser.getUsername());
+        assertEquals(1, incomes.size());
+        assertEquals(income, incomes.get(0));
+    }
+
+    @Test
+    public void shouldNotFindIncomeInInterval(){
+        Timestamp nowTimeStamp = new Timestamp(System.currentTimeMillis());
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income = incomeDao.save(income);
+        List<Income> incomes = incomeDao.findIncomesInTimeInterval(nowTimeStamp, nowTimeStamp, appUser.getUsername());
+        assertEquals(0, incomes.size());
     }
     
     private Income createIncome(AppUser appUser) {
