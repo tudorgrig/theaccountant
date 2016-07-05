@@ -1,5 +1,7 @@
 package com.myMoneyTracker.controller;
 
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.util.YahooCurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -94,7 +97,30 @@ public class ExpenseController {
         }
         return new ResponseEntity<List<ExpenseDTO>>(createExpenseDTOs(expenses), HttpStatus.OK);
     }
-    
+
+    @RequestMapping(value = "/find/{category_name:.+}/{currency}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
+    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryNameAndTimeInterval(
+            @PathVariable("category_name") String categoryName,
+            @PathVariable("currency") String currency,
+            @PathVariable("start_time_millis") long startTimeMillis,
+            @PathVariable("end_time_millis") long endTimeMillis) {
+
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Expense> expenses = null;
+        if (categoryName.equals("*")) {
+            expenses = expenseDao.findByTimeInterval(user.getUsername(), new Timestamp(startTimeMillis),
+                    new Timestamp(endTimeMillis));
+        } else {
+            expenses = expenseDao.findByTimeIntervalAndCategory(user.getUsername(), categoryName,
+                    new Timestamp(startTimeMillis), new Timestamp(endTimeMillis));
+        }
+        if (expenses.isEmpty()) {
+            return new ResponseEntity<List<ExpenseDTO>>(HttpStatus.NO_CONTENT);
+        }
+        convertExpenseCurrencies(expenses, currency);
+        return new ResponseEntity<List<ExpenseDTO>>(createExpenseDTOs(expenses), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<ExpenseDTO> findExpense(@PathVariable("id") Long id) {
     
@@ -178,7 +204,19 @@ public class ExpenseController {
         expenseDao.flush();
         return new ResponseEntity<String>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
-    
+
+    private void convertExpenseCurrencies(List<Expense> expenses, String currency) {
+        expenses.parallelStream().filter(expense -> !expense.getCurrency().equals(currency)).forEach(expense -> {
+            try {
+                float convertedAmount = YahooCurrencyConverter.convert(expense.getCurrency(), currency, expense.getAmount().floatValue());
+                expense.setAmount(Double.valueOf(Float.toString(convertedAmount)));
+            } catch (IOException e) {
+                   throw new BadRequestException(e);
+            }
+            expense.setCurrency(currency);
+        });
+    }
+
     private Category createAndSaveCategory(String categoryName, AppUser user) {
     
         Category category = new Category();

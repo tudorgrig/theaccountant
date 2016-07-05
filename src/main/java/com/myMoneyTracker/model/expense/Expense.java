@@ -49,7 +49,7 @@ public class Expense {
     private String currency;
 
     @Column(name = "frequency", nullable = true)
-    private int frequency;
+    private Integer frequency;
 
     public long getId() {
 
@@ -129,11 +129,11 @@ public class Expense {
         this.currency = currency;
     }
 
-    public int getFrequency() {
+    public Integer getFrequency() {
         return frequency;
     }
 
-    public void setFrequency(int frequency) {
+    public void setFrequency(Integer frequency) {
         this.frequency = frequency;
     }
 

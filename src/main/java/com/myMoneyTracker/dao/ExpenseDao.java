@@ -1,5 +1,6 @@
 package com.myMoneyTracker.dao;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -43,4 +44,16 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
                 "(?2 = cast(Extract(month from exp.creationDate) as int) AND cast(Extract(day from exp.creationDate) as int) = ?1) " +
             ")", nativeQuery = true)
     List<Expense> findRecurrentExpensesToAdd(int currentDay, int currentMonth);
+
+    @Query("SELECT e FROM Expense e " +
+            "WHERE e.user.username = ?1" +
+            " AND e.creationDate BETWEEN ?2 AND ?3")
+    List<Expense> findByTimeInterval(String username, Timestamp startDate, Timestamp endDate);
+
+    @Query("SELECT e FROM Expense e " +
+            "WHERE e.user.username = ?1 " +
+            " AND e.category.name = ?2" +
+            " AND e.creationDate BETWEEN ?3 AND ?4")
+    List<Expense> findByTimeIntervalAndCategory(String username, String categoryName,
+                                                Timestamp startDate, Timestamp endDate);
 }
