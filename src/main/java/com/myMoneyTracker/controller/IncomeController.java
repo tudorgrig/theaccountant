@@ -1,5 +1,7 @@
 package com.myMoneyTracker.controller;
 
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -8,6 +10,8 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
+import com.myMoneyTracker.util.YahooCurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -136,7 +140,32 @@ public class IncomeController {
         incomeDao.flush();
         return new ResponseEntity<String>("Incomes deleted", HttpStatus.NO_CONTENT);
     }
-    
+
+    @RequestMapping(value ="/findByInterval/{startDate}/{endDate}/{currency}", method = RequestMethod.GET)
+    public ResponseEntity<?> findByInterval(@PathVariable("startDate") long startDate,
+                                            @PathVariable("endDate") long endDate,
+                                            @PathVariable("currency") String currency){
+        if(CurrencyUtil.getCurrency(currency) == null){
+            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+        }
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        List<Income> incomes = incomeDao.findIncomesInTimeInterval(new Timestamp(startDate), new Timestamp(endDate), user.getUsername());
+        convertCurrencies(incomes, currency);
+        return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
+    }
+
+    private void convertCurrencies(List<Income> incomes, String currency) {
+        incomes.parallelStream().filter(income -> !income.getCurrency().equals(currency)).forEach(income -> {
+            try {
+                float convertedAmount = YahooCurrencyConverter.convert(income.getCurrency(), currency, income.getAmount().floatValue());
+                income.setAmount(Double.valueOf(Float.toString(convertedAmount)));
+            } catch (IOException e) {
+                throw new BadRequestException(e);
+            }
+            income.setCurrency(currency);
+        });
+    }
+
     private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
     
         List<IncomeDTO> incomeDTOs = new ArrayList<IncomeDTO>();
