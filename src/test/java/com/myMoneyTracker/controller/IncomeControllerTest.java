@@ -261,7 +261,7 @@ public class IncomeControllerTest {
 
     @Test
     public void shouldFindAllIncomesByInterval(){
-        Timestamp fromTimestamp = new Timestamp(System.currentTimeMillis());
+        long fromTimestamp = System.currentTimeMillis();
 
         Income income = createIncome();
         income.setUser(applicationUser);
@@ -272,7 +272,7 @@ public class IncomeControllerTest {
         incomeRON.setCurrency("RON");
         incomeDao.save(incomeRON);
 
-        Timestamp untilTimeStamp = new Timestamp(System.currentTimeMillis());
+        long untilTimeStamp = System.currentTimeMillis();
 
         ResponseEntity responseEntity = incomeController.findByInterval(fromTimestamp, untilTimeStamp, "USD");
         assertEquals(2, ((List<IncomeDTO>) responseEntity.getBody()).size());

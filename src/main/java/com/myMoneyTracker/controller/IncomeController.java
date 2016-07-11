@@ -142,12 +142,14 @@ public class IncomeController {
     }
 
     @RequestMapping(value ="/findByInterval/{startDate}/{endDate}/{currency}", method = RequestMethod.GET)
-    public ResponseEntity<?> findByInterval(Timestamp startDate, Timestamp endDate, String currency){
+    public ResponseEntity<?> findByInterval(@PathVariable("startDate") long startDate,
+                                            @PathVariable("endDate") long endDate,
+                                            @PathVariable("currency") String currency){
         if(CurrencyUtil.getCurrency(currency) == null){
             return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
         }
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        List<Income> incomes = incomeDao.findIncomesInTimeInterval(startDate, endDate, user.getUsername());
+        List<Income> incomes = incomeDao.findIncomesInTimeInterval(new Timestamp(startDate), new Timestamp(endDate), user.getUsername());
         convertCurrencies(incomes, currency);
         return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
