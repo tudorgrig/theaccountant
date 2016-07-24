@@ -227,7 +227,39 @@ public class AppUserControllerTest {
         appUserDao.flush();
 
     }
-    
+
+    @Test
+    public void shouldNotSetDefaultCurrency() {
+
+        String INVALID_CURRENCY = "INVALID";
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String uncryptedPassword = appUser.getPassword();
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(cryptedPassword);
+        appUser.setActivated(true);
+        String username = appUser.getUsername();
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        boolean exceptionThrown = false;
+        try {
+            appUserController.setDefaultCurrency(new DefaultCurrencyDTO(INVALID_CURRENCY));
+        } catch (Exception e) {
+            exceptionThrown = true;
+            assertTrue("Setting invalid Currency should throw BadRequestException!", e instanceof BadRequestException);
+        }
+
+        assertTrue("Setting invalid Currency should throw Exception!", exceptionThrown == true);
+
+        userRegistrationDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
     @Test
     public void shouldNotLoginNonActivatedUser() {
     

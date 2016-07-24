@@ -179,8 +179,11 @@ public class AppUserController {
             throw new BadRequestException("Default currency should not be null!");
         }
 
-        user.setDefaultCurrency(Currency.getInstance(defaultCurrencyValue));
-
+        try {
+            user.setDefaultCurrency(Currency.getInstance(defaultCurrencyValue));
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid currency!");
+        }
         return new ResponseEntity<DefaultCurrencyDTO>(HttpStatus.OK);
     }
 
