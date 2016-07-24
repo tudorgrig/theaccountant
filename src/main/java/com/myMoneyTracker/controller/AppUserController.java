@@ -2,12 +2,14 @@ package com.myMoneyTracker.controller;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -165,7 +167,36 @@ public class AppUserController {
         appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
     }
-    
+
+
+    @RequestMapping(value = "/default_currency", method = RequestMethod.POST)
+    @Transactional
+    public ResponseEntity<?> setDefaultCurrency(@RequestBody DefaultCurrencyDTO defaultCurrencyDTO) {
+
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        String defaultCurrencyValue = defaultCurrencyDTO.getValue();
+        if (defaultCurrencyValue == null || defaultCurrencyValue.isEmpty()) {
+            throw new BadRequestException("Default currency should not be null!");
+        }
+
+        user.setDefaultCurrency(Currency.getInstance(defaultCurrencyValue));
+
+        return new ResponseEntity<DefaultCurrencyDTO>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/default_currency", method = RequestMethod.GET)
+    public ResponseEntity<?> getDefaultCurrency() {
+
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        String default_currency = null;
+        if (user.getDefaultCurrency() != null) {
+            default_currency = user.getDefaultCurrency().getCurrencyCode();
+        }
+        DefaultCurrencyDTO defaultCurrencyDTO = new DefaultCurrencyDTO(default_currency);
+
+        return new ResponseEntity<DefaultCurrencyDTO>(defaultCurrencyDTO, HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
     @Transactional
     public ResponseEntity<AppUserDTO> registerUser(@PathVariable("code") String code) {
