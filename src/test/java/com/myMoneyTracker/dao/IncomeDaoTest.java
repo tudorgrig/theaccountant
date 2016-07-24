@@ -144,6 +144,15 @@ public class IncomeDaoTest {
         List<Income> incomes = incomeDao.findIncomesInTimeInterval(nowTimeStamp, nowTimeStamp, appUser.getUsername());
         assertEquals(0, incomes.size());
     }
+
+    @Test(expected = javax.validation.ConstraintViolationException.class)
+    public void shouldNotCreateIncomeWithNegativeAmount(){
+        AppUser appUser = createAppUser(EMAIL, USERNAME);
+        Income income = createIncome(appUser);
+        income.setAmount(Double.valueOf(-1));
+        incomeDao.save(income);
+        incomeDao.flush();
+    }
     
     private Income createIncome(AppUser appUser) {
     

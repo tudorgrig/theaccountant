@@ -3,6 +3,7 @@ package com.myMoneyTracker.model.income;
 import java.sql.Timestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.user.AppUser;
@@ -29,6 +30,7 @@ public class Income {
     private String description;
 
     @NotNull
+    @Min(value = 0)
     private Double amount;
 
     @NotNull

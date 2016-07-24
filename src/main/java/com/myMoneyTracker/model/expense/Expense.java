@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.myMoneyTracker.model.category.Category;
@@ -40,6 +41,7 @@ public class Expense {
     private String description;
 
     @Column(nullable = false)
+    @Min(value = 0)
     private Double amount;
 
     @Column(nullable = false)

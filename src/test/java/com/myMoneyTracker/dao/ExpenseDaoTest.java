@@ -204,6 +204,16 @@ public class ExpenseDaoTest {
         assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
     }
 
+    @Test(expected = javax.validation.ConstraintViolationException.class)
+    public void shouldNotCreateExpenseWithNegativeAmount(){
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Expense expense = createExpense(creationDate);
+        expense.setAmount(Double.valueOf(-1));
+        expenseDao.save(expense);
+        expenseDao.flush();
+    }
+
     private Expense createExpense() {
         return createExpense(new Timestamp(System.currentTimeMillis()));
     }
