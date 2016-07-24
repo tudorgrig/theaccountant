@@ -102,7 +102,7 @@ public class SessionServiceImpl implements SessionService {
     @Scheduled(fixedDelay = TWELVE_HOURS_IN_MILLISECONDS)
     public void scheduleAuthenticatedSessionsCleanUp() {
         List<AuthenticatedSession> authenticatedSessions = authenticatedSessionDao.findAll();
-        authenticatedSessions.parallelStream().forEach(authenticatedSession -> {
+        authenticatedSessions.stream().forEach(authenticatedSession -> {
 
             if (isSessionExpired(authenticatedSession)) {
                 authenticatedSessionDao.delete(authenticatedSession.getId());

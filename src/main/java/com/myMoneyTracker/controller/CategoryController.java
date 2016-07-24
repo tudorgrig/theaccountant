@@ -133,7 +133,7 @@ public class CategoryController {
     private List<CategoryDTO> getListOfCategoryDTOs(List<Category> categories) {
     
         List<CategoryDTO> categoryDTOs = new ArrayList<CategoryDTO>();
-        categories.parallelStream().forEach(category -> {
+        categories.stream().forEach(category -> {
             categoryDTOs.add(categoryConverter.convertTo(category));
         });
         return categoryDTOs;

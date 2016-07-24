@@ -155,7 +155,7 @@ public class IncomeController {
     }
 
     private void convertCurrencies(List<Income> incomes, String currency) {
-        incomes.parallelStream().filter(income -> !income.getCurrency().equals(currency)).forEach(income -> {
+        incomes.stream().filter(income -> !income.getCurrency().equals(currency)).forEach(income -> {
             try {
                 float convertedAmount = YahooCurrencyConverter.convert(income.getCurrency(), currency, income.getAmount().floatValue());
                 income.setAmount(Double.valueOf(Float.toString(convertedAmount)));
@@ -169,7 +169,7 @@ public class IncomeController {
     private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
     
         List<IncomeDTO> incomeDTOs = new ArrayList<IncomeDTO>();
-        incomes.parallelStream().forEach(income -> {
+        incomes.stream().forEach(income -> {
             incomeDTOs.add(incomeConverter.convertTo(income));
         });
         return incomeDTOs;

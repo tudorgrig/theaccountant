@@ -104,7 +104,7 @@ public class CategoryControllerTest {
         ResponseEntity responseEntity = categoryController.getAllCategories();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(5, ((List<CategoryDTO>) responseEntity.getBody()).size());
-        categories.parallelStream().forEach(category -> {
+        categories.stream().forEach(category -> {
             categoryDao.delete(category.getId());
         });
         categoryDao.flush();

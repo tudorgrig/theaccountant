@@ -28,7 +28,7 @@ public class RecurrentEventService {
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         int month = Calendar.getInstance().get(Calendar.MONTH) + 1; //January is 0
         List<Income> recurrentIncomeEventList = incomeDao.findRecurrentIncomesToAdd(day, month);
-        recurrentIncomeEventList.parallelStream().forEach(income -> {
+        recurrentIncomeEventList.stream().forEach(income -> {
             Income clone = income.clone();
             clone.setCreationDate(new Timestamp(new Date().getTime()));
             incomeDao.saveAndFlush(clone);
@@ -40,7 +40,7 @@ public class RecurrentEventService {
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         int month = Calendar.getInstance().get(Calendar.MONTH) + 1; //January is 0
         List<Expense> recurrentExpensesToAdd = expenseDao.findRecurrentExpensesToAdd(day, month);
-        recurrentExpensesToAdd.parallelStream().forEach(expense -> {
+        recurrentExpensesToAdd.stream().forEach(expense -> {
             Expense clone = expense.clone();
             clone.setCreationDate(new Timestamp(new Date().getTime()));
             expenseDao.saveAndFlush(clone);

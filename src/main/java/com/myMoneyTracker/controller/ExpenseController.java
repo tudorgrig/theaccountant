@@ -206,7 +206,7 @@ public class ExpenseController {
     }
 
     private void convertExpenseCurrencies(List<Expense> expenses, String currency) {
-        expenses.parallelStream().filter(expense -> !expense.getCurrency().equals(currency)).forEach(expense -> {
+        expenses.stream().filter(expense -> !expense.getCurrency().equals(currency)).forEach(expense -> {
             try {
                 float convertedAmount = YahooCurrencyConverter.convert(expense.getCurrency(), currency, expense.getAmount().floatValue());
                 expense.setAmount(Double.valueOf(Float.toString(convertedAmount)));
@@ -229,7 +229,7 @@ public class ExpenseController {
     private List<ExpenseDTO> createExpenseDTOs(List<Expense> expenses) {
     
         List<ExpenseDTO> expenseDTOs = new ArrayList<ExpenseDTO>();
-        expenses.parallelStream().forEach(expense -> {
+        expenses.stream().forEach(expense -> {
             expenseDTOs.add(expenseConverter.convertTo(expense));
         });
         return expenseDTOs;
