@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
+import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.junit.After;
 import org.junit.Before;
@@ -178,10 +179,10 @@ public class AppUserControllerTest {
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
-    
+
     @Test
     public void shouldLoginWithUsername() {
-    
+
         AppUser appUser = createAppUser(FIRST_NAME);
         String uncryptedPassword = appUser.getPassword();
         String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
@@ -197,7 +198,68 @@ public class AppUserControllerTest {
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
-    
+
+    @Test
+    public void shouldSetAndGetDefaultCurrency() {
+
+        String USD_CURRENCY = "USD";
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String uncryptedPassword = appUser.getPassword();
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(cryptedPassword);
+        appUser.setActivated(true);
+        String username = appUser.getUsername();
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        appUserController.setDefaultCurrency(new DefaultCurrencyDTO(USD_CURRENCY));
+
+        ResponseEntity<?> response = appUserController.getDefaultCurrency();
+        DefaultCurrencyDTO responseDTO = (DefaultCurrencyDTO) response.getBody();
+        assertTrue("The Value Of the returned DefaultCurrency is invalid!", responseDTO.getValue().equals(USD_CURRENCY));
+
+        userRegistrationDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+
+    }
+
+    @Test
+    public void shouldNotSetDefaultCurrency() {
+
+        String INVALID_CURRENCY = "INVALID";
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String uncryptedPassword = appUser.getPassword();
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setPassword(cryptedPassword);
+        appUser.setActivated(true);
+        String username = appUser.getUsername();
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        boolean exceptionThrown = false;
+        try {
+            appUserController.setDefaultCurrency(new DefaultCurrencyDTO(INVALID_CURRENCY));
+        } catch (Exception e) {
+            exceptionThrown = true;
+            assertTrue("Setting invalid Currency should throw BadRequestException!", e instanceof BadRequestException);
+        }
+
+        assertTrue("Setting invalid Currency should throw Exception!", exceptionThrown == true);
+
+        userRegistrationDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
     @Test
     public void shouldNotLoginNonActivatedUser() {
     
