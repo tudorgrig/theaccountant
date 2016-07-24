@@ -2,6 +2,7 @@ package com.myMoneyTracker.converter;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Currency;
 import java.util.Date;
 
 import org.junit.Test;
@@ -33,6 +34,7 @@ public class AppUserConverterTest {
         assertEquals(appUser.getSurname(), appUserDTO.getSurname());
         assertEquals(appUser.getFirstName(), appUserDTO.getFirstName());
         assertEquals(appUser.getUsername(), appUserDTO.getUsername());
+        assertEquals(appUser.getDefaultCurrency().getCurrencyCode(), appUserDTO.getDefaultCurrency());
     }
 
     @Test
@@ -65,6 +67,7 @@ public class AppUserConverterTest {
         appUser.setUsername("florynyacob");
         appUser.setBirthdate(new Date());
         appUser.setEmail("my-money-tracker@gmail.com");
+        appUser.setDefaultCurrency(Currency.getInstance("RON"));
         return appUser;
     }
 }

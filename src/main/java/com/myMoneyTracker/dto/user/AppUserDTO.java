@@ -10,6 +10,7 @@ public class AppUserDTO {
     private String firstName;
     private String surname;
     private String username;
+    private String defaultCurrency;
 
     public long getId() {
 
@@ -49,5 +50,13 @@ public class AppUserDTO {
     public void setUsername(String username) {
 
         this.username = username;
+    }
+
+    public String getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
+    public void setDefaultCurrency(String defaultCurrency) {
+        this.defaultCurrency = defaultCurrency;
     }
 }
