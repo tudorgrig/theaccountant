@@ -1,14 +1,19 @@
 package com.myMoneyTracker.service.impl;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
 import com.myMoneyTracker.dao.ExpenseDao;
 import com.myMoneyTracker.dao.IncomeDao;
 import com.myMoneyTracker.model.expense.Expense;
 import com.myMoneyTracker.model.income.Income;
+import com.myMoneyTracker.util.CurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +36,9 @@ public class RecurrentEventService {
         recurrentIncomeEventList.stream().forEach(income -> {
             Income clone = income.clone();
             clone.setCreationDate(new Timestamp(new Date().getTime()));
+            if(!clone.getCurrency().equals(clone.getUser().getDefaultCurrency().getCurrencyCode())){
+                setDefaultCurrencyAmount(clone, clone.getUser().getDefaultCurrency());
+            }
             incomeDao.saveAndFlush(clone);
         });
     }
@@ -43,7 +51,42 @@ public class RecurrentEventService {
         recurrentExpensesToAdd.stream().forEach(expense -> {
             Expense clone = expense.clone();
             clone.setCreationDate(new Timestamp(new Date().getTime()));
+            if(!clone.getCurrency().equals(clone.getUser().getDefaultCurrency().getCurrencyCode())){
+                setDefaultCurrencyAmount(clone, clone.getUser().getDefaultCurrency());
+            }
             expenseDao.saveAndFlush(clone);
         });
+    }
+
+    private void setDefaultCurrencyAmount(Expense expense, Currency defaultCurrency){
+        String expenseCurrency = expense.getCurrency();
+        Double amount = expense.getAmount();
+        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(expense.getCreationDate().getTime());
+        Double exchangeRateOnDay = null;
+        try {
+            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(expenseCurrency, defaultCurrency, formatDate);
+            if(exchangeRateOnDay != null) {
+                expense.setDefaultCurrency(defaultCurrency.getCurrencyCode());
+                expense.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
+            }
+        } catch (IOException e) {
+            throw new BadRequestException(e);
+        }
+    }
+
+    private void setDefaultCurrencyAmount(Income income, Currency defaultCurrency){
+        String incomeCurrency = income.getCurrency();
+        Double amount = income.getAmount();
+        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(income.getCreationDate().getTime());
+        Double exchangeRateOnDay = null;
+        try {
+            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(incomeCurrency, defaultCurrency, formatDate);
+            if(exchangeRateOnDay != null) {
+                income.setDefaultCurrency(defaultCurrency.getCurrencyCode());
+                income.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
+            }
+        } catch (IOException e) {
+            throw new BadRequestException(e);
+        }
     }
 }

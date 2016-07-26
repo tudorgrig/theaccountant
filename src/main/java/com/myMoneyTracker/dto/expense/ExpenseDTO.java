@@ -14,6 +14,8 @@ public class ExpenseDTO {
     private Timestamp creationDate;
     private String currency;
     private String frequency;
+    private String defaultCurrency;
+    private Double defaultCurrencyAmount;
     
 
     public long getId() {
@@ -90,5 +92,21 @@ public class ExpenseDTO {
 
     public void setFrequency(String frequency) {
         this.frequency = frequency;
+    }
+
+    public String getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
+    public void setDefaultCurrency(String defaultCurrency) {
+        this.defaultCurrency = defaultCurrency;
+    }
+
+    public Double getDefaultCurrencyAmount() {
+        return defaultCurrencyAmount;
+    }
+
+    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
+        this.defaultCurrencyAmount = defaultCurrencyAmount;
     }
 }

@@ -1,9 +1,7 @@
 package com.myMoneyTracker.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.sql.Timestamp;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -25,6 +23,8 @@ import com.myMoneyTracker.dto.income.IncomeDTO;
 import com.myMoneyTracker.model.income.Income;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.util.ControllerUtil;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Floryn
@@ -267,12 +267,16 @@ public class IncomeControllerTest {
 
         long untilTimeStamp = System.currentTimeMillis();
 
-        ResponseEntity responseEntity = incomeController.findByInterval(fromTimestamp, untilTimeStamp, "USD");
+        ResponseEntity responseEntity = incomeController.findByInterval(fromTimestamp, untilTimeStamp);
         assertEquals(2, ((List<IncomeDTO>) responseEntity.getBody()).size());
         IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
         assertEquals("USD",result.getCurrency());
+        assertNotNull(result.getDefaultCurrency());
+        assertNotNull(result.getDefaultCurrencyAmount());
         result = ((List<IncomeDTO>) responseEntity.getBody()).get(1);
-        assertEquals("USD",result.getCurrency());
+        assertEquals("RON",result.getCurrency());
+        assertNull(result.getDefaultCurrency());
+        assertNull(result.getDefaultCurrencyAmount());
         incomeDao.delete(income);
         incomeDao.delete(incomeRON);
         incomeDao.flush();
@@ -309,6 +313,7 @@ public class IncomeControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance("RON"));
         appUser = appUserDao.saveAndFlush(appUser);
         return appUser;
     }
