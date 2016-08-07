@@ -32,6 +32,9 @@ public class UserUtil {
     
     @Autowired
     private EmailValidator emailValidator;
+
+    @Autowired
+    private CategoryDao categoryDao;
     
     /**
      * Method that will generate and send a registration code to the specified user email.
@@ -72,5 +75,14 @@ public class UserUtil {
             throw new UnauthorizedException("Unauthorized attempt!");
         }
         return appUser;
+    }
+
+
+    public void generateDefaultCategoriesForUser(AppUser appUser){
+        CategoryUtil.DEFAULT_CATEGORIES.forEach(category -> {
+            category.setUser(appUser);
+            categoryDao.save(category);
+        });
+        categoryDao.flush();
     }
 }

@@ -42,6 +42,14 @@ public class Category {
     @Nullable
     private float threshold = 0;
 
+
+    public Category(){}
+
+    public Category(String name, String colour){
+        this.name = name;
+        this.colour = colour;
+    }
+
     public long getId() {
 
         return id;

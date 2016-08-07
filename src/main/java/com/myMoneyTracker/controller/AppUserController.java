@@ -76,6 +76,7 @@ public class AppUserController {
         appUser.setActivated(false);
         try {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
+            userUtil.generateDefaultCategoriesForUser(createdAppUser);
             userUtil.generateAccountRegistration(createdAppUser);
             return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(createdAppUser), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {

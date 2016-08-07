@@ -1,16 +1,14 @@
 package com.myMoneyTracker.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
+import com.myMoneyTracker.dao.*;
 import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
+import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.junit.After;
 import org.junit.Before;
@@ -27,14 +25,12 @@ import com.myMoneyTracker.app.authentication.SessionAuthentication;
 import com.myMoneyTracker.controller.exception.BadRequestException;
 import com.myMoneyTracker.controller.exception.ConflictException;
 import com.myMoneyTracker.controller.exception.NotFoundException;
-import com.myMoneyTracker.dao.AppUserDao;
-import com.myMoneyTracker.dao.AuthenticatedSessionDao;
-import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.dto.user.AppUserDTO;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.model.user.UserRegistration;
 import com.myMoneyTracker.service.SessionService;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Floryn
@@ -67,6 +63,9 @@ public class AppUserControllerTest {
     
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private CategoryDao categoryDao;
     
     @Before
     public void deleteAllUsers() {
@@ -86,6 +85,23 @@ public class AppUserControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         userRegistrationDao.deleteByUserId(((AppUserDTO) responseEntity.getBody()).getId());
         assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
+        categoryDao.deleteAllByUsername(appUser.getUsername());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldCreateDefaultCategoriesOnRegister() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        ResponseEntity<?> responseEntity = appUserController.createAppUser(appUser);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        userRegistrationDao.deleteByUserId(((AppUserDTO) responseEntity.getBody()).getId());
+        assertTrue(((AppUserDTO) responseEntity.getBody()).getId() > 0);
+
+        List<Category> defaultCategories = categoryDao.findByUsername (appUser.getUsername());
+        assertNotNull(defaultCategories);
+        categoryDao.deleteAllByUsername(appUser.getUsername());
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
@@ -176,6 +192,7 @@ public class AppUserControllerTest {
         appUser = appUserDao.findOne(appUser.getId());
         assertTrue("User should be activated!", appUser.isActivated());
         userRegistrationDao.deleteByUserId(appUser.getId());
+        categoryDao.deleteAllByUsername(appUser.getUsername());
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
