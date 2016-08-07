@@ -19,10 +19,12 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -72,6 +74,17 @@ public class RecurrentEventServiceTest {
     }
 
     @Test
+    public void shouldAddRecurrentExpenseOnExactDayAndConvertCurrency(){
+        Expense expense = createExpenseWithMonthlyFrequency();
+        expense.setCurrency("RON");
+        expenseDao.save(expense);
+        assertTrue(expense.getId() > 0);
+        recurrentEventService.addRecurrentExpenseEvents();
+        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        assertEquals(2, expenses.size());
+    }
+
+    @Test
     public void shouldAddRecurrentExpenseOnExactDayLastMonth() throws ParseException {
         Expense expense = createExpenseWithMonthlyFrequency();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -111,6 +124,18 @@ public class RecurrentEventServiceTest {
         recurrentEventService.addRecurrentIncomeEvents();
         List<Income> incomes = incomeDao.findByUsername(income.getUser().getUsername());
         assertEquals(2, incomes.size());
+    }
+
+    @Test
+    public void shouldAddRecurrentIncomeOnExactDayAndConvertCurrency(){
+        Income income = createIncomeWithMonthlyFrequency();
+        income.setCurrency("RON");
+        assertTrue(income.getId() > 0);
+        recurrentEventService.addRecurrentIncomeEvents();
+        List<Income> incomes = incomeDao.findByUsername(income.getUser().getUsername());
+        assertEquals(2, incomes.size());
+        assertNotNull(incomes.get(1).getDefaultCurrency());
+        assertNotNull(incomes.get(1).getDefaultCurrencyAmount());
     }
 
     @Test
@@ -278,6 +303,7 @@ public class RecurrentEventServiceTest {
         appUser.setUsername(username);
         appUser.setBirthdate(new Date());
         appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance("USD"));
         appUserDao.save(appUser);
         return appUser;
     }

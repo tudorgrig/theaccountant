@@ -1,9 +1,11 @@
 package com.myMoneyTracker.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -28,6 +30,8 @@ import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.expense.Expense;
 import com.myMoneyTracker.model.user.AppUser;
 import com.myMoneyTracker.util.ControllerUtil;
+
+import javax.transaction.Transactional;
 
 /**
  * Test class for the expense controller
@@ -82,6 +86,20 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+    @Test
+    public void shouldCreateExpenseWithDefaultCurrencyAndAmount() {
+
+        Expense expense = createExpense(category, applicationUser);
+        expense.setCurrency("EUR");
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrency());
+        assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrencyAmount());
         expenseDao.delete(expense.getId());
         expenseDao.flush();
     }
@@ -168,13 +186,13 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval(category.getName(), "USD",
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval(category.getName(),
                 queryStartTime, queryEndTime);
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*", "USD",
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
                 queryStartTime, queryEndTime);
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
@@ -185,6 +203,46 @@ public class ExpenseControllerTest {
     }
 
     @Test
+    public void shouldListAllExpenseForAllCategoriesAndTimeInterval() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+                queryStartTime, queryEndTime);
+        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
+        ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
+        assertEquals(expense.getName(), result.getName());
+
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+    @Test
+    public void shouldListAllExpensesForAllCategAndTimeAndSetDefCurrAmount() {
+
+        Expense expense = createExpense(category, applicationUser);
+        expense.setCurrency("EUR");
+        expense = expenseDao.save(expense);
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        ResponseEntity responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+                queryStartTime, queryEndTime);
+        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
+        ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
+        assertEquals(expense.getName(), result.getName());
+        assertEquals(applicationUser.getDefaultCurrency().getCurrencyCode(), result.getDefaultCurrency());
+
+        expenseDao.delete(expense.getId());
+        expenseDao.flush();
+    }
+
+
+    @Test
     public void shouldNotListAllExpenseByCategoryNameAndTimeIntervalForInvalidInterval() {
 
         Expense expense = createExpense(category, applicationUser);
@@ -193,7 +251,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() + 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 2000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*", "USD",
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
@@ -211,7 +269,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("Another category", "USD",
+        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("Another category",
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
@@ -242,6 +300,7 @@ public class ExpenseControllerTest {
 
     @Test
     @SuppressWarnings("unchecked")
+
     public void shouldUpdateExpense() {
 
         Expense expense = createExpense(category, applicationUser);
@@ -269,6 +328,39 @@ public class ExpenseControllerTest {
         categoryDao.delete(found.get(0).getCategory().getId());
         categoryDao.flush();
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @Transactional
+    public void shouldUpdateExpenseAndSetDefaultCurrencyAmount() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long id = expense.getId();
+        Expense toUpdate = createExpense(category, applicationUser);
+        toUpdate.setName("updated_expense");
+        toUpdate.setCurrency("EUR");
+        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
+        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        Category category = new Category();
+        category.setName("another_category");
+        toUpdate.setCategory(category);
+        responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
+        assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+
+        responseEntity = expenseController.listAllExpenses();
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
+        assertEquals("updated_expense", found.get(0).getName());
+
+        expenseDao.delete(id);
+        expenseDao.flush();
+        categoryDao.delete(found.get(0).getCategory().getId());
+        categoryDao.flush();
+    }
+
 
     @Test
     public void shouldNotUpdateExpenseWithWrongCurrency() {
@@ -354,9 +446,9 @@ public class ExpenseControllerTest {
         expense.setName("name1");
         expense.setCategory(category);
         expense.setUser(user);
-        expense.setCurrency("USD");
+        expense.setCurrency("RON");
         expense.setDescription("description1");
-        expense.setAmount(new Double(222.222));
+        expense.setAmount(new Double(10));
         expense.setCreationDate(new Timestamp(System.currentTimeMillis()));
         return expense;
     }
@@ -379,6 +471,7 @@ public class ExpenseControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance("RON"));
         appUser = appUserDao.saveAndFlush(appUser);
         return appUser;
     }

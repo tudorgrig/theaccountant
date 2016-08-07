@@ -2,7 +2,9 @@ package com.myMoneyTracker.controller;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,7 +13,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 import com.myMoneyTracker.controller.exception.BadRequestException;
-import com.myMoneyTracker.util.YahooCurrencyConverter;
+import com.myMoneyTracker.util.CurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -47,7 +49,8 @@ public class IncomeController {
     
     @Autowired
     IncomeConverter incomeConverter;
-    
+
+    private static final long ONE_DAY = 24 * 60 * 60 * 1000;
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -59,6 +62,9 @@ public class IncomeController {
             }
             AppUser user = userUtil.extractLoggedAppUserFromDatabase();
             income.setUser(user);
+            if(!user.getDefaultCurrency().getCurrencyCode().equals(income.getCurrency())){
+                setDefaultCurrencyAmount(income, user.getDefaultCurrency());
+            }
             Income createdIncome = incomeDao.saveAndFlush(income);
             return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
@@ -66,16 +72,16 @@ public class IncomeController {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<IncomeDTO>> listAllIncomes() {
     
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         List<Income> incomes = incomeDao.findByUsername(user.getUsername());
         if (incomes.isEmpty()) {
-            return new ResponseEntity<List<IncomeDTO>>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
+        return new ResponseEntity<>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
@@ -84,12 +90,12 @@ public class IncomeController {
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Income income = incomeDao.findOne(id);
         if (income == null) {
-            return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Income not found", HttpStatus.NOT_FOUND);
         }
         if (!(user.getUsername().equals(income.getUser().getUsername()))) {
-            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(income), HttpStatus.OK);
+        return new ResponseEntity<>(incomeConverter.convertTo(income), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
@@ -98,20 +104,23 @@ public class IncomeController {
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Income oldIncome = incomeDao.findOne(id);
         if (oldIncome == null) {
-            return new ResponseEntity<String>("Income not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Income not found", HttpStatus.NOT_FOUND);
         }
         if (!(user.getUsername().equals(oldIncome.getUser().getUsername()))) {
-            return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Unauthorized request", HttpStatus.BAD_REQUEST);
         }
         if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
-            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Wrong currency code!", HttpStatus.BAD_REQUEST);
         }
         income.setId(id);
         income.setUser(oldIncome.getUser());
+        if(shouldUpdateDefaultCurrencyAmount(income, user, oldIncome)){
+            setDefaultCurrencyAmount(income,user.getDefaultCurrency());
+        }
         incomeDao.saveAndFlush(income);
-        return new ResponseEntity<String>("Income updated", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Income updated", HttpStatus.NO_CONTENT);
     }
-    
+
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteIncome(@PathVariable("id") Long id) {
     
@@ -138,32 +147,19 @@ public class IncomeController {
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         incomeDao.deleteAllByUsername(user.getUsername());
         incomeDao.flush();
-        return new ResponseEntity<String>("Incomes deleted", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Incomes deleted", HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value ="/findByInterval/{startDate}/{endDate}/{currency}", method = RequestMethod.GET)
+    @RequestMapping(value ="/findByInterval/{startDate}/{endDate}", method = RequestMethod.GET)
     public ResponseEntity<?> findByInterval(@PathVariable("startDate") long startDate,
-                                            @PathVariable("endDate") long endDate,
-                                            @PathVariable("currency") String currency){
-        if(CurrencyUtil.getCurrency(currency) == null){
-            return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
-        }
+                                            @PathVariable("endDate") long endDate){
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         List<Income> incomes = incomeDao.findIncomesInTimeInterval(new Timestamp(startDate), new Timestamp(endDate), user.getUsername());
-        convertCurrencies(incomes, currency);
-        return new ResponseEntity<List<IncomeDTO>>(createIncomeDTOs(incomes), HttpStatus.OK);
-    }
-
-    private void convertCurrencies(List<Income> incomes, String currency) {
-        incomes.stream().filter(income -> !income.getCurrency().equals(currency)).forEach(income -> {
-            try {
-                float convertedAmount = YahooCurrencyConverter.convert(income.getCurrency(), currency, income.getAmount().floatValue());
-                income.setAmount(Double.valueOf(Float.toString(convertedAmount)));
-            } catch (IOException e) {
-                throw new BadRequestException(e);
-            }
-            income.setCurrency(currency);
-        });
+        if (incomes.isEmpty()) {
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }
+        convertIncomesToDefaultCurrency(incomes, user);
+        return new ResponseEntity<>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
 
     private List<IncomeDTO> createIncomeDTOs(List<Income> incomes) {
@@ -173,5 +169,60 @@ public class IncomeController {
             incomeDTOs.add(incomeConverter.convertTo(income));
         });
         return incomeDTOs;
+    }
+
+
+    private void setDefaultCurrencyAmount(Income income, Currency defaultCurrency){
+        String incomeCurrency = income.getCurrency();
+        Double amount = income.getAmount();
+        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(income.getCreationDate().getTime());
+        Double exchangeRateOnDay = null;
+        try {
+            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(incomeCurrency, defaultCurrency, formatDate);
+            if(exchangeRateOnDay != null) {
+                income.setDefaultCurrency(defaultCurrency.getCurrencyCode());
+                income.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
+            }
+        } catch (IOException e) {
+            throw new BadRequestException(e);
+        }
+    }
+
+
+    private boolean shouldUpdateDefaultCurrencyAmount(Income income, AppUser user, Income oldIncome) {
+        boolean creationDateChanged = !income.getCreationDate().equals(oldIncome.getCreationDate())
+                && (income.getCreationDate().getTime() - oldIncome.getCreationDate().getTime() >= ONE_DAY
+                ||
+                oldIncome.getCreationDate().getTime() - income.getCreationDate().getTime() >= ONE_DAY);
+
+        boolean currencyChanged = !income.getCurrency().equals(oldIncome.getCurrency());
+        boolean amountChanged = !income.getAmount().equals(oldIncome.getAmount());
+        if(creationDateChanged || currencyChanged || amountChanged){
+            //if any of those fields changed, check if the user updated the income with his own default currency.
+            //if yes, no conversion is needed, if not conversion is needed between the income currency
+            // and the users default currency
+            boolean hasDiffCurrencyThanDefault = !income.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
+            if(!hasDiffCurrencyThanDefault){
+                income.setDefaultCurrency(null);
+                income.setDefaultCurrencyAmount(null);
+            }
+            return hasDiffCurrencyThanDefault;
+        }
+        return false;
+    }
+
+    private void convertIncomesToDefaultCurrency(List<Income> incomes, AppUser user) {
+        incomes.stream().filter(income -> shouldUpdateDefaultCurrencyAmount(income, user)).forEach(income -> {
+            setDefaultCurrencyAmount(income, user.getDefaultCurrency());
+            incomeDao.saveAndFlush(income);
+        });
+    }
+
+    private boolean shouldUpdateDefaultCurrencyAmount(Income income, AppUser user) {
+        boolean incomeWasOnOldDefaultCurrency = income.getDefaultCurrency() == null &&
+                !income.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
+        boolean userChangedDefaultCurrency = income.getDefaultCurrency() != null &&
+                !income.getDefaultCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
+        return incomeWasOnOldDefaultCurrency || userChangedDefaultCurrency;
     }
 }

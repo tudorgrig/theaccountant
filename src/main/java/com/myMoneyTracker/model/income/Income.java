@@ -39,6 +39,9 @@ public class Income {
     @NotNull
     private String currency;
 
+    private String defaultCurrency;
+    private Double defaultCurrencyAmount;
+
     @Column(name = "frequency", nullable = true)
     private Integer frequency;
 
@@ -117,6 +120,22 @@ public class Income {
 
     public void setFrequency(Integer frequency) {
         this.frequency = frequency;
+    }
+
+    public String getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
+    public void setDefaultCurrency(String defaultCurrency) {
+        this.defaultCurrency = defaultCurrency;
+    }
+
+    public Double getDefaultCurrencyAmount() {
+        return defaultCurrencyAmount;
+    }
+
+    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
+        this.defaultCurrencyAmount = defaultCurrencyAmount;
     }
 
     @Override
