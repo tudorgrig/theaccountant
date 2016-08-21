@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
+import com.myMoneyTracker.dto.user.ChangePasswordDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -155,7 +156,32 @@ public class AppUserController {
             throw new BadRequestException("Incorrect password");
         }
     }
-    
+
+
+    @RequestMapping(value = "/change_password", method = RequestMethod.POST)
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePassDTO) {
+
+        String op = changePassDTO.getOp();
+        String np = changePassDTO.getNp();
+        if (op == null || op.isEmpty() || np == null || np.isEmpty()) {
+            throw new BadRequestException("Invalid request!");
+        } else if (np.length() < 8) {
+            throw new BadRequestException("Password must have at least 8 characters!");
+        }
+        String oldPassEncrypted = passwordEncrypt.encryptPassword(op);
+
+        AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
+        if (!loggedUser.getPassword().equals(oldPassEncrypted)) {
+            throw new BadRequestException("Invalid parameters!");
+        }
+
+        String newPassEncrypted = passwordEncrypt.encryptPassword(np);
+        loggedUser.setPassword(newPassEncrypted);
+        appUserDao.saveAndFlush(loggedUser);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     @Transactional
     public ResponseEntity<String> updateAppUser(@PathVariable("id") Long id, @RequestBody @Valid AppUser appUser) {

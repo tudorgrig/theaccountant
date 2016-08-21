@@ -8,6 +8,7 @@ import javax.validation.ConstraintViolationException;
 
 import com.myMoneyTracker.dao.*;
 import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
+import com.myMoneyTracker.dto.user.ChangePasswordDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.junit.After;
@@ -313,7 +314,136 @@ public class AppUserControllerTest {
         appUserDao.delete(appUser.getId());
         appUserDao.flush();
     }
-    
+
+    @Test
+    public void shouldChangePassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String email = appUser.getEmail();
+        String uncryptedPassword = appUser.getPassword();
+        String password = passwordEncrypt.encryptPassword(appUser.getPassword());;
+        appUser.setPassword(password);
+        appUser.setActivated(true);
+        appUser = appUserDao.saveAndFlush(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(email, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        String newPassword = "Florin1234";
+        ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
+        changePasswordDTO.setNp(newPassword);
+        changePasswordDTO.setOp(uncryptedPassword);
+        appUserController.changePassword(changePasswordDTO);
+
+        appUser = appUserDao.findOne(appUser.getId());
+        assertEquals("The password for the user should be changed!",
+                passwordEncrypt.encryptPassword(newPassword),
+                appUser.getPassword());
+
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldNotChangeTooShortPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String email = appUser.getEmail();
+        String uncryptedPassword = appUser.getPassword();
+        String password = passwordEncrypt.encryptPassword(appUser.getPassword());;
+        appUser.setPassword(password);
+        appUser.setActivated(true);
+        appUser = appUserDao.saveAndFlush(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(email, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        String newPassword = "1234";
+        ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
+        changePasswordDTO.setNp(newPassword);
+        changePasswordDTO.setOp(uncryptedPassword);
+        boolean exceptionThrown = false;
+        try {
+            appUserController.changePassword(changePasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Password must have at least 8 characters!"));
+        }
+
+        assertTrue("Should NOT change password having less than 8 characters!", exceptionThrown);
+
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldNotChangePasswordInvalidOldPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String email = appUser.getEmail();
+        String uncryptedPassword = appUser.getPassword();
+        String password = passwordEncrypt.encryptPassword(appUser.getPassword());;
+        appUser.setPassword(password);
+        appUser.setActivated(true);
+        appUser = appUserDao.saveAndFlush(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(email, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        String newPassword = "Florin1234";
+        ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
+        changePasswordDTO.setNp(newPassword);
+        changePasswordDTO.setOp("invalidPassword");
+        boolean exceptionThrown = false;
+        try {
+            appUserController.changePassword(changePasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid parameters!"));
+        }
+
+        assertTrue("Should NOT change password having less than 8 characters!", exceptionThrown);
+
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldNotChangePasswordForEmptyOldPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String email = appUser.getEmail();
+        String uncryptedPassword = appUser.getPassword();
+        String password = passwordEncrypt.encryptPassword(appUser.getPassword());;
+        appUser.setPassword(password);
+        appUser.setActivated(true);
+        appUser = appUserDao.saveAndFlush(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(email, uncryptedPassword);
+        ResponseEntity<?> loginResponseEntity = appUserController.login(authorizationString);
+        assertEquals(HttpStatus.OK, loginResponseEntity.getStatusCode());
+
+        String newPassword = "Florin1234";
+        ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
+        changePasswordDTO.setNp(newPassword);
+        changePasswordDTO.setOp("");
+        boolean exceptionThrown = false;
+        try {
+            appUserController.changePassword(changePasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid request!"));
+        }
+
+        assertTrue("Should NOT change password having less than 8 characters!", exceptionThrown);
+
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
     @Test
     public void shouldNotLoginWrongUsername() {
     
