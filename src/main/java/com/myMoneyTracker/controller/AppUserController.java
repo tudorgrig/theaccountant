@@ -9,8 +9,12 @@ import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import com.myMoneyTracker.dao.ForgotPasswordDao;
 import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
 import com.myMoneyTracker.dto.user.ChangePasswordDTO;
+import com.myMoneyTracker.dto.user.ForgotPasswordDTO;
+import com.myMoneyTracker.dto.user.RenewForgotPasswordDTO;
+import com.myMoneyTracker.model.user.ForgotPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -52,6 +56,9 @@ public class AppUserController {
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
+
+    @Autowired
+    private ForgotPasswordDao forgotPasswordDao;
     
     @Autowired
     private EmailValidator emailValidator;
@@ -157,7 +164,6 @@ public class AppUserController {
         }
     }
 
-
     @RequestMapping(value = "/change_password", method = RequestMethod.POST)
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePassDTO) {
 
@@ -181,6 +187,59 @@ public class AppUserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/forgot_password", method = RequestMethod.POST)
+    public ResponseEntity<?> sendForgotPasswordMail(@RequestBody ForgotPasswordDTO forgotPassDTO) {
+
+        String email = forgotPassDTO.getEmail();
+        if (email == null || email.isEmpty()) {
+            throw new BadRequestException("Invalid request!");
+        } else if (!emailValidator.validate(email)) {
+            throw new BadRequestException("Invalid email address!");
+        }
+
+        AppUser appUser = appUserDao.findByEmail(email);
+        if (appUser == null) {
+            throw new BadRequestException("Invalid request attempt!");
+        }
+
+        try {
+            userUtil.generateForgotPassword(appUser);
+        } catch (MessagingException me) {
+            throw new BadRequestException(me.getMessage());
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/renew_forgot_password", method = RequestMethod.POST)
+    public ResponseEntity<?> renewForgotPassword(@RequestBody RenewForgotPasswordDTO renewForgotPassDTO) {
+
+        String code = renewForgotPassDTO.getCode();
+        String newPassword = renewForgotPassDTO.getNp();
+        if (code == null || code.isEmpty()) {
+            throw new BadRequestException("Invalid request!");
+        } else if (newPassword == null || newPassword.isEmpty()) {
+            throw new BadRequestException("Invalid request!");
+        }
+
+        ForgotPassword forgotPassword = forgotPasswordDao.findByCode(code);
+        if (forgotPassword == null) {
+            throw new BadRequestException("Invalid renew attempt!");
+        }
+
+        AppUser appUser = forgotPassword.getUser();
+        if (appUser == null) {
+            throw new BadRequestException("Invalid user!");
+        }
+
+        String newPasswordEncrypted = passwordEncrypt.encryptPassword(newPassword);
+        appUser.setPassword(newPasswordEncrypted);
+        appUserDao.saveAndFlush(appUser);
+
+        forgotPasswordDao.delete(forgotPassword);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     @Transactional
@@ -194,7 +253,6 @@ public class AppUserController {
         appUserDao.saveAndFlush(appUser);
         return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
     }
-
 
     @RequestMapping(value = "/default_currency", method = RequestMethod.POST)
     @Transactional

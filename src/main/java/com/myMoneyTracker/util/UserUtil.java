@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import javax.mail.MessagingException;
 
+import com.myMoneyTracker.dao.ForgotPasswordDao;
+import com.myMoneyTracker.model.user.ForgotPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.myMoneyTracker.controller.exception.UnauthorizedException;
@@ -23,6 +25,9 @@ public class UserUtil {
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
+
+    @Autowired
+    private ForgotPasswordDao forgotPasswordDao;
     
     @Autowired
     private EmailSender emailSender;
@@ -41,8 +46,9 @@ public class UserUtil {
      * 
      * @param user : currently registered user.
      * 
-     * @throws MessagingException
-     *              exception that is thrown in case of an invalid email address.
+     * @throws MessagingException:
+ *              exception that is thrown in case of any issues sending the email
+     *          to the user's address
      */
     public void generateAccountRegistration(AppUser user) throws MessagingException {
     
@@ -53,7 +59,26 @@ public class UserUtil {
         userRegistrationDao.saveAndFlush(userRegistration);
         emailSender.sendUserRegistrationEmail(user, code);
     }
-    
+
+    /**
+     * Method that will generate and send a code to the specified user email for
+     * renewing the forgotten password.
+     *
+     * @param user : the user that requests the renewal of the password
+     * @throws MessagingException:
+     *          exception that is thrown in case of any issues sending the email
+     *          to the user's address
+     */
+    public void generateForgotPassword(AppUser user) throws MessagingException {
+
+        String code = UUID.randomUUID().toString();
+        ForgotPassword forgotPasswordEntity = new ForgotPassword();
+        forgotPasswordEntity.setCode(code);
+        forgotPasswordEntity.setUser(user);
+        forgotPasswordDao.saveAndFlush(forgotPasswordEntity);
+        emailSender.sendForgotPasswordEmail(user, code);
+    }
+
     /**
      * Extracts an appUser from the database based on the authentication string registered
      * on session.

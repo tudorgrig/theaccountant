@@ -24,6 +24,7 @@ public class EmailSender {
     private String senderEmail;
     private String senderPassword;
     private String baseRegistrationUrl;
+    private String baseForgotPasswordUrl;
     
     /**
      * Send an email to the specified user to require the account registration using an URL containing 
@@ -39,6 +40,25 @@ public class EmailSender {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append("<h2 style='color:red;'>Hello, " + user.getUsername() + "!</h2>");
         messageBuilder.append("<br><br><pre style='font-size: 160%;'>Please confirm your registration by following the " + "link: " + "<a href='" + baseRegistrationUrl + code + "'>REGISTRATION LINK</a></pre>");
+        messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
+        sendEmail(user.getEmail(), subject, messageBuilder.toString());
+    }
+
+    /**
+     * Send an email to the specified user to require the renewal of the forgotten password using an URL containing
+     * the received generated code.
+     *
+     * @param user
+     * @param code
+     * @throws MessagingException
+     */
+    public void sendForgotPasswordEmail(AppUser user, String code) throws MessagingException {
+
+        String subject = "[My Money Tracker] Forgot password";
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append("<h2 style='color:red;'>Hello, " + user.getUsername() + "!</h2>");
+        messageBuilder.append("<br><br><pre style='font-size: 160%;'>You've requested the renewal of the forgotten password. If you didn't initialize this action, please ignore this email.</pre>");
+        messageBuilder.append("<br><pre style='font-size: 160%;'>Please renew your password by following the " + "link: " + "<a href='" + baseForgotPasswordUrl + code + "'>RENEW YOUR PASSWORD</a></pre>");
         messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
         sendEmail(user.getEmail(), subject, messageBuilder.toString());
     }
@@ -89,7 +109,15 @@ public class EmailSender {
     
         return baseRegistrationUrl;
     }
-    
+
+    public String getBaseForgotPasswordUrl() {
+        return baseForgotPasswordUrl;
+    }
+
+    public void setBaseForgotPasswordUrl(String baseForgotPasswordUrl) {
+        this.baseForgotPasswordUrl = baseForgotPasswordUrl;
+    }
+
     public void setBaseRegistrationUrl(String baseRegistrationUrl) {
     
         this.baseRegistrationUrl = baseRegistrationUrl;

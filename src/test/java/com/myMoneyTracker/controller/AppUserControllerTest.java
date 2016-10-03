@@ -9,7 +9,10 @@ import javax.validation.ConstraintViolationException;
 import com.myMoneyTracker.dao.*;
 import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
 import com.myMoneyTracker.dto.user.ChangePasswordDTO;
+import com.myMoneyTracker.dto.user.ForgotPasswordDTO;
+import com.myMoneyTracker.dto.user.RenewForgotPasswordDTO;
 import com.myMoneyTracker.model.category.Category;
+import com.myMoneyTracker.model.user.ForgotPassword;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import org.junit.After;
 import org.junit.Before;
@@ -55,6 +58,9 @@ public class AppUserControllerTest {
     
     @Autowired
     private UserRegistrationDao userRegistrationDao;
+
+    @Autowired
+    private ForgotPasswordDao forgotPasswordDao;
     
     @Autowired
     private AuthenticatedSessionDao authenticatedSessionDao;
@@ -316,6 +322,63 @@ public class AppUserControllerTest {
     }
 
     @Test
+    public void shouldNotLoginWrongUsername() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String password = appUser.getPassword();
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword("WrongUsername", password);
+        try{
+            appUserController.login(authorizationString);
+        } catch(Exception e){
+            assertTrue(e instanceof NotFoundException);
+            appUserDao.delete(appUser.getId());
+            appUserDao.flush();
+        }
+
+    }
+
+    @Test
+    public void shouldNotLoginIncorrectPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String username = appUser.getUsername();
+        appUser.setActivated(true);
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, "wrong_pass");
+        try{
+            appUserController.login(authorizationString);
+        }catch(Exception e){
+            assertTrue(e instanceof BadRequestException);
+            appUserDao.delete(appUser.getId());
+            appUserDao.flush();
+        }
+
+    }
+
+    @Test
+    public void shouldNotLoginNullPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String username = appUser.getUsername();
+        appUser.setActivated(true);
+        appUserDao.save(appUser);
+
+        String authorizationString = sessionService.encodeUsernameAndPassword(username, null);
+        try{
+            appUserController.login(authorizationString);
+        } catch(Exception e){
+            assertTrue(e instanceof BadRequestException);
+            userRegistrationDao.deleteByUserId(appUser.getId());
+            appUserDao.delete(appUser.getId());
+            appUserDao.flush();
+        }
+
+    }
+
+    @Test
     public void shouldChangePassword() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
@@ -445,62 +508,150 @@ public class AppUserControllerTest {
     }
 
     @Test
-    public void shouldNotLoginWrongUsername() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String password = appUser.getPassword();
-        appUserDao.save(appUser);
-        
-        String authorizationString = sessionService.encodeUsernameAndPassword("WrongUsername", password);
-        try{
-            appUserController.login(authorizationString);
-        } catch(Exception e){
-            assertTrue(e instanceof NotFoundException);
-            appUserDao.delete(appUser.getId());
-            appUserDao.flush();
+    public void shouldNotSendForgotPasswordEmailForNullEmail() {
+
+        boolean exceptionThrown = false;
+        ForgotPasswordDTO forgotPasswordDTO = new ForgotPasswordDTO(null);
+        try {
+            appUserController.sendForgotPasswordMail(forgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid request!"));
         }
 
+        assertTrue("Should NOT send forgot password mail for null email!", exceptionThrown);
     }
-    
+
     @Test
-    public void shouldNotLoginIncorrectPassword() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String username = appUser.getUsername();
-        appUser.setActivated(true);
-        appUserDao.save(appUser);
+    public void shouldNotSendForgotPasswordEmailForIncorrectEmail() {
 
-        String authorizationString = sessionService.encodeUsernameAndPassword(username, "wrong_pass");
-        try{
-            appUserController.login(authorizationString);
-        }catch(Exception e){
-            assertTrue(e instanceof BadRequestException);
-            appUserDao.delete(appUser.getId());
-            appUserDao.flush();
+        boolean exceptionThrown = false;
+        ForgotPasswordDTO forgotPasswordDTO = new ForgotPasswordDTO("incorrect_email@");
+        try {
+            appUserController.sendForgotPasswordMail(forgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid email address!"));
         }
 
+        assertTrue("Should NOT send forgot password mail for incorrect email!", exceptionThrown);
     }
-    
+
     @Test
-    public void shouldNotLoginNullPassword() {
-    
-        AppUser appUser = createAppUser(FIRST_NAME);
-        String username = appUser.getUsername();
-        appUser.setActivated(true);
-        appUserDao.save(appUser);
+    public void shouldNotSendForgotPasswordEmailForUnregisteredEmail() {
 
-        String authorizationString = sessionService.encodeUsernameAndPassword(username, null);
-        try{
-            appUserController.login(authorizationString);
-        } catch(Exception e){
-            assertTrue(e instanceof BadRequestException);
-            userRegistrationDao.deleteByUserId(appUser.getId());
-            appUserDao.delete(appUser.getId());
-            appUserDao.flush();
+        boolean exceptionThrown = false;
+        ForgotPasswordDTO forgotPasswordDTO = new ForgotPasswordDTO("inexistent_mail@gmail.com");
+        try {
+            appUserController.sendForgotPasswordMail(forgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid request attempt!"));
         }
 
+        assertTrue("Should NOT send forgot password mail for unregistered email!", exceptionThrown);
     }
-    
+
+    @Test
+    public void shouldSendForgotPasswordEmail() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setActivated(true);
+        appUser.setPassword(cryptedPassword);
+        appUserDao.save(appUser);
+
+        ForgotPasswordDTO forgotPasswordDTO = new ForgotPasswordDTO(appUser.getEmail());
+        try {
+            appUserController.sendForgotPasswordMail(forgotPasswordDTO);
+        } catch (Exception e) {
+            forgotPasswordDao.deleteByUserId(appUser.getId());
+            appUserDao.delete(appUser.getId());
+            appUserDao.flush();
+            fail(e.getMessage());
+        }
+
+        forgotPasswordDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldNotRenewForgotPasswordForInvalidCodeOrNewPassword() {
+
+        boolean exceptionThrown = false;
+        RenewForgotPasswordDTO renewForgotPasswordDTO = new RenewForgotPasswordDTO("", "Pasword1234");
+        try {
+            appUserController.renewForgotPassword(renewForgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid request!"));
+        }
+
+        assertTrue("Should NOT renew forgot password for invalid request!", exceptionThrown);
+
+        exceptionThrown = false;
+        renewForgotPasswordDTO = new RenewForgotPasswordDTO("code123", null);
+        try {
+            appUserController.renewForgotPassword(renewForgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid request!"));
+        }
+
+        assertTrue("Should NOT renew forgot password for invalid request!", exceptionThrown);
+    }
+
+    @Test
+    public void shouldNotRenewForgotPasswordForNonExistentCode() {
+
+        boolean exceptionThrown = false;
+        RenewForgotPasswordDTO renewForgotPasswordDTO = new RenewForgotPasswordDTO("non-existent-code-1234", "Pasword1234");
+        try {
+            appUserController.renewForgotPassword(renewForgotPasswordDTO);
+        } catch (BadRequestException e) {
+            exceptionThrown = true;
+            assertTrue(e.getMessage().equals("Invalid renew attempt!"));
+        }
+
+        assertTrue("Should NOT renew forgot password for non-existent code!", exceptionThrown);
+    }
+
+    @Test
+    public void shouldRenewForgotPassword() {
+
+        AppUser appUser = createAppUser(FIRST_NAME);
+        String cryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
+        appUser.setActivated(true);
+        appUser.setPassword(cryptedPassword);
+        appUserDao.save(appUser);
+
+        ForgotPasswordDTO forgotPasswordDTO = new ForgotPasswordDTO(appUser.getEmail());
+        try {
+            appUserController.sendForgotPasswordMail(forgotPasswordDTO);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
+        ForgotPassword forgotPassword = forgotPasswordDao.findByUserId(appUser.getId()).get(0);
+        String newPassword = "NewPass1234";
+        RenewForgotPasswordDTO renewForgotPasswordDTO = new RenewForgotPasswordDTO(forgotPassword.getCode(), newPassword);
+        try {
+            appUserController.renewForgotPassword(renewForgotPasswordDTO);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
+        appUser = appUserDao.findOne(appUser.getId());
+        assertEquals("The new password was NOT set for the User",
+                passwordEncrypt.encryptPassword(newPassword),
+                appUser.getPassword());
+
+        forgotPasswordDao.deleteByUserId(appUser.getId());
+        appUserDao.delete(appUser.getId());
+        appUserDao.flush();
+    }
+
     @Test
     public void shouldLogoutUser() {
     
