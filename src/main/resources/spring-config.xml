@@ -69,6 +69,7 @@
         <property name="senderEmail" value="${emailSender.email}"/>
         <property name="senderPassword" value="${emailSender.password}"/>
         <property name="baseRegistrationUrl" value="${emailSender.base_registration_url}"/>
+        <property name="baseForgotPasswordUrl" value="${emailSender.base_forgot_password_url}"/>
     </bean>
 
     <bean id="mapper" class="org.dozer.DozerBeanMapper">

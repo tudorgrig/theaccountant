@@ -55,7 +55,13 @@ public class AuthenticationFilter implements Filter {
             if (url.contains("?")) {
                 url = url.substring(0, url.indexOf('?'));
             }
-            if (url.contains("/user/login") || url.contains("/user/logout") || url.contains("/user/registration/") || url.contains("/user/add") || url.contains("/description")) {
+            if (url.contains("/user/login")
+                    || url.contains("/user/logout")
+                    || url.contains("/user/registration/")
+                    || url.contains("/user/forgot_password")
+                    || url.contains("/user/add")
+                    || url.contains("/user/description")
+                    || url.equals("/")) {
                 isAllowed = true;
             }
         }
