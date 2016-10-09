@@ -2,7 +2,7 @@ package com.myMoneyTracker.dto.user;
 
 
 /**
- * Created by Floryn on 08.08.2016.
+ * Created by Florin on 08.08.2016.
  */
 public class ChangePasswordDTO {
 

@@ -1,51 +1,42 @@
 package com.myMoneyTracker.controller;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-
-import javax.mail.MessagingException;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-
-import com.myMoneyTracker.dao.ForgotPasswordDao;
-import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
-import com.myMoneyTracker.dto.user.ChangePasswordDTO;
-import com.myMoneyTracker.dto.user.ForgotPasswordDTO;
-import com.myMoneyTracker.dto.user.RenewForgotPasswordDTO;
-import com.myMoneyTracker.model.user.ForgotPassword;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.myMoneyTracker.controller.exception.BadRequestException;
 import com.myMoneyTracker.controller.exception.ConflictException;
 import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.converter.AppUserConverter;
 import com.myMoneyTracker.dao.AppUserDao;
+import com.myMoneyTracker.dao.ForgotPasswordDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
+import com.myMoneyTracker.dto.currency.DefaultCurrencyDTO;
 import com.myMoneyTracker.dto.user.AppUserDTO;
+import com.myMoneyTracker.dto.user.ChangePasswordDTO;
+import com.myMoneyTracker.dto.user.ForgotPasswordDTO;
+import com.myMoneyTracker.dto.user.RenewForgotPasswordDTO;
 import com.myMoneyTracker.model.session.AuthenticatedSession;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.model.user.ForgotPassword;
 import com.myMoneyTracker.model.user.UserRegistration;
 import com.myMoneyTracker.service.SessionService;
 import com.myMoneyTracker.util.ControllerUtil;
 import com.myMoneyTracker.util.EmailValidator;
 import com.myMoneyTracker.util.PasswordEncrypt;
 import com.myMoneyTracker.util.UserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.mail.MessagingException;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
+import java.sql.Timestamp;
+import java.util.Currency;
 
 /**
  * Rest Controller for AppUser entity.
  *
- * @author Floryn
+ * @author Tudor
  */
 @RestController
 @RequestMapping(value = "/user")
@@ -86,7 +77,7 @@ public class AppUserController {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
             userUtil.generateDefaultCategoriesForUser(createdAppUser);
             userUtil.generateAccountRegistration(createdAppUser);
-            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(createdAppUser), HttpStatus.OK);
+            return new ResponseEntity<>(appUserConverter.convertTo(createdAppUser), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
             throw new ConflictException(dive.getMostSpecificCause().getMessage());
         } catch (MessagingException me) {
@@ -101,7 +92,7 @@ public class AppUserController {
         if (appUser == null) {
             throw new NotFoundException("User not found");
         }
-        return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
+        return new ResponseEntity<>(appUserConverter.convertTo(appUser), HttpStatus.OK);
     }
     
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
@@ -115,7 +106,7 @@ public class AppUserController {
         if (removed) {
             return new ResponseEntity<HttpStatus>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<String>("User is not logged in", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("User is not logged in", HttpStatus.BAD_REQUEST);
         }
     }
     
@@ -124,7 +115,7 @@ public class AppUserController {
     
         String clientIpAddress = ControllerUtil.getRequestClienIpAddress();
         if (clientIpAddress == null) {
-            return new ResponseEntity<String>("Invalid request IP address", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid request IP address", HttpStatus.BAD_REQUEST);
         }
         
         String authenticationUsername = null;
@@ -134,14 +125,14 @@ public class AppUserController {
             authenticationUsername = authenticationValues[0];
             authenticationPassword = authenticationValues[1];
         } else {
-            return new ResponseEntity<String>("Invalid credentials", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.BAD_REQUEST);
         }
         
         if (authenticationUsername == null) {
-            return new ResponseEntity<String>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid username/email provided", HttpStatus.BAD_REQUEST);
         }
         if (authenticationPassword == null) {
-            return new ResponseEntity<String>("Invalid password", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid password", HttpStatus.BAD_REQUEST);
         }
         AppUser appUser = null;
         if (emailValidator.validate(authenticationUsername)) {
@@ -158,7 +149,7 @@ public class AppUserController {
         String passwordToLogin = passwordEncrypt.encryptPassword(authenticationPassword);
         if (passwordToLogin.equals(appUser.getPassword())) {
             handleSuccessfulLogin(appUser, authorization, clientIpAddress);
-            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(appUser), HttpStatus.OK);
+            return new ResponseEntity<>(appUserConverter.convertTo(appUser), HttpStatus.OK);
         } else {
             throw new BadRequestException("Incorrect password");
         }
@@ -249,9 +240,9 @@ public class AppUserController {
         if (oldAppUser == null) {
             throw new NotFoundException("User not found");
         }
-        appUser.setId(id);
+        appUser.setUserId(id);
         appUserDao.saveAndFlush(appUser);
-        return new ResponseEntity<String>("User updated", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("User updated", HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = "/default_currency", method = RequestMethod.POST)
@@ -282,7 +273,7 @@ public class AppUserController {
         }
         DefaultCurrencyDTO defaultCurrencyDTO = new DefaultCurrencyDTO(default_currency);
 
-        return new ResponseEntity<DefaultCurrencyDTO>(defaultCurrencyDTO, HttpStatus.OK);
+        return new ResponseEntity<>(defaultCurrencyDTO, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
@@ -297,7 +288,7 @@ public class AppUserController {
             user.setActivated(true);
             appUserDao.saveAndFlush(user);
             userRegistrationDao.delete(userRegistration);
-            return new ResponseEntity<AppUserDTO>(appUserConverter.convertTo(user), HttpStatus.OK);
+            return new ResponseEntity<>(appUserConverter.convertTo(user), HttpStatus.OK);
         }
     }
     

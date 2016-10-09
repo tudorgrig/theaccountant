@@ -18,10 +18,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -69,7 +66,7 @@ public class RecurrentEventServiceTest {
         Expense expense = createExpenseWithMonthlyFrequency();
         assertTrue(expense.getId() > 0);
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(2, expenses.size());
     }
 
@@ -80,7 +77,7 @@ public class RecurrentEventServiceTest {
         expenseDao.save(expense);
         assertTrue(expense.getId() > 0);
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(2, expenses.size());
     }
 
@@ -113,7 +110,7 @@ public class RecurrentEventServiceTest {
         expenseDao.save(expense);
         assertTrue(expense.getId() > 0);
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(2, expenses.size());
     }
 
@@ -143,7 +140,7 @@ public class RecurrentEventServiceTest {
         Expense expense = createExpenseWith2MonthFrequency();
         assertTrue(expense.getId() > 0);
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(2, expenses.size());
     }
 
@@ -161,7 +158,7 @@ public class RecurrentEventServiceTest {
         Expense expense = createExpenseWithQuarterlyFrequency();
         assertTrue(expense.getId() > 0);
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(2, expenses.size());
     }
 
@@ -197,7 +194,7 @@ public class RecurrentEventServiceTest {
         expenseDao.save(expense);
 
         recurrentEventService.addRecurrentExpenseEvents();
-        List<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(expense.getUser().getUsername());
         assertEquals(1, expenses.size());
     }
 

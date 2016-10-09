@@ -17,7 +17,7 @@ import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * Test class for IncomeConverter dozer mapping class
- * @author Floryn
+ * @author Tudor
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
@@ -75,7 +75,7 @@ public class IncomeConverterTest {
     private AppUser createAppUser(String email, String username) {
     
         AppUser appUser = new AppUser();
-        appUser.setId(1);
+        appUser.setUserId(1);
         appUser.setFirstName("Florin");
         appUser.setSurname("Iacob");
         appUser.setPassword("TEST_PASS");

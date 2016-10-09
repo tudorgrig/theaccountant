@@ -1,12 +1,11 @@
 package com.myMoneyTracker.model.income;
 
-import java.sql.Timestamp;
+import com.myMoneyTracker.model.user.AppUser;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
-import com.myMoneyTracker.model.user.AppUser;
+import java.sql.Timestamp;
 
 /**
  * Entity class for the 'income' table

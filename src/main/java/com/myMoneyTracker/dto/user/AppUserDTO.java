@@ -6,20 +6,20 @@ package com.myMoneyTracker.dto.user;
  */
 public class AppUserDTO {
 
-    private long id;
+    private long userId;
     private String firstName;
     private String surname;
     private String username;
     private String defaultCurrency;
 
-    public long getId() {
+    public long getUserId() {
 
-        return id;
+        return userId;
     }
 
-    public void setId(long id) {
+    public void setUserId(long id) {
 
-        this.id = id;
+        this.userId = id;
     }
 
     public String getFirstName() {

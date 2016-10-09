@@ -16,7 +16,7 @@ import com.myMoneyTracker.model.user.AppUser;
 
 /**
  * Test class for dozer converter between AppUser and AppUserDTO
- * @author Floryn Iacob
+ * @author Tudor
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
@@ -30,7 +30,7 @@ public class AppUserConverterTest {
 
         AppUser appUser = createAppUser("Floryn");
         AppUserDTO appUserDTO = appUserConverter.convertTo(appUser);
-        assertEquals(appUser.getId(), appUserDTO.getId());
+        assertEquals(appUser.getUserId(), appUserDTO.getUserId());
         assertEquals(appUser.getSurname(), appUserDTO.getSurname());
         assertEquals(appUser.getFirstName(), appUserDTO.getFirstName());
         assertEquals(appUser.getUsername(), appUserDTO.getUsername());
@@ -45,7 +45,7 @@ public class AppUserConverterTest {
         assertEquals(appUserDTO.getFirstName(), appUser.getFirstName());
         assertEquals(appUserDTO.getUsername(), appUser.getUsername());
         assertEquals(appUserDTO.getSurname(), appUser.getSurname());
-        assertEquals(appUserDTO.getId(), appUser.getId());
+        assertEquals(appUserDTO.getUserId(), appUser.getUserId());
     }
 
     private AppUserDTO createAppUserDTO() {
@@ -54,7 +54,7 @@ public class AppUserConverterTest {
         appUserDTO.setSurname("SURNAME");
         appUserDTO.setUsername("USERNAME");
         appUserDTO.setFirstName("FIRST_NAME");
-        appUserDTO.setId(2l);
+        appUserDTO.setUserId(2l);
         return appUserDTO;
     }
 

@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Floryn
+ * @author Tudor
  * This class is used to encrypt the app_user password
  */
 public class PasswordEncrypt {

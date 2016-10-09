@@ -1,27 +1,5 @@
 package com.myMoneyTracker.controller;
 
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-
-import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
-
-import com.myMoneyTracker.util.CurrencyConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.myMoneyTracker.controller.exception.BadRequestException;
 import com.myMoneyTracker.controller.exception.NotFoundException;
 import com.myMoneyTracker.converter.ExpenseConverter;
@@ -31,8 +9,22 @@ import com.myMoneyTracker.dto.expense.ExpenseDTO;
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.expense.Expense;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.util.CurrencyConverter;
 import com.myMoneyTracker.util.CurrencyUtil;
 import com.myMoneyTracker.util.UserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * REST controller for expense entity
@@ -76,32 +68,41 @@ public class ExpenseController {
             expense.setCategory(category);
             expense.setUser(user);
             Expense createdExpense = expenseDao.saveAndFlush(expense);
-            return new ResponseEntity<ExpenseDTO>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
+            return new ResponseEntity<>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
         }
     }
 
+    //TODO: Why do we have this? If we implement list all expenses it should be based on time interval
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
+    @Transactional
     public ResponseEntity<List<ExpenseDTO>> listAllExpenses() {
     
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        List<Expense> expenses = expenseDao.findByUsername(user.getUsername());
+        Set<Expense> expenses = expenseDao.findByUsername(user.getUsername());
         if (expenses.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(createExpenseDTOs(expenses), HttpStatus.OK);
     }
-    
+
+    //TODO: SAME AS UPPER TODO
     @RequestMapping(value = "/find/category/{category_name:.+}", method = RequestMethod.GET)
+    @Transactional
     public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryName(@PathVariable("category_name") String categoryName) {
-    
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        List<Expense> expenses = expenseDao.findByCategoryNameAndUsername(categoryName, user.getUsername());
-        if (expenses.isEmpty()) {
+        Optional<Category> found =
+                user.getCategories().stream().filter(category -> category.getName().equals(categoryName)).findFirst();
+        if (!found.isPresent()) {
+            throw new NotFoundException("Category not found");
+        }
+        Category category = found.get();
+        if (category.getExpenses().isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(createExpenseDTOs(expenses), HttpStatus.OK);
+        return new ResponseEntity<>(createExpenseDTOs(category.getExpenses()), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/find/{category_name:.+}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
@@ -111,7 +112,7 @@ public class ExpenseController {
             @PathVariable("end_time_millis") long endTimeMillis) {
 
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        List<Expense> expenses;
+        Set<Expense> expenses;
         if (categoryName.equals("*")) {
             expenses = expenseDao.findByTimeInterval(user.getUsername(), new Timestamp(startTimeMillis),
                     new Timestamp(endTimeMillis));
@@ -222,7 +223,7 @@ public class ExpenseController {
         return category;
     }
     
-    private List<ExpenseDTO> createExpenseDTOs(List<Expense> expenses) {
+    private List<ExpenseDTO> createExpenseDTOs(Set<Expense> expenses) {
     
         List<ExpenseDTO> expenseDTOs = new ArrayList<ExpenseDTO>();
         expenses.stream().forEach(expense -> {
@@ -277,7 +278,7 @@ public class ExpenseController {
         }
     }
 
-    private void convertExpensesToDefaultCurrency(List<Expense> expenses, AppUser user) {
+    private void convertExpensesToDefaultCurrency(Set<Expense> expenses, AppUser user) {
         expenses.stream().filter(expense -> shouldUpdateDefaultCurrencyAmount(expense, user)).forEach(expense -> {
             setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
             expenseDao.saveAndFlush(expense);

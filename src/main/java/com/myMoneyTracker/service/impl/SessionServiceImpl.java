@@ -1,11 +1,8 @@
 package com.myMoneyTracker.service.impl;
 
-import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.dao.AuthenticatedSessionDao;
+import com.myMoneyTracker.model.session.AuthenticatedSession;
+import com.myMoneyTracker.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -14,9 +11,10 @@ import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 
-import com.myMoneyTracker.dao.AuthenticatedSessionDao;
-import com.myMoneyTracker.model.session.AuthenticatedSession;
-import com.myMoneyTracker.service.SessionService;
+import javax.transaction.Transactional;
+import java.nio.charset.Charset;
+import java.sql.Timestamp;
+import java.util.List;
 
 @EnableAsync
 @EnableScheduling

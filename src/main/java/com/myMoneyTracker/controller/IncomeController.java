@@ -1,5 +1,22 @@
 package com.myMoneyTracker.controller;
 
+import com.myMoneyTracker.controller.exception.BadRequestException;
+import com.myMoneyTracker.converter.IncomeConverter;
+import com.myMoneyTracker.dao.IncomeDao;
+import com.myMoneyTracker.dto.income.IncomeDTO;
+import com.myMoneyTracker.model.income.Income;
+import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.util.CurrencyConverter;
+import com.myMoneyTracker.util.CurrencyUtil;
+import com.myMoneyTracker.util.UserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -9,31 +26,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
-
-import com.myMoneyTracker.controller.exception.BadRequestException;
-import com.myMoneyTracker.util.CurrencyConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.myMoneyTracker.converter.IncomeConverter;
-import com.myMoneyTracker.dao.IncomeDao;
-import com.myMoneyTracker.dto.income.IncomeDTO;
-import com.myMoneyTracker.model.income.Income;
-import com.myMoneyTracker.model.user.AppUser;
-import com.myMoneyTracker.util.CurrencyUtil;
-import com.myMoneyTracker.util.UserUtil;
-
 /**
- * @author Floryn
+ * @author Tudor
  * REST controller for income entity
  *
  */
@@ -58,7 +52,7 @@ public class IncomeController {
     
         try {
             if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
-                return new ResponseEntity<String>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("Wrong currency code!", HttpStatus.BAD_REQUEST);
             }
             AppUser user = userUtil.extractLoggedAppUserFromDatabase();
             income.setUser(user);
@@ -66,13 +60,14 @@ public class IncomeController {
                 setDefaultCurrencyAmount(income, user.getDefaultCurrency());
             }
             Income createdIncome = incomeDao.saveAndFlush(income);
-            return new ResponseEntity<IncomeDTO>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
+            return new ResponseEntity<>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             log.log(Level.SEVERE, e.getMessage());
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
+    //TODO: AGAIN, WHY?
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<IncomeDTO>> listAllIncomes() {
     
@@ -83,7 +78,8 @@ public class IncomeController {
         }
         return new ResponseEntity<>(createIncomeDTOs(incomes), HttpStatus.OK);
     }
-    
+
+    //TODO: WHY?
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findIncome(@PathVariable("id") Long id) {
     
@@ -97,7 +93,8 @@ public class IncomeController {
         }
         return new ResponseEntity<>(incomeConverter.convertTo(income), HttpStatus.OK);
     }
-    
+
+
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<String> updateIncome(@PathVariable("id") Long id, @RequestBody @Valid Income income) {
     
@@ -131,14 +128,14 @@ public class IncomeController {
                 throw new EmptyResultDataAccessException("Income not found", 1);
             }
             if (!(user.getUsername().equals(incomeToBeDeleted.getUser().getUsername()))) {
-                return new ResponseEntity<String>("Unauthorized request", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("Unauthorized request", HttpStatus.BAD_REQUEST);
             }
             incomeDao.delete(id);
         } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
             log.info(emptyResultDataAccessException.getMessage());
-            return new ResponseEntity<String>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(emptyResultDataAccessException.getMessage(), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<String>("Income deleted", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Income deleted", HttpStatus.NO_CONTENT);
     }
     
     @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)

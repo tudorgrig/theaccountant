@@ -1,12 +1,11 @@
 package com.myMoneyTracker.util;
 
-import java.util.Collection;
-
+import com.myMoneyTracker.app.authentication.SessionAuthentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.myMoneyTracker.app.authentication.SessionAuthentication;
+import java.util.Collection;
 
 /**
  * Class that contains useful methods for REST controllers.

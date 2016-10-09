@@ -1,6 +1,7 @@
 package com.myMoneyTracker.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -65,8 +66,10 @@ public class CategoryControllerTest {
 
     @After
     public void cleanUp() {
-        appUserDao.delete(appUser.getId());
-        appUserDao.flush();
+        if(appUser != null && appUser.getUserId() != 0) {
+            appUserDao.delete(appUser.getUserId());
+            appUserDao.flush();
+        }
     }
     
     @Test
@@ -78,8 +81,6 @@ public class CategoryControllerTest {
         assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
         assertEquals(TEST_COLOUR, ((CategoryDTO) responseEntity.getBody()).getColour());
         assertTrue(TEST_THRESHOLD == ((CategoryDTO) responseEntity.getBody()).getThreshold());
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test
@@ -104,10 +105,6 @@ public class CategoryControllerTest {
         ResponseEntity responseEntity = categoryController.getAllCategories();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(5, ((List<CategoryDTO>) responseEntity.getBody()).size());
-        categories.stream().forEach(category -> {
-            categoryDao.delete(category.getId());
-        });
-        categoryDao.flush();
     }
     
     @Test
@@ -118,8 +115,6 @@ public class CategoryControllerTest {
         ResponseEntity<?> found = categoryController.getCategory(CATEGORY_NAME);
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)
@@ -141,8 +136,6 @@ public class CategoryControllerTest {
         assertEquals("Category updated", updated.getBody());
         ResponseEntity updatedCategory = categoryController.getCategory(updatedName);
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)
@@ -150,7 +143,7 @@ public class CategoryControllerTest {
     
         String updatedName = "updatedCategoryName";
         Category toUpdatecategory = createCategory(updatedName);
-        ResponseEntity updated = categoryController.updateCategory(-1l, toUpdatecategory);
+        categoryController.updateCategory(-1l, toUpdatecategory);
     }
     
     @Test
@@ -161,12 +154,14 @@ public class CategoryControllerTest {
         ResponseEntity deletedEntity = categoryController.deleteCategory((((CategoryDTO) responseEntity.getBody()).getId()));
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("Category deleted", deletedEntity.getBody());
+        Category category1 = categoryDao.findOne(category.getId());
+        assertNull(category1);
     }
     
     @Test(expected = NotFoundException.class)
     public void shouldNotDeleteCategory() {
 
-        ResponseEntity deletedEntity = categoryController.deleteCategory(-1l);
+        categoryController.deleteCategory(-1l);
     }
     
     private Category createCategory(String categoryName) {
@@ -187,7 +182,7 @@ public class CategoryControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
-        appUserDao.save(appUser);
+        appUserDao.saveAndFlush(appUser);
         return appUser;
     }
 }

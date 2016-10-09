@@ -3,8 +3,11 @@ package com.myMoneyTracker.dao;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -68,7 +71,7 @@ public class IncomeDaoTest {
         AppUser appUser = createAppUser(EMAIL, USERNAME);
         Income income = createIncome(appUser);
         income = incomeDao.save(income);
-        List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getId());
+        List<Income> incomeForUser = incomeDao.findByUserId(income.getUser().getUserId());
         assertEquals(1, incomeForUser.size());
         assertEquals(income.getId(), incomeForUser.get(0).getId());
     }
@@ -136,12 +139,14 @@ public class IncomeDaoTest {
     }
 
     @Test
-    public void shouldNotFindIncomeInInterval(){
-        Timestamp nowTimeStamp = new Timestamp(System.currentTimeMillis());
+    public void shouldNotFindIncomeInInterval() throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = dateFormat.parse("23/09/2007");
+        Timestamp timestamp = new Timestamp(date.getTime());
         AppUser appUser = createAppUser(EMAIL, USERNAME);
         Income income = createIncome(appUser);
         income = incomeDao.save(income);
-        List<Income> incomes = incomeDao.findIncomesInTimeInterval(nowTimeStamp, nowTimeStamp, appUser.getUsername());
+        List<Income> incomes = incomeDao.findIncomesInTimeInterval(timestamp, timestamp, appUser.getUsername());
         assertEquals(0, incomes.size());
     }
 

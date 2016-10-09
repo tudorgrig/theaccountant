@@ -1,10 +1,9 @@
 package com.myMoneyTracker.converter;
 
-import org.dozer.DozerBeanMapperSingletonWrapper;
-import org.dozer.Mapper;
-
 import com.myMoneyTracker.dto.category.CategoryDTO;
 import com.myMoneyTracker.model.category.Category;
+import org.dozer.DozerBeanMapperSingletonWrapper;
+import org.dozer.Mapper;
 
 /**
  * Dozer converter between category and categoryDTO

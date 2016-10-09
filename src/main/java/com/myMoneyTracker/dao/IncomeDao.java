@@ -1,15 +1,13 @@
 package com.myMoneyTracker.dao;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.model.income.Income;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import com.myMoneyTracker.model.income.Income;
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Data access object class for 'income'
@@ -19,13 +17,15 @@ import com.myMoneyTracker.model.income.Income;
 @Transactional
 public interface IncomeDao extends JpaRepository<Income, Long> {
 
+
+    @Query("SELECT i FROM Income i WHERE i.user.userId = ?1")
     List<Income> findByUserId(Long userId);
     
     @Query("SELECT i FROM Income i WHERE i.user.username = ?1")
     List<Income> findByUsername(String username);
     
     @Modifying
-    @Query(value = "DELETE FROM income WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
+    @Query(value = "DELETE FROM income WHERE user_id IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
 
     @Query(value = "SELECT inc.* " +

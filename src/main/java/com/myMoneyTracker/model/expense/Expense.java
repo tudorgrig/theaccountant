@@ -1,20 +1,12 @@
 package com.myMoneyTracker.model.expense;
 
-import java.sql.Timestamp;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.myMoneyTracker.model.category.Category;
 import com.myMoneyTracker.model.user.AppUser;
+
+import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 
 /**
  * Entity class for the 'expense' table
@@ -29,7 +21,7 @@ public class Expense {
     private long id;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     private AppUser user;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
