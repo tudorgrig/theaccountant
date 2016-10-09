@@ -1,19 +1,13 @@
 package com.myMoneyTracker.model.category;
 
-import javax.annotation.Nullable;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-import javax.persistence.*;
-
+import com.myMoneyTracker.model.expense.Expense;
 import com.myMoneyTracker.model.user.AppUser;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by florinIacob on 18.12.2015.
@@ -21,27 +15,29 @@ import com.myMoneyTracker.model.user.AppUser;
  */
 @Entity
 @Table(name = "category",
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "user_id"}) })
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "userId"}) })
 public class Category {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @NotNull
-    @Length(min = 3, message = "Category name should have at least 3 characters")
     private String name;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "user_id")
     private AppUser user;
 
-    @NotNull
     private String colour = "stable";
 
-    @Nullable
+    private Set<Expense> expenses = new HashSet<>();
+
     private float threshold = 0;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category" , cascade = CascadeType.ALL)
+    public Set<Expense> getExpenses() {
+        return expenses;
+    }
+
+    public void setExpenses(Set<Expense> expenses) {
+        this.expenses = expenses;
+    }
 
     public Category(){}
 
@@ -50,6 +46,10 @@ public class Category {
         this.colour = colour;
     }
 
+
+    @Column(name = "id", unique = true, nullable = false)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public long getId() {
 
         return id;
@@ -60,6 +60,9 @@ public class Category {
         this.id = id;
     }
 
+    @Column(name = "name", unique = false, nullable = false)
+    @NotNull
+    @Length(min = 3, message = "Category name should have at least 3 characters")
     public String getName() {
 
         return name;
@@ -70,6 +73,8 @@ public class Category {
         this.name = name;
     }
 
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "userId")
     public AppUser getUser() {
 
         return user;
@@ -80,6 +85,8 @@ public class Category {
         this.user = user;
     }
 
+
+    @Column(name = "colour", unique = false)
     public String getColour() {
         return colour;
     }
@@ -88,6 +95,8 @@ public class Category {
         this.colour = colour;
     }
 
+
+    @Column(name = "threshold", unique = false, nullable = true)
     public float getThreshold() {
         return threshold;
     }

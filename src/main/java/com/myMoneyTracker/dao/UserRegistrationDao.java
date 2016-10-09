@@ -1,15 +1,13 @@
 package com.myMoneyTracker.dao;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.model.user.UserRegistration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.myMoneyTracker.model.user.UserRegistration;
+import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * Created by Florin Iacob.

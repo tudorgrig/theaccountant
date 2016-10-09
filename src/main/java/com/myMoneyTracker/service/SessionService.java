@@ -1,8 +1,8 @@
 package com.myMoneyTracker.service;
 
-import java.sql.Timestamp;
-
 import com.myMoneyTracker.model.session.AuthenticatedSession;
+
+import java.sql.Timestamp;
 
 /**
  * An interface that provides support for a class in order to be used to by the application to register 

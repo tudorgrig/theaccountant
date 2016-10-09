@@ -1,10 +1,9 @@
 package com.myMoneyTracker.converter;
 
-import org.dozer.DozerBeanMapperSingletonWrapper;
-import org.dozer.Mapper;
-
 import com.myMoneyTracker.dto.expense.ExpenseDTO;
 import com.myMoneyTracker.model.expense.Expense;
+import org.dozer.DozerBeanMapperSingletonWrapper;
+import org.dozer.Mapper;
 
 /**
  * Dozer converter between expense and expenseDTO

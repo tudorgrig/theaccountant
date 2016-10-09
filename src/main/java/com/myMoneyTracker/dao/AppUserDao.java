@@ -1,14 +1,13 @@
 package com.myMoneyTracker.dao;
 
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.model.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.myMoneyTracker.model.user.AppUser;
+import javax.transaction.Transactional;
 
 /**
- * Created by Floryn on 17.12.2015.
+ * Created by Tudor on 17.12.2015.
  * Data access object class for app_user
  */
 @Transactional

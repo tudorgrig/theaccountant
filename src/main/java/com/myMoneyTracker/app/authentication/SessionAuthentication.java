@@ -1,11 +1,10 @@
 package com.myMoneyTracker.app.authentication;
 
-import java.util.Collection;
-
+import com.myMoneyTracker.model.user.AppUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import com.myMoneyTracker.model.user.AppUser;
+import java.util.Collection;
 
 /**
  * A class representing an implementation of the {@link Authentication} interface.

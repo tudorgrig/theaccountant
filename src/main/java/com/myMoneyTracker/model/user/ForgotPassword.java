@@ -11,18 +11,13 @@ import javax.validation.constraints.NotNull;
 @Table(name = "forgot_password")
 public class ForgotPassword {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
 
-    @NotNull
+    private long id;
     private String code;
-    
-    @OneToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "user_id")
-    @NotNull
     private AppUser user;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public long getId() {
     
         return id;
@@ -33,6 +28,7 @@ public class ForgotPassword {
         this.id = id;
     }
 
+    @NotNull
     public String getCode() {
     
         return code;
@@ -43,6 +39,9 @@ public class ForgotPassword {
         this.code = code;
     }
 
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "user_id")
+    @NotNull
     public AppUser getUser() {
     
         return user;

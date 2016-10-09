@@ -101,7 +101,7 @@ public class ExpenseConverterTest {
     private AppUser createAppUser(String email, String username) {
     
         AppUser appUser = new AppUser();
-        appUser.setId(1);
+        appUser.setUserId(1);
         appUser.setFirstName("Florin");
         appUser.setSurname("Iacob");
         appUser.setPassword("TEST_PASS");

@@ -65,8 +65,10 @@ public class CategoryControllerTest {
 
     @After
     public void cleanUp() {
-        appUserDao.delete(appUser.getId());
-        appUserDao.flush();
+        if(appUser != null && appUser.getUserId() != 0) {
+            appUserDao.delete(appUser.getUserId());
+            appUserDao.flush();
+        }
     }
     
     @Test
@@ -78,8 +80,6 @@ public class CategoryControllerTest {
         assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
         assertEquals(TEST_COLOUR, ((CategoryDTO) responseEntity.getBody()).getColour());
         assertTrue(TEST_THRESHOLD == ((CategoryDTO) responseEntity.getBody()).getThreshold());
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test
@@ -104,10 +104,6 @@ public class CategoryControllerTest {
         ResponseEntity responseEntity = categoryController.getAllCategories();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(5, ((List<CategoryDTO>) responseEntity.getBody()).size());
-        categories.stream().forEach(category -> {
-            categoryDao.delete(category.getId());
-        });
-        categoryDao.flush();
     }
     
     @Test
@@ -118,8 +114,6 @@ public class CategoryControllerTest {
         ResponseEntity<?> found = categoryController.getCategory(CATEGORY_NAME);
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)
@@ -141,8 +135,6 @@ public class CategoryControllerTest {
         assertEquals("Category updated", updated.getBody());
         ResponseEntity updatedCategory = categoryController.getCategory(updatedName);
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
     }
     
     @Test(expected = NotFoundException.class)
@@ -187,7 +179,7 @@ public class CategoryControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
-        appUserDao.save(appUser);
+        appUserDao.saveAndFlush(appUser);
         return appUser;
     }
 }

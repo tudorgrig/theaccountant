@@ -1,14 +1,13 @@
 package com.myMoneyTracker.converter;
 
+import com.myMoneyTracker.dto.income.IncomeDTO;
+import com.myMoneyTracker.model.income.Income;
 import org.dozer.DozerBeanMapperSingletonWrapper;
 import org.dozer.Mapper;
 
-import com.myMoneyTracker.dto.income.IncomeDTO;
-import com.myMoneyTracker.model.income.Income;
-
 /**
  * Dozer converter between income and incomeDTO
- * @author Floryn
+ * @author Tudor
  */
 public class IncomeConverter {
 

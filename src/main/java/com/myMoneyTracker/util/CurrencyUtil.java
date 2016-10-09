@@ -3,7 +3,7 @@ package com.myMoneyTracker.util;
 import java.util.Currency;
 
 /**
- * Created by Floryn on 08.02.2016.
+ * Created by Tudor on 08.02.2016.
  */
 public class CurrencyUtil {
 

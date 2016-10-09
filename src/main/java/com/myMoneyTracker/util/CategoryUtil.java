@@ -3,7 +3,6 @@ package com.myMoneyTracker.util;
 import com.myMoneyTracker.model.category.Category;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

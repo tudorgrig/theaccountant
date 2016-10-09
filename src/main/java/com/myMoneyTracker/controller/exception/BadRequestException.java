@@ -1,13 +1,13 @@
 package com.myMoneyTracker.controller.exception;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Created by Floryn on 06.03.2016
+ * Created by Tudor on 06.03.2016
  */
 @ResponseStatus(value = HttpStatus.CONFLICT)
 public class BadRequestException extends RuntimeException {

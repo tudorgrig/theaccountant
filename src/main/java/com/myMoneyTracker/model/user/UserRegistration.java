@@ -1,13 +1,6 @@
 package com.myMoneyTracker.model.user;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -18,18 +11,15 @@ import javax.validation.constraints.NotNull;
 @Table(name = "user_registration")
 public class UserRegistration {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
     private long id;
 
-    @NotNull
     private String code;
-    
-    @OneToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "user_id")
-    @NotNull
+
     private AppUser user;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public long getId() {
     
         return id;
@@ -40,6 +30,7 @@ public class UserRegistration {
         this.id = id;
     }
 
+    @NotNull
     public String getCode() {
     
         return code;
@@ -50,6 +41,10 @@ public class UserRegistration {
         this.code = code;
     }
 
+
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "user_id")
+    @NotNull
     public AppUser getUser() {
     
         return user;

@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 /**
  * DTO class for income model class
- * @author Floryn
+ * @author Tudor
  */
 public class IncomeDTO {
 

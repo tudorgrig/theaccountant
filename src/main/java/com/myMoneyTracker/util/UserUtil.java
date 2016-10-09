@@ -1,20 +1,17 @@
 package com.myMoneyTracker.util;
 
-import java.util.UUID;
-
-import javax.mail.MessagingException;
-
-import com.myMoneyTracker.dao.ForgotPasswordDao;
-import com.myMoneyTracker.model.user.ForgotPassword;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.myMoneyTracker.controller.exception.UnauthorizedException;
-import com.myMoneyTracker.converter.ExpenseConverter;
 import com.myMoneyTracker.dao.AppUserDao;
 import com.myMoneyTracker.dao.CategoryDao;
+import com.myMoneyTracker.dao.ForgotPasswordDao;
 import com.myMoneyTracker.dao.UserRegistrationDao;
 import com.myMoneyTracker.model.user.AppUser;
+import com.myMoneyTracker.model.user.ForgotPassword;
 import com.myMoneyTracker.model.user.UserRegistration;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.mail.MessagingException;
+import java.util.UUID;
 
 /**
  * Class containing useful methods for User management.
@@ -106,7 +103,7 @@ public class UserUtil {
     public void generateDefaultCategoriesForUser(AppUser appUser){
         CategoryUtil.DEFAULT_CATEGORIES.forEach(category -> {
             category.setUser(appUser);
-            categoryDao.save(category);
+            categoryDao.saveAndFlush(category);
         });
         categoryDao.flush();
     }

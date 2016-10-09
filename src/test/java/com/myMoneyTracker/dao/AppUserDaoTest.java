@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.myMoneyTracker.model.user.AppUser;
 
 /**
- * @author Floryn
+ * @author Tudor
  * This class represents the test class for the app user data access object
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -34,9 +34,6 @@ public class AppUserDaoTest {
 
     @Autowired
     private IncomeDao incomeDao;
-    
-    @Autowired
-    private UserRegistrationDao userRegistrationDao;
 
     private String FIRST_NAME = "DerbedeiidinBacau";
     private AppUser appUser = null;
@@ -51,8 +48,8 @@ public class AppUserDaoTest {
     @Test
     public void shouldSaveAppUser() {
         appUser = appUserDao.save(appUser);
-        logger.info("The user has id = " + appUser.getId());
-        assertTrue(appUser.getId() != 0);
+        logger.info("The user has id = " + appUser.getUserId());
+        assertTrue(appUser.getUserId() != 0);
     }
 
     @Test(expected = org.springframework.dao.DataIntegrityViolationException.class)
@@ -67,7 +64,7 @@ public class AppUserDaoTest {
     @Test
     public void shouldFindAppUser() {
         appUser = appUserDao.save(appUser);
-        appUser = appUserDao.findOne(appUser.getId());
+        appUser = appUserDao.findOne(appUser.getUserId());
         assertTrue(appUser != null);
     }
 
@@ -82,7 +79,7 @@ public class AppUserDaoTest {
     public void shouldDeleteAppUser() {
         appUser = appUserDao.save(appUser);
         appUserDao.delete(appUser);
-        appUser = appUserDao.findOne(appUser.getId());
+        appUser = appUserDao.findOne(appUser.getUserId());
         assertTrue(appUser == null);
     }
 
@@ -97,8 +94,8 @@ public class AppUserDaoTest {
     @Test
     public void shouldSaveAndFlush() {
         appUser = appUserDao.saveAndFlush(appUser);
-        assertTrue(appUser.getId() > 0);
-        appUserDao.delete(appUser.getId());
+        assertTrue(appUser.getUserId() > 0);
+        appUserDao.delete(appUser.getUserId());
         appUserDao.flush();
     }
 

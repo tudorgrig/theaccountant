@@ -1,8 +1,8 @@
 package com.myMoneyTracker.dto.expense;
 
-import java.sql.Timestamp;
-
 import com.myMoneyTracker.dto.category.CategoryDTO;
+
+import java.sql.Timestamp;
 
 public class ExpenseDTO {
     

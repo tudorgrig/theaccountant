@@ -1,15 +1,14 @@
 package com.myMoneyTracker.dao;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.model.expense.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import com.myMoneyTracker.model.expense.Expense;
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Data access object class for 'expense'
@@ -19,19 +18,19 @@ import com.myMoneyTracker.model.expense.Expense;
 @Transactional
 public interface ExpenseDao extends JpaRepository<Expense, Long> {
     
-    @Query("SELECT e FROM Expense e WHERE e.user.username = ?1")
-    List<Expense> findByUsername(String username);
+    @Query("SELECT DISTINCT e FROM Expense e WHERE e.user.username = ?1")
+    Set<Expense> findByUsername(String username);
     
     @Query("SELECT e FROM Expense e WHERE e.category.name = ?1 AND e.user.username = ?2")
     List<Expense> findByCategoryNameAndUsername(String categoryName, String username);
     
     @Modifying
-    @Query(value = "DELETE FROM expense WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
+    @Query(value = "DELETE FROM expense WHERE userid IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
     
     @Modifying
     @Query(value = "DELETE FROM expense WHERE category_id IN (SELECT category.id FROM category WHERE category.name= ?1)"
-            + "AND user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?2)", nativeQuery = true)
+            + "AND userid IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?2)", nativeQuery = true)
     void deleteAllByCategoryNameAndUsername(String categoryName, String username);
 
     @Query(value = "SELECT exp.* " +
@@ -45,15 +44,15 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
             ")", nativeQuery = true)
     List<Expense> findRecurrentExpensesToAdd(int currentDay, int currentMonth);
 
-    @Query("SELECT e FROM Expense e " +
+    @Query("SELECT DISTINCT e FROM Expense e " +
             "WHERE e.user.username = ?1" +
             " AND e.creationDate BETWEEN ?2 AND ?3")
-    List<Expense> findByTimeInterval(String username, Timestamp startDate, Timestamp endDate);
+    Set<Expense> findByTimeInterval(String username, Timestamp startDate, Timestamp endDate);
 
-    @Query("SELECT e FROM Expense e " +
+    @Query("SELECT DISTINCT e FROM Expense e " +
             "WHERE e.user.username = ?1 " +
             " AND e.category.name = ?2" +
             " AND e.creationDate BETWEEN ?3 AND ?4")
-    List<Expense> findByTimeIntervalAndCategory(String username, String categoryName,
-                                                Timestamp startDate, Timestamp endDate);
+    Set<Expense> findByTimeIntervalAndCategory(String username, String categoryName,
+                                               Timestamp startDate, Timestamp endDate);
 }

@@ -70,11 +70,7 @@ public class ExpenseControllerTest {
 
     @After
     public void cleanUp() {
-
-        categoryDao.delete(category.getId());
-        categoryDao.flush();
-
-        appUserDao.delete(applicationUser.getId());
+        appUserDao.delete(applicationUser.getUserId());
         appUserDao.flush();
 
     }
@@ -86,8 +82,6 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -100,8 +94,6 @@ public class ExpenseControllerTest {
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
         assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrency());
         assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrencyAmount());
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -112,8 +104,6 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test(expected = BadRequestException.class)
@@ -134,10 +124,6 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
-        categoryDao.delete(expense.getCategory().getId());
-        categoryDao.flush();
     }
 
     @Test(expected = BadRequestException.class)
@@ -158,8 +144,6 @@ public class ExpenseControllerTest {
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @SuppressWarnings("unchecked")
@@ -173,8 +157,6 @@ public class ExpenseControllerTest {
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -197,9 +179,6 @@ public class ExpenseControllerTest {
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
-
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -216,9 +195,6 @@ public class ExpenseControllerTest {
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
-
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -236,9 +212,6 @@ public class ExpenseControllerTest {
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
         assertEquals(applicationUser.getDefaultCurrency().getCurrencyCode(), result.getDefaultCurrency());
-
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
 
@@ -255,9 +228,6 @@ public class ExpenseControllerTest {
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
-
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -273,9 +243,6 @@ public class ExpenseControllerTest {
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
-
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test
@@ -288,8 +255,6 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
         assertEquals(expense.getName(), found.getName());
-        expenseDao.delete(expense.getId());
-        expenseDao.flush();
     }
 
     @Test(expected = NotFoundException.class)
@@ -306,7 +271,6 @@ public class ExpenseControllerTest {
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        long id = expense.getId();
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
@@ -314,6 +278,7 @@ public class ExpenseControllerTest {
 
         Category category = new Category();
         category.setName("another_category");
+        category.setUser(applicationUser);
         toUpdate.setCategory(category);
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
@@ -322,22 +287,15 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
         assertEquals("updated_expense", found.get(0).getName());
-
-        expenseDao.delete(id);
-        expenseDao.flush();
-        categoryDao.delete(found.get(0).getCategory().getId());
-        categoryDao.flush();
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    @Transactional
     public void shouldUpdateExpenseAndSetDefaultCurrencyAmount() {
 
         Expense expense = createExpense(category, applicationUser);
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        long id = expense.getId();
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
         toUpdate.setCurrency("EUR");
@@ -354,11 +312,6 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
         assertEquals("updated_expense", found.get(0).getName());
-
-        expenseDao.delete(id);
-        expenseDao.flush();
-        categoryDao.delete(found.get(0).getCategory().getId());
-        categoryDao.flush();
     }
 
 
@@ -381,8 +334,6 @@ public class ExpenseControllerTest {
             expenseController.updateExpense(expense.getId(), toUpdate);
         } catch(Exception e){
             assertTrue(e instanceof BadRequestException);
-            expenseDao.delete(expense.getId());
-            expenseDao.flush();
         }
     }
 

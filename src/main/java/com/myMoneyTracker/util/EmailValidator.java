@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Floryn
+ * @author Tudor
  * Class used to validate email format in strings
  */
 public class EmailValidator {

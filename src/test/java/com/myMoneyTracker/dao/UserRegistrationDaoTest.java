@@ -44,11 +44,11 @@ public class UserRegistrationDaoTest {
         appUser = appUserDao.save(appUser);
         UserRegistration userRegistration = createUserRegistration("code-test", appUser);
         userRegistrationDao.save(userRegistration);
-        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getId());
+        List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getUserId());
         assertFalse("Could not find userRegistration!", regList.isEmpty());
         userRegistration = regList.get(0);
         userRegistrationDao.delete(userRegistration);
-        regList = userRegistrationDao.findByUserId(appUser.getId());
+        regList = userRegistrationDao.findByUserId(appUser.getUserId());
         assertTrue("userRegistration should be deleted!", regList.isEmpty());
     }
     

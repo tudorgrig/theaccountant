@@ -1,14 +1,12 @@
 package com.myMoneyTracker.dao;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.myMoneyTracker.model.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import com.myMoneyTracker.model.category.Category;
+import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * Created by florinIacob on 18.12.2015.
@@ -24,7 +22,7 @@ public interface CategoryDao extends JpaRepository<Category, Long> {
     List<Category> findByUsername(String username);
 
     @Modifying
-    @Query(value = "delete from category WHERE user_id IN (SELECT app_user.id FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
+    @Query(value = "delete from category WHERE userId IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
 
 }
