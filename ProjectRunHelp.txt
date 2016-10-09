@@ -12,4 +12,4 @@
 
 3. Run the jar application: 
 
-	'java -jar target\MyMoneyTracker-0.0.1-SNAPSHOT.jar'
+	'java -jar target\TheAccountant-0.0.1-SNAPSHOT.jar'

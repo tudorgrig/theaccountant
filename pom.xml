@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.my-money-tracker</groupId>
-	<artifactId>MyMoneyTracker</artifactId>
+	<groupId>com.theaccountant</groupId>
+	<artifactId>TheAccountant</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>MyMoneyTracker</name>
-	<description>Money tracker application</description>
+	<name>TheAccountant</name>
+	<description>The accountant application</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
