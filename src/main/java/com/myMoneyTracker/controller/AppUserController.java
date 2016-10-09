@@ -211,6 +211,8 @@ public class AppUserController {
             throw new BadRequestException("Invalid request!");
         } else if (newPassword == null || newPassword.isEmpty()) {
             throw new BadRequestException("Invalid request!");
+        } else if (newPassword.length() < 8) {
+            throw new BadRequestException("Password should have at least 8 characters!");
         }
 
         ForgotPassword forgotPassword = forgotPasswordDao.findByCode(code);
