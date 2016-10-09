@@ -57,7 +57,7 @@ public class EmailSender {
         String subject = "[My Money Tracker] Forgot password";
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append("<h2 style='color:red;'>Hello, " + user.getUsername() + "!</h2>");
-        messageBuilder.append("<br><br><pre style='font-size: 160%;'>You've requested the renewal of the forgotten password. If you didn't initialize this action, please ignore this email.</pre>");
+        messageBuilder.append("<br><br><pre style='font-size: 160%;'>You've requested the renewal of your password. If you didn't initialize this action, please ignore this email.</pre>");
         messageBuilder.append("<br><pre style='font-size: 160%;'>Please renew your password by following the " + "link: " + "<a href='" + baseForgotPasswordUrl + code + "'>RENEW YOUR PASSWORD</a></pre>");
         messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
         sendEmail(user.getEmail(), subject, messageBuilder.toString());
