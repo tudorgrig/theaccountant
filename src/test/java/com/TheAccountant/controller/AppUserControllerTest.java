@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.TheAccountant.app.authentication.SessionAuthentication;
@@ -43,6 +44,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
+@TestPropertySource(locations="classpath:application-test.properties")
 public class AppUserControllerTest {
 
     private String FIRST_NAME = "Floryn";

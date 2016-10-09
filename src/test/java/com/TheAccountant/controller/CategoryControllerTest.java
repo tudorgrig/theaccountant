@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.TheAccountant.controller.exception.NotFoundException;
@@ -34,6 +35,7 @@ import com.TheAccountant.util.ControllerUtil;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
+@TestPropertySource(locations="classpath:application-test.properties")
 @SuppressWarnings("rawtypes")
 public class CategoryControllerTest {
     

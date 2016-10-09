@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.TheAccountant.app.filter.AuthenticationFilter;
@@ -24,6 +25,7 @@ import com.TheAccountant.service.SessionService;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
+@TestPropertySource(locations="classpath:application-test.properties")
 public class AuthenticationFilterTest {
     
     private static final String BASE_URL = "https://localhost:8443";
