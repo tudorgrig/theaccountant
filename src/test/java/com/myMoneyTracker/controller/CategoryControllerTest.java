@@ -1,6 +1,7 @@
 package com.myMoneyTracker.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -142,7 +143,7 @@ public class CategoryControllerTest {
     
         String updatedName = "updatedCategoryName";
         Category toUpdatecategory = createCategory(updatedName);
-        ResponseEntity updated = categoryController.updateCategory(-1l, toUpdatecategory);
+        categoryController.updateCategory(-1l, toUpdatecategory);
     }
     
     @Test
@@ -153,12 +154,14 @@ public class CategoryControllerTest {
         ResponseEntity deletedEntity = categoryController.deleteCategory((((CategoryDTO) responseEntity.getBody()).getId()));
         assertEquals(HttpStatus.NO_CONTENT, deletedEntity.getStatusCode());
         assertEquals("Category deleted", deletedEntity.getBody());
+        Category category1 = categoryDao.findOne(category.getId());
+        assertNull(category1);
     }
     
     @Test(expected = NotFoundException.class)
     public void shouldNotDeleteCategory() {
 
-        ResponseEntity deletedEntity = categoryController.deleteCategory(-1l);
+        categoryController.deleteCategory(-1l);
     }
     
     private Category createCategory(String categoryName) {

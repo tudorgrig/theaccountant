@@ -71,10 +71,10 @@ public class AppUser {
     private Currency defaultCurrency;
 
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user" , cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Income> incomes = new HashSet<>();
 
 

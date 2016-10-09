@@ -30,7 +30,7 @@ public class Category {
 
     private float threshold = 0;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category" , cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     public Set<Expense> getExpenses() {
         return expenses;
     }
