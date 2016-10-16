@@ -196,7 +196,7 @@ public class AppUserControllerTest {
         assertFalse("User should NOT be activated!", appUser.isActivated());
         List<UserRegistration> regList = userRegistrationDao.findByUserId(appUser.getUserId());
         assertFalse("Could not find userRegistration!", regList.isEmpty());
-        appUserController.registerUser(regList.get(0).getCode());
+        appUserController.activateUser(regList.get(0).getCode());
         appUser = appUserDao.findOne(appUser.getUserId());
         assertTrue("User should be activated!", appUser.isActivated());
         appUserDao.delete(appUser.getUserId());
@@ -667,7 +667,7 @@ public class AppUserControllerTest {
     @Test(expected = BadRequestException.class)
     public void shouldNotRegisterAndActivateUser() {
 
-        ResponseEntity<?> responseEntity = appUserController.registerUser("invalid_code");
+        ResponseEntity<?> responseEntity = appUserController.activateUser("invalid_code");
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 

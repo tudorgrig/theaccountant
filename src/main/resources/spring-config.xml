@@ -68,7 +68,7 @@
     <bean id="emailSender" class="com.TheAccountant.util.EmailSender">
         <property name="senderEmail" value="${emailSender.email}"/>
         <property name="senderPassword" value="${emailSender.password}"/>
-        <property name="baseRegistrationUrl" value="${emailSender.base_registration_url}"/>
+        <property name="baseActivationUrl" value="${emailSender.base_activation_url}"/>
         <property name="baseForgotPasswordUrl" value="${emailSender.base_forgot_password_url}"/>
     </bean>
 

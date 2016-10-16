@@ -278,9 +278,9 @@ public class AppUserController {
         return new ResponseEntity<>(defaultCurrencyDTO, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/registration/{code:.+}", method = RequestMethod.GET)
+    @RequestMapping(value = "/activation/{code:.+}", method = RequestMethod.GET)
     @Transactional
-    public ResponseEntity<AppUserDTO> registerUser(@PathVariable("code") String code) {
+    public ResponseEntity<AppUserDTO> activateUser(@PathVariable("code") String code) {
     
         UserRegistration userRegistration = userRegistrationDao.findByCode(code);
         if (userRegistration == null) {
