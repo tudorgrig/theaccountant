@@ -5,6 +5,7 @@ import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.CategoryDao;
 import com.TheAccountant.dao.ForgotPasswordDao;
 import com.TheAccountant.dao.UserRegistrationDao;
+import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.model.user.ForgotPassword;
 import com.TheAccountant.model.user.UserRegistration;
@@ -102,8 +103,9 @@ public class UserUtil {
 
     public void generateDefaultCategoriesForUser(AppUser appUser){
         CategoryUtil.DEFAULT_CATEGORIES.forEach(category -> {
-            category.setUser(appUser);
-            categoryDao.saveAndFlush(category);
+            Category clone = category.clone();
+            clone.setUser(appUser);
+            categoryDao.saveAndFlush(clone);
         });
         categoryDao.flush();
     }

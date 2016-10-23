@@ -105,5 +105,12 @@ public class Category {
         this.threshold = threshold;
     }
 
+    public Category clone(){
+        Category category = new Category();
+        category.setColour(this.colour);
+        category.setName(this.name);
+        return category;
+    }
+
 
 }
