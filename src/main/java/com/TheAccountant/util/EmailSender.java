@@ -17,7 +17,7 @@ public class EmailSender {
 
     private String senderEmail;
     private String senderPassword;
-    private String baseRegistrationUrl;
+    private String baseActivationUrl;
     private String baseForgotPasswordUrl;
     
     /**
@@ -30,10 +30,10 @@ public class EmailSender {
      */
     public void sendUserRegistrationEmail(AppUser user, String code) throws MessagingException {
     
-        String subject = "[My Money Tracker] Account registration";
+        String subject = "[My Money Tracker] Account activation";
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append("<h2 style='color:red;'>Hello, " + user.getUsername() + "!</h2>");
-        messageBuilder.append("<br><br><pre style='font-size: 160%;'>Please confirm your registration by following the " + "link: " + "<a href='" + baseRegistrationUrl + code + "'>REGISTRATION LINK</a></pre>");
+        messageBuilder.append("<br><br><pre style='font-size: 160%;'>Please confirm your registration by following the link: " + "<a href='" + baseActivationUrl + code + "'>ACTIVATION LINK</a></pre>");
         messageBuilder.append("<br><br><pre style='font-size: 130%;'>Kind regards,<br>My Money Tracker Team</pre>");
         sendEmail(user.getEmail(), subject, messageBuilder.toString());
     }
@@ -99,9 +99,9 @@ public class EmailSender {
         this.senderPassword = senderPassword;
     }
     
-    public String getBaseRegistrationUrl() {
+    public String getBaseActivationUrl() {
     
-        return baseRegistrationUrl;
+        return baseActivationUrl;
     }
 
     public String getBaseForgotPasswordUrl() {
@@ -112,9 +112,9 @@ public class EmailSender {
         this.baseForgotPasswordUrl = baseForgotPasswordUrl;
     }
 
-    public void setBaseRegistrationUrl(String baseRegistrationUrl) {
+    public void setBaseActivationUrl(String baseActivationUrl) {
     
-        this.baseRegistrationUrl = baseRegistrationUrl;
+        this.baseActivationUrl = baseActivationUrl;
     }
 
     private Properties buildProperties() {

@@ -50,7 +50,7 @@ public class AuthenticationFilter implements Filter {
             }
             if (url.contains("/user/login")
                     || url.contains("/user/logout")
-                    || url.contains("/user/registration/")
+                    || url.contains("/user/activation/")
                     || url.contains("/user/forgot_password")
                     || url.contains("/user/renew_forgot_password")
                     || url.contains("/user/add")

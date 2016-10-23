@@ -68,7 +68,7 @@ public class AuthenticationFilterTest {
         MockHttpServletRequest request1 = new MockHttpServletRequest("GET", requestUrl1, clientIpAddress);
         MockHttpServletResponse response1 = new MockHttpServletResponse();
         
-        String requestUrl2 = BASE_URL + "/user/registration/aaaaaaaaaa";
+        String requestUrl2 = BASE_URL + "/user/activation/aaaaaaaaaa";
         MockHttpServletRequest request2 = new MockHttpServletRequest("GET", requestUrl2, clientIpAddress);
         MockHttpServletResponse response2 = new MockHttpServletResponse();
 
