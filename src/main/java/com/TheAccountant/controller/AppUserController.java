@@ -69,7 +69,8 @@ public class AppUserController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
     public ResponseEntity<AppUserDTO> createAppUser(@RequestBody @Valid AppUser appUser) {
-    
+
+        userUtil.validateUsername(appUser.getUsername());
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         appUser.setActivated(false);

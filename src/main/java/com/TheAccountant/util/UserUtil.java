@@ -1,5 +1,6 @@
 package com.TheAccountant.util;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.UnauthorizedException;
 import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.CategoryDao;
@@ -10,6 +11,8 @@ import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.model.user.ForgotPassword;
 import com.TheAccountant.model.user.UserRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import java.util.UUID;
@@ -38,6 +41,9 @@ public class UserUtil {
 
     @Autowired
     private CategoryDao categoryDao;
+
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-z0-9A-Z_.-]{5,15}$");
+
     
     /**
      * Method that will generate and send a registration code to the specified user email.
@@ -108,5 +114,13 @@ public class UserUtil {
             categoryDao.saveAndFlush(clone);
         });
         categoryDao.flush();
+    }
+
+    public void validateUsername(String username) {
+        Matcher m = USERNAME_PATTERN.matcher(username);
+        boolean b = m.matches();
+        if (b == false){
+            throw new BadRequestException("Username must not contain special characters");
+        }
     }
 }
