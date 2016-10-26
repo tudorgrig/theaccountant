@@ -150,10 +150,8 @@ public class IncomeControllerTest {
         responseEntity = incomeController.updateIncome(income.getId(), toUpdate);
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
-        responseEntity = incomeController.listAllIncomes();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<IncomeDTO> found = (List<IncomeDTO>) responseEntity.getBody();
-        assertEquals("updated_income", found.get(0).getName());
+        Income found = incomeDao.findOne(income.getId());
+        assertEquals("updated_income", found.getName());
     }
 
     @Test
@@ -201,8 +199,8 @@ public class IncomeControllerTest {
         responseEntity = incomeController.deleteIncome(income.getId());
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
-        responseEntity = incomeController.findIncome(income.getId());
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Income found = incomeDao.findOne(income.getId());
+        assertNull(found);
     }
 
     @Test
@@ -221,7 +219,7 @@ public class IncomeControllerTest {
         appUserDao.delete(income.getUser().getUserId());
         appUserDao.flush();
     }
-    
+
     @Test
     public void shouldDeleteAllIncomes() {
 

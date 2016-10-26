@@ -55,12 +55,12 @@ public class CategoryController {
 
     }
     
-    @RequestMapping(value = "find/{categoryName.+}", method = RequestMethod.GET)
-    public ResponseEntity<CategoryDTO> getCategory(@PathVariable("categoryName") String categoryName) {
+    @RequestMapping(value = "find/{id.+}", method = RequestMethod.GET)
+    public ResponseEntity<CategoryDTO> getCategory(@PathVariable("id") long id) {
     
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Optional<Category> found =
-                user.getCategories().stream().filter(category -> category.getName().equals(categoryName)).findFirst();
+                user.getCategories().stream().filter(category -> category.getId() == id).findFirst();
         if (!found.isPresent()) {
             throw new NotFoundException("Category not found");
         }

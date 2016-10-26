@@ -20,18 +20,15 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
     
     @Query("SELECT DISTINCT e FROM Expense e WHERE e.user.username = ?1")
     Set<Expense> findByUsername(String username);
-    
-    @Query("SELECT e FROM Expense e WHERE e.category.name = ?1 AND e.user.username = ?2")
-    List<Expense> findByCategoryNameAndUsername(String categoryName, String username);
-    
+
     @Modifying
     @Query(value = "DELETE FROM expense WHERE userid IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);
-    
+
     @Modifying
-    @Query(value = "DELETE FROM expense WHERE category_id IN (SELECT category.id FROM category WHERE category.name= ?1)"
+    @Query(value = "DELETE FROM expense WHERE category_id IN (SELECT category.id FROM category WHERE category.id= ?1)"
             + "AND userid IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?2)", nativeQuery = true)
-    void deleteAllByCategoryNameAndUsername(String categoryName, String username);
+    void deleteAllByCategoryAndUsername(long categoryId, String username);
 
     @Query(value = "SELECT exp.* " +
             "FROM expense exp " +
@@ -51,8 +48,8 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
 
     @Query("SELECT DISTINCT e FROM Expense e " +
             "WHERE e.user.username = ?1 " +
-            " AND e.category.name = ?2" +
+            " AND e.category.id = ?2" +
             " AND e.creationDate BETWEEN ?3 AND ?4")
-    Set<Expense> findByTimeIntervalAndCategory(String username, String categoryName,
+    Set<Expense> findByTimeIntervalAndCategory(String username, long categoryId,
                                                Timestamp startDate, Timestamp endDate);
 }

@@ -78,7 +78,7 @@ public class ExpenseController {
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     @Transactional
     public ResponseEntity<List<ExpenseDTO>> listAllExpenses() {
-    
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Set<Expense> expenses = expenseDao.findByUsername(user.getUsername());
         if (expenses.isEmpty()) {
@@ -105,19 +105,19 @@ public class ExpenseController {
         return new ResponseEntity<>(createExpenseDTOs(category.getExpenses()), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/find/{category_name:.+}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
-    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryNameAndTimeInterval(
-            @PathVariable("category_name") String categoryName,
+    @RequestMapping(value = "/find/{id:.+}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
+    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryAndTimeInterval(
+            @PathVariable("id") String id,
             @PathVariable("start_time_millis") long startTimeMillis,
             @PathVariable("end_time_millis") long endTimeMillis) {
 
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Set<Expense> expenses;
-        if (categoryName.equals("*")) {
+        if (id.equals("*")) {
             expenses = expenseDao.findByTimeInterval(user.getUsername(), new Timestamp(startTimeMillis),
                     new Timestamp(endTimeMillis));
         } else {
-            expenses = expenseDao.findByTimeIntervalAndCategory(user.getUsername(), categoryName,
+            expenses = expenseDao.findByTimeIntervalAndCategory(user.getUsername(), Long.valueOf(id),
                     new Timestamp(startTimeMillis), new Timestamp(endTimeMillis));
         }
         if (expenses.isEmpty()) {
@@ -203,13 +203,13 @@ public class ExpenseController {
         expenseDao.flush();
         return new ResponseEntity<>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
-    
-    @RequestMapping(value = "/delete_all/{category_name:.+}", method = RequestMethod.DELETE)
+
+    @RequestMapping(value = "/delete_all/{id:.+}", method = RequestMethod.DELETE)
     @Transactional
-    public ResponseEntity<String> deleteAllByCategoryName(@PathVariable("category_name") String categoryName) {
-    
+    public ResponseEntity<String> deleteAllByCategory(@PathVariable("id") long categoryId) {
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        expenseDao.deleteAllByCategoryNameAndUsername(categoryName, user.getUsername());
+        expenseDao.deleteAllByCategoryAndUsername(categoryId, user.getUsername());
         expenseDao.flush();
         return new ResponseEntity<>("Expenses deleted", HttpStatus.NO_CONTENT);
     }

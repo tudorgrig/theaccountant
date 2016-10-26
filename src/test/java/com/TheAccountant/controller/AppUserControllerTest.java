@@ -88,7 +88,6 @@ public class AppUserControllerTest {
     }
 
     @Test
-    @Ignore
     public void shouldCreateAppUser() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
@@ -100,7 +99,6 @@ public class AppUserControllerTest {
     }
 
     @Test
-    @Ignore
     public void shouldCreateDefaultCategoriesOnRegister() {
 
         AppUser appUser = createAppUser(FIRST_NAME);
@@ -123,7 +121,6 @@ public class AppUserControllerTest {
     }
 
     @Test(expected = BadRequestException.class)
-    @Ignore
     public void shouldNotCreateAppUserWithInvalidMail() {
 
         AppUser appUser = createAppUser(FIRST_NAME);

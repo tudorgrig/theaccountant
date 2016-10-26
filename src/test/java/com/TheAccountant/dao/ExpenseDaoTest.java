@@ -170,7 +170,7 @@ public class ExpenseDaoTest {
         assertTrue("Problems on creating the Expense", expense.getUser() != null);
 
         Set<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
-                category.getName(), queryStartDate, queryEndDate);
+                category.getId(), queryStartDate, queryEndDate);
         assertTrue("The expense list should have 1 element!", (expenses != null && expenses.size() == 1));
     }
 
@@ -186,7 +186,7 @@ public class ExpenseDaoTest {
         assertTrue("Problems on creating the Expense", expense.getUser() != null);
 
         Set<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
-                category.getName(), queryStartDate, queryEndDate);
+                category.getId(), queryStartDate, queryEndDate);
         assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
     }
 
@@ -202,7 +202,7 @@ public class ExpenseDaoTest {
         assertTrue("Problems on creating the Expense", expense.getUser() != null);
 
         Set<Expense> expenses = expenseDao.findByTimeIntervalAndCategory(applicationUser.getUsername(),
-                "Another category", queryStartDate, queryEndDate);
+                6L, queryStartDate, queryEndDate);
         assertTrue("The expense list should be empty!", (expenses == null || expenses.size() == 0));
     }
 
