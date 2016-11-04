@@ -175,6 +175,11 @@ public class IncomeController {
         String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(income.getCreationDate().getTime());
         Double exchangeRateOnDay = null;
         try {
+            if(incomeCurrency.equals(defaultCurrency.getCurrencyCode())){
+                income.setDefaultCurrencyAmount(null);
+                income.setDefaultCurrency(null);
+                return;
+            }
             exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(incomeCurrency, defaultCurrency, formatDate);
             if(exchangeRateOnDay != null) {
                 income.setDefaultCurrency(defaultCurrency.getCurrencyCode());

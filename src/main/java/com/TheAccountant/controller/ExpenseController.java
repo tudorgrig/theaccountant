@@ -271,6 +271,11 @@ public class ExpenseController {
         String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(expense.getCreationDate().getTime());
         Double exchangeRateOnDay = null;
         try {
+            if(expenseCurrency.equals(defaultCurrency.getCurrencyCode())){
+                expense.setDefaultCurrencyAmount(null);
+                expense.setDefaultCurrency(null);
+                return;
+            }
             exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(expenseCurrency, defaultCurrency, formatDate);
             if(exchangeRateOnDay != null) {
                 expense.setDefaultCurrency(defaultCurrency.getCurrencyCode());
