@@ -175,6 +175,19 @@ public class ExpenseControllerTest {
         assertEquals(expense.getName(), result.getName());
     }
 
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowExceptionIdIsNotNumber() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        expenseController.listAllExpensesByCategoryAndTimeInterval("BAD_ID",
+                queryStartTime, queryEndTime);
+    }
+
     @Test
     public void shouldListAllExpenseForAllCategoriesAndTimeInterval() {
 
@@ -233,7 +246,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval(String.valueOf(-1),
+        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval(String.valueOf(777),
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);

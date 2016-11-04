@@ -12,6 +12,7 @@ import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.CurrencyConverter;
 import com.TheAccountant.util.CurrencyUtil;
 import com.TheAccountant.util.UserUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -117,6 +118,7 @@ public class ExpenseController {
             expenses = expenseDao.findByTimeInterval(user.getUsername(), new Timestamp(startTimeMillis),
                     new Timestamp(endTimeMillis));
         } else {
+            validateIdIsNumber(id);
             expenses = expenseDao.findByTimeIntervalAndCategory(user.getUsername(), Long.valueOf(id),
                     new Timestamp(startTimeMillis), new Timestamp(endTimeMillis));
         }
@@ -126,6 +128,7 @@ public class ExpenseController {
         convertExpensesToDefaultCurrency(expenses, user);
         return new ResponseEntity(createExpenseDTOs(expenses), HttpStatus.OK);
     }
+
 
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<ExpenseDTO> findExpense(@PathVariable("id") Long id) {
@@ -285,6 +288,11 @@ public class ExpenseController {
         });
     }
 
-
+    private void validateIdIsNumber(String id) {
+        if(!StringUtils.isNumeric(id)){
+            throw new BadRequestException("Id must be either * or a number");
+        }
+        return;
+    }
 
 }
