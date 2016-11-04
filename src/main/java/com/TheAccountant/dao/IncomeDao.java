@@ -23,7 +23,7 @@ public interface IncomeDao extends JpaRepository<Income, Long> {
     
     @Query("SELECT i FROM Income i WHERE i.user.username = ?1")
     List<Income> findByUsername(String username);
-    
+
     @Modifying
     @Query(value = "DELETE FROM income WHERE user_id IN (SELECT app_user.userId FROM app_user WHERE app_user.username= ?1)", nativeQuery = true)
     void deleteAllByUsername(String username);

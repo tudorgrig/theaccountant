@@ -40,6 +40,7 @@ import com.TheAccountant.util.ControllerUtil;
 public class CategoryControllerTest {
     
     private static final String CATEGORY_NAME = "Category1";
+    private static final Long CATEGORY_ID = 777L;
     private static final String TEST_COLOUR = "stable";
     private static final float TEST_THRESHOLD = (float)42.2;
 
@@ -114,7 +115,7 @@ public class CategoryControllerTest {
     
         Category category = createCategory(CATEGORY_NAME);
         categoryController.createCategory(category);
-        ResponseEntity<?> found = categoryController.getCategory(CATEGORY_NAME);
+        ResponseEntity<?> found = categoryController.getCategory(category.getId());
         assertEquals(HttpStatus.OK, found.getStatusCode());
         assertTrue(found.getBody() != null);
     }
@@ -122,7 +123,7 @@ public class CategoryControllerTest {
     @Test(expected = NotFoundException.class)
     public void shouldNotFindOneCategory() {
     
-       categoryController.getCategory(CATEGORY_NAME + "extra");
+       categoryController.getCategory(CATEGORY_ID);
     }
     
     @Test
@@ -136,7 +137,7 @@ public class CategoryControllerTest {
         ResponseEntity updated = categoryController.updateCategory(id, toUpdatecategory);
         assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
         assertEquals("Category updated", updated.getBody());
-        ResponseEntity updatedCategory = categoryController.getCategory(updatedName);
+        ResponseEntity updatedCategory = categoryController.getCategory(id);
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
     }
     

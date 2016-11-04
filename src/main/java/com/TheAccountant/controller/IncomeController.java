@@ -70,7 +70,7 @@ public class IncomeController {
     //TODO: AGAIN, WHY?
     @RequestMapping(value = "/find_all", method = RequestMethod.GET)
     public ResponseEntity<List<IncomeDTO>> listAllIncomes() {
-    
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         List<Income> incomes = incomeDao.findByUsername(user.getUsername());
         if (incomes.isEmpty()) {
@@ -82,7 +82,7 @@ public class IncomeController {
     //TODO: WHY?
     @RequestMapping(value = "/find/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findIncome(@PathVariable("id") Long id) {
-    
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Income income = incomeDao.findOne(id);
         if (income == null) {
@@ -137,10 +137,10 @@ public class IncomeController {
         }
         return new ResponseEntity<>("Income deleted", HttpStatus.NO_CONTENT);
     }
-    
+
     @RequestMapping(value = "/delete_all", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteAll() {
-    
+
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         incomeDao.deleteAllByUsername(user.getUsername());
         incomeDao.flush();

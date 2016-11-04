@@ -168,17 +168,24 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval(category.getName(),
+        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval(String.valueOf(category.getId()),
                 queryStartTime, queryEndTime);
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
+    }
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowExceptionIdIsNotNumber() {
+
+        Expense expense = createExpense(category, applicationUser);
+        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        long queryStartTime = expense.getCreationDate().getTime() - 1000;
+        long queryEndTime = expense.getCreationDate().getTime() + 1000;
+
+        expenseController.listAllExpensesByCategoryAndTimeInterval("BAD_ID",
                 queryStartTime, queryEndTime);
-        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
-        result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
-        assertEquals(expense.getName(), result.getName());
     }
 
     @Test
@@ -190,7 +197,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval("*",
                 queryStartTime, queryEndTime);
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
@@ -206,7 +213,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        ResponseEntity responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+        ResponseEntity responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval("*",
                 queryStartTime, queryEndTime);
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
@@ -224,7 +231,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() + 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 2000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("*",
+        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval("*",
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
@@ -239,7 +246,7 @@ public class ExpenseControllerTest {
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
 
-        responseEntity = expenseController.listAllExpensesByCategoryNameAndTimeInterval("Another category",
+        responseEntity = expenseController.listAllExpensesByCategoryAndTimeInterval(String.valueOf(777),
                 queryStartTime, queryEndTime);
         assertTrue(((List<ExpenseDTO>) responseEntity.getBody()) == null
                 || ((List<ExpenseDTO>) responseEntity.getBody()).size() == 0);
@@ -283,10 +290,10 @@ public class ExpenseControllerTest {
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
-        responseEntity = expenseController.listAllExpenses();
+        responseEntity = expenseController.findExpense(expense.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
-        assertEquals("updated_expense", found.get(0).getName());
+        ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
+        assertEquals("updated_expense", found.getName());
     }
 
     @Test
@@ -308,10 +315,10 @@ public class ExpenseControllerTest {
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
         assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
-        responseEntity = expenseController.listAllExpenses();
+        responseEntity = expenseController.findExpense(expense.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<ExpenseDTO> found = (List<ExpenseDTO>) responseEntity.getBody();
-        assertEquals("updated_expense", found.get(0).getName());
+        ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
+        assertEquals("updated_expense", found.getName());
     }
 
 
@@ -384,7 +391,7 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
-        responseEntity = expenseController.deleteAllByCategoryName(category.getName());
+        responseEntity = expenseController.deleteAllByCategory(category.getId());
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
 
         responseEntity = expenseController.listAllExpensesByCategoryName(category.getName());

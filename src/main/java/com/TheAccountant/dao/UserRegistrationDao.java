@@ -18,10 +18,6 @@ import java.util.List;
 public interface UserRegistrationDao extends JpaRepository<UserRegistration, Long>  {
     
     UserRegistration findByCode(String code);
- 
-    @Modifying
-    @Query(value = "delete from user_registration WHERE user_id = ?1", nativeQuery = true)
-    void deleteByUserId(long id);
     
     @Query(value = "select * from user_registration WHERE user_id = ?1", nativeQuery = true)
     List<UserRegistration> findByUserId(long id);

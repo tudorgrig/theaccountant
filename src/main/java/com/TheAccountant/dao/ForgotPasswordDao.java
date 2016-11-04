@@ -18,10 +18,6 @@ import java.util.List;
 public interface ForgotPasswordDao extends JpaRepository<ForgotPassword, Long>  {
 
     ForgotPassword findByCode(String code);
- 
-    @Modifying
-    @Query(value = "delete from forgot_password WHERE user_id = ?1", nativeQuery = true)
-    void deleteByUserId(long id);
     
     @Query(value = "select * from forgot_password WHERE user_id = ?1", nativeQuery = true)
     List<ForgotPassword> findByUserId(long id);
