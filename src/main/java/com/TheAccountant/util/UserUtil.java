@@ -11,6 +11,8 @@ import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.model.user.ForgotPassword;
 import com.TheAccountant.model.user.UserRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,7 +78,14 @@ public class UserUtil {
     public void generateForgotPassword(AppUser user) throws MessagingException {
 
         String code = UUID.randomUUID().toString();
-        ForgotPassword forgotPasswordEntity = new ForgotPassword();
+
+        ForgotPassword forgotPasswordEntity;
+        List<ForgotPassword> forgotPasswordList = forgotPasswordDao.findByUserId(user.getUserId());
+        if (forgotPasswordList != null && !forgotPasswordList.isEmpty()) {
+            forgotPasswordEntity = forgotPasswordList.get(0);
+        } else {
+            forgotPasswordEntity = new ForgotPassword();
+        }
         forgotPasswordEntity.setCode(code);
         forgotPasswordEntity.setUser(user);
         forgotPasswordDao.saveAndFlush(forgotPasswordEntity);
