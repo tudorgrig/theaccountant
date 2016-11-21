@@ -112,6 +112,7 @@ public class AppUserController {
     }
     
     @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @Transactional
     public ResponseEntity<?> login(@RequestHeader(value = "Authorization") String authorization) {
     
         String clientIpAddress = ControllerUtil.getRequestClienIpAddress();
@@ -157,6 +158,7 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/change_password", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePassDTO) {
 
         String op = changePassDTO.getOp();
@@ -180,6 +182,7 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/forgot_password", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<?> sendForgotPasswordMail(@RequestBody ForgotPasswordDTO forgotPassDTO) {
 
         String email = forgotPassDTO.getEmail();
@@ -204,6 +207,7 @@ public class AppUserController {
     }
 
     @RequestMapping(value = "/renew_forgot_password", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<?> renewForgotPassword(@RequestBody RenewForgotPasswordDTO renewForgotPassDTO) {
 
         String code = renewForgotPassDTO.getCode();
