@@ -55,6 +55,7 @@ public class AuthenticationFilter implements Filter {
                     || url.contains("/user/renew_forgot_password")
                     || url.contains("/user/add")
                     || url.contains("/user/description")
+                    || url.contains("/.well-known/acme-challenge")
                     || url.equals("/")) {
                 isAllowed = true;
             }
