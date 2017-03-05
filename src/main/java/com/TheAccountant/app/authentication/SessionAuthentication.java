@@ -17,7 +17,7 @@ public class SessionAuthentication implements Authentication {
     private static final long serialVersionUID = -7906839299823126986L;
     
     private String name;
-    private boolean isAuthenticated;
+    private boolean isAuthenticated = true;
     private AppUser user;
     private String clientIpAddress;
     
