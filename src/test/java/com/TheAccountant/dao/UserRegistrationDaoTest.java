@@ -29,7 +29,9 @@ import com.TheAccountant.model.user.UserRegistration;
 @TestPropertySource(locations="classpath:application-test.properties")
 @Transactional
 public class UserRegistrationDaoTest {
-    
+
+    private static final String LOGGED_USERNAME = "UserRegistration_test";
+
     @Autowired
     private UserRegistrationDao userRegistrationDao;
     
@@ -68,9 +70,9 @@ public class UserRegistrationDaoTest {
         appUser.setFirstName(firstName);
         appUser.setSurname("Iacob");
         appUser.setPassword("TEST_PASS");
-        appUser.setUsername("florin");
+        appUser.setUsername(LOGGED_USERNAME);
         appUser.setBirthdate(new Date());
-        appUser.setEmail("rampageflo2@gmail.com");
+        appUser.setEmail(LOGGED_USERNAME + "@gmail.com");
         return appUser;
     }
 }

@@ -1,7 +1,9 @@
 package com.TheAccountant.model.user;
 
 import com.TheAccountant.model.category.Category;
+import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.income.Income;
+import com.TheAccountant.model.loan.Loan;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -77,6 +79,11 @@ public class AppUser {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Income> incomes = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
+    private Set<Counterparty> counterparties = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
+    private Set<Loan> loans = new HashSet<>();
 
     @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
     private ForgotPassword forgotPassword;
@@ -204,6 +211,22 @@ public class AppUser {
 
     public void setDefaultCurrency(Currency defaultCurrency) {
         this.defaultCurrency = defaultCurrency;
+    }
+
+    public Set<Counterparty> getCounterparties() {
+        return counterparties;
+    }
+
+    public void setCounterparties(Set<Counterparty> counterparties) {
+        this.counterparties = counterparties;
+    }
+
+    public Set<Loan> getLoans() {
+        return loans;
+    }
+
+    public void setLoans(Set<Loan> loans) {
+        this.loans = loans;
     }
 
     @Override

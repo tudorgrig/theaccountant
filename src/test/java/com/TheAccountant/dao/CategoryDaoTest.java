@@ -34,7 +34,7 @@ public class CategoryDaoTest {
 
     private static final Logger logger = Logger.getLogger(CategoryDaoTest.class.getName());
 
-    private static final String USERNAME = "Username";
+    private static final String USERNAME = "category_user";
     private static final String CATEGORY_NAME = "Category";
     private static final String TEST_COLOUR = "stable";
     private static final double TEST_THRESHOLD = 42.7;
