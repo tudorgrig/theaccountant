@@ -1,0 +1,112 @@
+package com.TheAccountant.controller;
+
+import com.TheAccountant.dao.AppUserDao;
+import com.TheAccountant.dao.NotificationDao;
+import com.TheAccountant.model.notification.Notification;
+import com.TheAccountant.model.notification.NotificationCategory;
+import com.TheAccountant.model.user.AppUser;
+import com.TheAccountant.util.ControllerUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.sql.Timestamp;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Created by tudor.grigoriu on 3/7/2017.
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "/spring-config.xml" })
+@TestPropertySource(locations="classpath:application-test.properties")
+public class NotificationControllerTest {
+
+    private static final String LOGGED_USERNAME = "florin.iacob";
+    private static final String MESSAGE = "NOTIFICATION MESSAGE";
+    private static final boolean SEEN = true;
+
+    private AppUser applicationUser;
+
+    @Autowired
+    private NotificationController notificationController;
+
+    @Autowired
+    private NotificationDao notificationDao;
+
+    @Autowired
+    private AppUserDao appUserDao;
+
+
+    @Before
+    public void setup() {
+
+        applicationUser = createAndSaveAppUser(LOGGED_USERNAME, "florin.iacob.expense@gmail.com");
+        ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
+    }
+
+    @After
+    public void cleanUp() {
+        appUserDao.delete(applicationUser.getUserId());
+        appUserDao.flush();
+    }
+
+    @Test
+    public void shouldFindNotifications(){
+        Notification notification = createNotification();
+        ResponseEntity<List<Notification>> responseEntity = notificationController.findNotifications(10, 0);
+        List<Notification> notifications = responseEntity.getBody();
+        assertEquals(notification.getMessage(), notifications.get(0).getMessage());
+        assertEquals(notification.getCategory(), notifications.get(0).getCategory());
+        assertEquals(notification.getCreationDate(), notifications.get(0).getCreationDate());
+        assertEquals(notification.getUser().getUsername(), notifications.get(0).getUser().getUsername());
+    }
+
+    @Test
+    public void shouldMarkAsSeen(){
+        Notification notification = createNotification();
+        notification.setSeen(false);
+        notificationDao.saveAndFlush(notification);
+        notificationController.markNotificationAsSeen(notification.getId());
+        Notification result = notificationDao.findOne(notification.getId());
+        assertTrue(result.isSeen());
+    }
+
+    private Notification createNotification() {
+        long creationTimeMillis = System.currentTimeMillis();
+        Timestamp creationDate = new Timestamp(creationTimeMillis);
+        Notification notification = new Notification();
+        notification.setMessage(MESSAGE);
+        notification.setCategory(NotificationCategory.LOAN.name());
+        notification.setCreationDate(creationDate);
+        notification.setSeen(SEEN);
+        notification.setUser(applicationUser);
+        notificationDao.saveAndFlush(notification);
+        return notification;
+    }
+
+    private AppUser createAndSaveAppUser(String username, String email) {
+
+        AppUser appUser = new AppUser();
+        appUser.setFirstName("Florin");
+        appUser.setSurname("Iacob");
+        appUser.setPassword("TEST_PASS");
+        appUser.setBirthdate(new Date());
+        appUser.setUsername(username);
+        appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance("RON"));
+        appUser = appUserDao.saveAndFlush(appUser);
+        return appUser;
+    }
+
+}
