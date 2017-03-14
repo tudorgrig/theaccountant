@@ -3,8 +3,8 @@ package com.TheAccountant.model.user;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.income.Income;
-import com.TheAccountant.model.loan.Loan;
-import org.hibernate.validator.constraints.Email;
+
+import com.TheAccountant.model.notification.Notification;import com.TheAccountant.model.loan.Loan;import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -79,15 +79,25 @@ public class AppUser {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Income> incomes = new HashSet<>();
 
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
+    private Set<Notification> notifications = new HashSet<>();
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Counterparty> counterparties = new HashSet<>();
-
     @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
     private ForgotPassword forgotPassword;
 
     @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
     private UserRegistration userRegistration;
 
+    public Set<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(Set<Notification> notifications) {
+        this.notifications = notifications;
+    }
 
     public Set<Income> getIncomes() {
         return incomes;
