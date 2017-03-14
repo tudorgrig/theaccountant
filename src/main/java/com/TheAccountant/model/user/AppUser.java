@@ -85,6 +85,7 @@ public class AppUser {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Counterparty> counterparties = new HashSet<>();
+
     @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
     private ForgotPassword forgotPassword;
 
