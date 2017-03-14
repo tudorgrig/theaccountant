@@ -17,7 +17,4 @@ public interface CounterpartyDao extends JpaRepository<Counterparty, Long> {
 
     @Query("SELECT DISTINCT C FROM Counterparty C WHERE C.user.username = ?1 ORDER BY email DESC")
     List<Counterparty> fetchAll(String username);
-
-    @Query(value = "SELECT DISTINCT * FROM counterparty c WHERE c.user_id = ?1 ORDER BY c.email DESC LIMIT ?2 OFFSET ?3", nativeQuery = true)
-    List<Counterparty> fetchAll(long userId, int limit, int offset);
 }

@@ -76,10 +76,6 @@ public class CounterpartyDaoTest {
         assertNotNull("Counterparty List should NOT be NULL when fetching by username", dbQueryResult);
         assertEquals(3, dbQueryResult.size());
 
-        List<Counterparty> dbQueryResultWithOffset = counterpartyDao.fetchAll(loggedUser.getUserId(), 2, 0);
-        assertNotNull("Counterparty List should NOT be NULL when fetching by username with OFFSET", dbQueryResultWithOffset);
-        assertEquals(2, dbQueryResultWithOffset.size());
-
         counterpartyDao.delete(dbCounterparty1.getId());
         counterpartyDao.delete(dbCounterparty2.getId());
         counterpartyDao.delete(dbCounterparty3.getId());
@@ -93,9 +89,6 @@ public class CounterpartyDaoTest {
 
         List<Counterparty> dbQueryResult = counterpartyDao.fetchAll("INVALID_USERNAME");
         assertTrue(dbQueryResult == null || dbQueryResult.size() == 0);
-
-        List<Counterparty> dbQueryResultWithOffset = counterpartyDao.fetchAll(loggedUser.getUserId() + 1, 1, 0);
-        assertTrue(dbQueryResultWithOffset == null || dbQueryResultWithOffset.size() == 0);
 
         counterpartyDao.delete(dbCounterparty.getId());
     }

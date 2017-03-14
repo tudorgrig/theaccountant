@@ -82,9 +82,6 @@ public class AppUser {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Counterparty> counterparties = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
-    private Set<Loan> loans = new HashSet<>();
-
     @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
     private ForgotPassword forgotPassword;
 
@@ -219,14 +216,6 @@ public class AppUser {
 
     public void setCounterparties(Set<Counterparty> counterparties) {
         this.counterparties = counterparties;
-    }
-
-    public Set<Loan> getLoans() {
-        return loans;
-    }
-
-    public void setLoans(Set<Loan> loans) {
-        this.loans = loans;
     }
 
     @Override
