@@ -51,7 +51,7 @@ public class ExpenseDaoTest {
     @Before
     public void initialize() {
     
-        applicationUser = createAppUser("test@my-money-tracker.ro", "user1");
+        applicationUser = createAppUser("expense_test@my-money-tracker.ro", "expense_user");
         category = createCategory(applicationUser);
     }
     

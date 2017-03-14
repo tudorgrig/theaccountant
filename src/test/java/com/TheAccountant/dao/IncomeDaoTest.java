@@ -42,8 +42,8 @@ public class IncomeDaoTest {
     
     private static final Logger logger = Logger.getLogger(IncomeDaoTest.class.getName());
     
-    private static final String USERNAME = "DerbedeiidinBacau";
-    private static final String EMAIL = "help.mmt@gmail.com";
+    private static final String USERNAME = "income_test";
+    private static final String EMAIL = USERNAME + "@gmail.com";
 
     
     @Test
