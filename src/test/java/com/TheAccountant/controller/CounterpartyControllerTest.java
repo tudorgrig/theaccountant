@@ -68,9 +68,9 @@ public class CounterpartyControllerTest {
         ResponseEntity responseEntity = counterpartyController.create(counterparty);
         Counterparty result = (Counterparty) responseEntity.getBody();
         assertTrue(result.getId() > 0 );
-        assertEquals(counterparty.getName(), counterparty.getName());
-        assertEquals(appUser.getUsername(), counterparty.getUser().getUsername());
-        assertEquals(counterparty.getEmail(), counterparty.getEmail());
+        assertEquals(counterparty.getName(), result.getName());
+        assertEquals(appUser.getUsername(), result.getUser().getUsername());
+        assertEquals(counterparty.getEmail(), result.getEmail());
     }
 
     @Test
