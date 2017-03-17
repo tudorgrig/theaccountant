@@ -194,7 +194,7 @@ public class AppUserController {
 
         AppUser appUser = appUserDao.findByEmail(email);
         if (appUser == null) {
-            throw new BadRequestException("Invalid request attempt!");
+            throw new BadRequestException("No user exists for this e-mail address!");
         }
 
         try {
