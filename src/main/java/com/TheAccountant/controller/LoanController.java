@@ -21,7 +21,7 @@ import java.util.List;
  * Created by tudor.grigoriu on 3/17/2017.
  */
 @RestController
-@RequestMapping(value = "/counterparties")
+@RequestMapping(value = "/loans")
 public class LoanController {
 
     @Autowired
