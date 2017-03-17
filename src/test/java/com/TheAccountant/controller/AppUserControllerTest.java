@@ -531,7 +531,7 @@ public class AppUserControllerTest {
             appUserController.sendForgotPasswordMail(forgotPasswordDTO);
         } catch (BadRequestException e) {
             exceptionThrown = true;
-            assertTrue(e.getMessage().equals("Invalid request attempt!"));
+            assertTrue(e.getMessage().equals("No user exists for this e-mail address!"));
         }
 
         assertTrue("Should NOT send forgot password mail for unregistered email!", exceptionThrown);
