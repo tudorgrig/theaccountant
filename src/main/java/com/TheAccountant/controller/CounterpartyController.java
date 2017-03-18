@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.dao.CounterpartyDao;
@@ -34,6 +35,7 @@ public class CounterpartyController {
     @Transactional
     public ResponseEntity<Counterparty> create(@RequestBody @Valid Counterparty counterparty) {
         try {
+            counterparty.setUser(userUtil.extractLoggedAppUserFromDatabase());
             Counterparty createdCounterparty = counterpartyDao.saveAndFlush(counterparty);
             return new ResponseEntity<>(createdCounterparty, HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
@@ -58,6 +60,11 @@ public class CounterpartyController {
         if (oldCounterparty == null) {
             throw new NotFoundException("Counterparty not found");
         }
+        AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
+        if(loggedUser.getUserId() != oldCounterparty.getUser().getUserId()){
+            throw new BadRequestException("Bad request!");
+        }
+        counterparty.setUser(loggedUser);
         counterparty.setId(id);
         counterpartyDao.saveAndFlush(counterparty);
         return new ResponseEntity<>("Counterparty updated", HttpStatus.NO_CONTENT);
@@ -72,6 +79,10 @@ public class CounterpartyController {
             Counterparty counterparty = counterpartyDao.findOne(id);
             if(counterparty == null){
                 throw new NotFoundException("Counterparty not found");
+            }
+            AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
+            if(loggedUser.getUserId() != counterparty.getUser().getUserId()){
+                throw new BadRequestException("Bad request!");
             }
             counterpartyDao.delete(id);
             counterpartyDao.flush();

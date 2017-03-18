@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.dao.LoanDao;
@@ -34,6 +35,7 @@ public class LoanController {
     @Transactional
     public ResponseEntity<Loan> create(@RequestBody @Valid Loan loan) {
         try {
+            loan.setUser(userUtil.extractLoggedAppUserFromDatabase());
             Loan createdLoan = loanDao.saveAndFlush(loan);
             return new ResponseEntity<>(createdLoan, HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
@@ -58,6 +60,11 @@ public class LoanController {
         if (oldLoan == null) {
             throw new NotFoundException("Loan not found");
         }
+        AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
+        if(appUser.getUserId() != oldLoan.getUser().getUserId()){
+            throw new BadRequestException("Bad request");
+        }
+        loan.setUser(appUser);
         loan.setId(id);
         loanDao.saveAndFlush(loan);
         return new ResponseEntity<>("Loan updated", HttpStatus.NO_CONTENT);
@@ -72,6 +79,10 @@ public class LoanController {
             Loan loan = loanDao.findOne(id);
             if(loan == null){
                 throw new NotFoundException("Loan not found");
+            }
+            AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
+            if(appUser.getUserId() != loan.getUser().getUserId()){
+                throw new BadRequestException("Bad request");
             }
             loanDao.delete(id);
             loanDao.flush();
