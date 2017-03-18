@@ -91,6 +91,24 @@ public class LoanControllerTest {
     }
 
     @Test
+    public void shouldCreateLoanAndCounterparty(){
+        Counterparty counterparty = createCounterparty();
+        Loan loan = createLoan();
+        loan.setCounterparty(counterparty);
+        ResponseEntity responseEntity = loanController.create(loan);
+        Loan result = (Loan) responseEntity.getBody();
+        assertTrue(result.getId() > 0 );
+        assertEquals(loan.getActive(), result.getActive());
+        assertEquals(loan.getUser().getUsername(), result.getUser().getUsername());
+        assertEquals(loan.getCreationDate(), result.getCreationDate());
+        assertEquals(loan.getAmount(), result.getAmount());
+        assertEquals(loan.getCounterparty(), result.getCounterparty());
+        assertEquals(loan.getCurrency(), result.getCurrency());
+        assertEquals(loan.getReceiving(), result.getReceiving());
+        assertEquals(loan.getDescription(), result.getDescription());
+    }
+
+    @Test
     public void shouldFindAll(){
         Counterparty counterparty = createCounterparty();
         counterpartyDao.saveAndFlush(counterparty);

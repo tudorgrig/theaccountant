@@ -3,6 +3,7 @@ package com.TheAccountant.controller;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
+import com.TheAccountant.dao.CounterpartyDao;
 import com.TheAccountant.dao.LoanDao;
 import com.TheAccountant.model.loan.Loan;
 import com.TheAccountant.model.user.AppUser;
@@ -29,12 +30,18 @@ public class LoanController {
     LoanDao loanDao;
 
     @Autowired
+    CounterpartyDao counterpartyDao;
+
+    @Autowired
     private UserUtil userUtil;
 
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
     public ResponseEntity<Loan> create(@RequestBody @Valid Loan loan) {
         try {
+            if(loan.getCounterparty().getId() == 0){
+                counterpartyDao.saveAndFlush(loan.getCounterparty());
+            }
             loan.setUser(userUtil.extractLoggedAppUserFromDatabase());
             Loan createdLoan = loanDao.saveAndFlush(loan);
             return new ResponseEntity<>(createdLoan, HttpStatus.OK);
@@ -63,6 +70,9 @@ public class LoanController {
         AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
         if(appUser.getUserId() != oldLoan.getUser().getUserId()){
             throw new BadRequestException("Bad request");
+        }
+        if(loan.getCounterparty().getId() == 0){
+            counterpartyDao.saveAndFlush(loan.getCounterparty());
         }
         loan.setUser(appUser);
         loan.setId(id);
