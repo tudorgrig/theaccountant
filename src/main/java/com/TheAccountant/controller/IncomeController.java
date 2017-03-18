@@ -67,7 +67,8 @@ public class IncomeController {
                     if (!user.getDefaultCurrency().getCurrencyCode().equals(income.getCurrency())) {
                         setDefaultCurrencyAmount(income, user.getDefaultCurrency());
                     }
-                    IncomeDTO createdIncomeDTO = incomeConverter.convertTo(incomeDao.saveAndFlush(income));
+                    Income savedIncome = incomeDao.saveAndFlush(income);
+                    IncomeDTO createdIncomeDTO = incomeConverter.convertTo(savedIncome);
                     createdIncomesDTO[index] = createdIncomeDTO;
                     index++;
                 }

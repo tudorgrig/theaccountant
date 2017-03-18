@@ -51,25 +51,37 @@ public class ExpenseController {
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<ExpenseDTO> createExpense(@RequestBody @Valid Expense expense) {
+    public ResponseEntity<ExpenseDTO[]> createExpenses(@RequestBody @Valid Expense[] expenses) {
     
         try {
-            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
-                throw new BadRequestException("Wrong currency code!");
+            if (expenses == null || expenses.length == 0) {
+                throw new BadRequestException("No expenses found in request!");
+            } else {
+                ExpenseDTO[] createdExpensesDTO = new ExpenseDTO[expenses.length];
+                int index = 0;
+                for (Expense expense : expenses) {
+                    if (CurrencyUtil.getCurrency(expense.getCurrency()) == null) {
+                        throw new BadRequestException("Wrong currency code for index [" + index + "]!");
+                    }
+                    String categoryName = expense.getCategory().getName();
+                    AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+                    Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
+                    if (category == null) {
+                        category = createAndSaveCategory(categoryName, user);
+                    }
+                    if (!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())) {
+                        setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
+                    }
+                    expense.setCategory(category);
+                    expense.setUser(user);
+
+                    Expense savedExpense = expenseDao.saveAndFlush(expense);
+                    ExpenseDTO createdExpenseDto = expenseConverter.convertTo(savedExpense);
+                    createdExpensesDTO[index] = createdExpenseDto;
+                    index++;
+                }
+                return new ResponseEntity<>(createdExpensesDTO, HttpStatus.OK);
             }
-            String categoryName = expense.getCategory().getName();
-            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-            Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(categoryName, user);
-            }
-            if(!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())){
-                setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
-            }
-            expense.setCategory(category);
-            expense.setUser(user);
-            Expense createdExpense = expenseDao.saveAndFlush(expense);
-            return new ResponseEntity<>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
         }
