@@ -39,6 +39,7 @@ public class LoanController {
     @Transactional
     public ResponseEntity<Loan> create(@RequestBody @Valid Loan loan) {
         try {
+            loan.setActive(true);
             if(loan.getCounterparty().getId() == 0){
                 counterpartyDao.saveAndFlush(loan.getCounterparty());
             }

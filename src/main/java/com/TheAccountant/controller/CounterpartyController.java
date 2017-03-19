@@ -3,7 +3,9 @@ package com.TheAccountant.controller;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
+import com.TheAccountant.converter.CounterpartyConverter;
 import com.TheAccountant.dao.CounterpartyDao;
+import com.TheAccountant.dto.counterparty.CounterpartyDTO;
 import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.UserUtil;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by tudor.grigoriu on 3/17/2017.
@@ -31,25 +34,33 @@ public class CounterpartyController {
     @Autowired
     private UserUtil userUtil;
 
+    @Autowired
+    private CounterpartyConverter counterpartyConverter;
+
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<Counterparty> create(@RequestBody @Valid Counterparty counterparty) {
+    public ResponseEntity<CounterpartyDTO> create(@RequestBody @Valid Counterparty counterparty) {
         try {
             counterparty.setUser(userUtil.extractLoggedAppUserFromDatabase());
             Counterparty createdCounterparty = counterpartyDao.saveAndFlush(counterparty);
-            return new ResponseEntity<>(createdCounterparty, HttpStatus.OK);
+            return new ResponseEntity<>(counterpartyConverter.convertTo(createdCounterparty), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
             throw new ConflictException(dive.getMostSpecificCause().getMessage());
         }
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Counterparty>> findAll() {
+    @Transactional
+    public ResponseEntity<List<CounterpartyDTO>> findAll() {
         AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();;
         if (appUser == null) {
             throw new NotFoundException("User not found");
         }
-        return new ResponseEntity<>(counterpartyDao.fetchAll(appUser.getUsername()), HttpStatus.OK);
+        List<CounterpartyDTO> result = counterpartyDao.fetchAll(appUser.getUsername())
+                .stream()
+                .map(counterparty -> counterpartyConverter.convertTo(counterparty))
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
