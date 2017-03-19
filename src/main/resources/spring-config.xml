@@ -90,6 +90,8 @@
           class="com.TheAccountant.converter.ExpenseConverter"/>
   	<bean id="categoryConverter"
           class="com.TheAccountant.converter.CategoryConverter"/>
+    <bean id="counterpartyConverter"
+          class="com.TheAccountant.converter.CounterpartyConverter"/>
     <bean id="recurrentEventService"
           class="com.TheAccountant.service.impl.RecurrentEventService"/>
 </beans>
