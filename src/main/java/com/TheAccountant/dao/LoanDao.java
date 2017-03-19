@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -23,6 +24,9 @@ public interface LoanDao extends JpaRepository<Loan, Long> {
 
     @Query("SELECT DISTINCT L FROM Loan L WHERE L.user.username = ?1 and L.active = ?2 ORDER BY L.creationDate DESC")
     List<Loan> findByActive(String username, boolean active);
+
+    @Query("SELECT DISTINCT L FROM Loan L WHERE L.active = 1 AND L.creationDate <= ?1 ORDER BY L.creationDate DESC")
+    List<Loan> findAllActiveBeforeDate(Timestamp timestamp);
 
     @Query("SELECT DISTINCT L FROM Loan L WHERE L.user.username = ?1 AND L.counterparty.id = ?2 ORDER BY L.creationDate DESC")
     List<Loan> findByCounterparty(String username, long counterpartyId);
