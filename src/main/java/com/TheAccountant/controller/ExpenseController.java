@@ -51,36 +51,32 @@ public class ExpenseController {
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<ExpenseDTO[]> createExpenses(@RequestBody @Valid Expense[] expenses) {
+    public ResponseEntity<List<ExpenseDTO>> createExpenses(@RequestBody @Valid Expense[] expenses) {
     
         try {
             if (expenses == null || expenses.length == 0) {
                 throw new BadRequestException("No expenses found in request!");
             } else {
-                ExpenseDTO[] createdExpensesDTO = new ExpenseDTO[expenses.length];
+                List<ExpenseDTO> createdExpenseListDTO = new ArrayList<>();
                 int index = 0;
                 for (Expense expense : expenses) {
                     if (CurrencyUtil.getCurrency(expense.getCurrency()) == null) {
-                        throw new BadRequestException("Wrong currency code for index [" + index + "]!");
+                        throw new BadRequestException("Wrong currency code for index [" + index + "] and Currency code [" + expense.getCurrency() + "]!");
                     }
-                    String categoryName = expense.getCategory().getName();
+
                     AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-                    Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
-                    if (category == null) {
-                        category = createAndSaveCategory(categoryName, user);
-                    }
+                    Category category = resolveCategory(user, expense.getCategory().getName());
                     if (!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())) {
                         setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
                     }
                     expense.setCategory(category);
                     expense.setUser(user);
 
-                    Expense savedExpense = expenseDao.saveAndFlush(expense);
-                    ExpenseDTO createdExpenseDto = expenseConverter.convertTo(savedExpense);
-                    createdExpensesDTO[index] = createdExpenseDto;
+                    ExpenseDTO createdExpenseDto = expenseConverter.convertTo(expenseDao.saveAndFlush(expense));
+                    createdExpenseListDTO.add(createdExpenseDto);
                     index++;
                 }
-                return new ResponseEntity<>(createdExpensesDTO, HttpStatus.OK);
+                return new ResponseEntity<>(createdExpenseListDTO, HttpStatus.OK);
             }
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
@@ -171,10 +167,7 @@ public class ExpenseController {
         Category oldCategory = oldExpense.getCategory();
         String newExpenseCategoryName = expense.getCategory().getName();
         if (!oldCategory.getName().equals(newExpenseCategoryName)) {
-            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(newExpenseCategoryName, oldExpense.getUser());
-            }
+            Category category = resolveCategory(oldExpense.getUser(), newExpenseCategoryName);
             expense.setCategory(category);
         }
         if(CurrencyUtil.getCurrency(expense.getCurrency()) == null){
@@ -227,6 +220,14 @@ public class ExpenseController {
         expenseDao.deleteAllByCategoryAndUsername(categoryId, user.getUsername());
         expenseDao.flush();
         return new ResponseEntity<>("Expenses deleted", HttpStatus.NO_CONTENT);
+    }
+
+    private Category resolveCategory(AppUser user, String categoryName) {
+        Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
+        if (category == null) {
+            category = createAndSaveCategory(categoryName, user);
+        }
+        return category;
     }
 
     private Category createAndSaveCategory(String categoryName, AppUser user) {

@@ -78,7 +78,7 @@ public class IncomeControllerTest {
 
         ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((IncomeDTO[]) responseEntity.getBody()).length == 2);
+        assertTrue(((List<IncomeDTO>) responseEntity.getBody()).size() == 2);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class IncomeControllerTest {
 
         ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals("Wrong currency code for index [0]!", responseEntity.getBody());
+        assertEquals("Wrong currency code for index [0] and Currency code [" + income.getCurrency() + "]!", responseEntity.getBody());
     }
 
     @Test
@@ -140,7 +140,7 @@ public class IncomeControllerTest {
         ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
-        responseEntity = incomeController.findIncome(((IncomeDTO[]) responseEntity.getBody())[0].getId());
+        responseEntity = incomeController.findIncome(((List<IncomeDTO>) responseEntity.getBody()).get(0).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         IncomeDTO found = (IncomeDTO) responseEntity.getBody();
         assertEquals(income.getName(), found.getName());

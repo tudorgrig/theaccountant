@@ -56,11 +56,11 @@ public class IncomeController {
             if (incomes == null || incomes.length == 0) {
                 return new ResponseEntity<>("No incomes found in request!", HttpStatus.BAD_REQUEST);
             } else {
-                IncomeDTO[] createdIncomesDTO = new IncomeDTO[incomes.length];
+                List<IncomeDTO> createdIncomeListDTO = new ArrayList<>();
                 int index = 0;
                 for (Income income : incomes) {
                     if (CurrencyUtil.getCurrency(income.getCurrency()) == null) {
-                        return new ResponseEntity<>("Wrong currency code for index [" + index + "]!", HttpStatus.BAD_REQUEST);
+                        return new ResponseEntity<>("Wrong currency code for index [" + index + "] and Currency code [" + income.getCurrency() + "]!", HttpStatus.BAD_REQUEST);
                     }
                     AppUser user = userUtil.extractLoggedAppUserFromDatabase();
                     income.setUser(user);
@@ -69,10 +69,10 @@ public class IncomeController {
                     }
                     Income savedIncome = incomeDao.saveAndFlush(income);
                     IncomeDTO createdIncomeDTO = incomeConverter.convertTo(savedIncome);
-                    createdIncomesDTO[index] = createdIncomeDTO;
+                    createdIncomeListDTO.add(createdIncomeDTO);
                     index++;
                 }
-                return new ResponseEntity<>(createdIncomesDTO, HttpStatus.OK);
+                return new ResponseEntity<>(createdIncomeListDTO, HttpStatus.OK);
             }
 
         } catch (ConstraintViolationException e) {

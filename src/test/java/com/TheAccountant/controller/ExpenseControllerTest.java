@@ -86,7 +86,7 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO[]) responseEntity.getBody()).length == 2);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 2);
     }
 
     @Test
@@ -99,9 +99,9 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO[]) responseEntity.getBody()).length == 1);
-        assertNotNull(((ExpenseDTO[]) responseEntity.getBody())[0].getDefaultCurrency());
-        assertNotNull(((ExpenseDTO[]) responseEntity.getBody())[0].getDefaultCurrencyAmount());
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
+        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrency());
+        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrencyAmount());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO[]) responseEntity.getBody()).length == 1);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
@@ -140,7 +140,7 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO[]) responseEntity.getBody()).length == 1);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
@@ -302,7 +302,7 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = expenseController.findExpense(((ExpenseDTO[]) responseEntity.getBody())[0].getId());
+        responseEntity = expenseController.findExpense(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
         assertEquals(expense.getName(), found.getName());
