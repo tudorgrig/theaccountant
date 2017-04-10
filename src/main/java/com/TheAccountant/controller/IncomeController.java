@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -46,21 +47,34 @@ public class IncomeController {
 
     private static final long ONE_DAY = 24 * 60 * 60 * 1000;
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
-    
+
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<?> createIncome(@RequestBody @Valid Income income) {
-    
+    @Transactional
+    public ResponseEntity<?> createIncomes(@RequestBody @Valid Income[] incomes) {
+
         try {
-            if(CurrencyUtil.getCurrency(income.getCurrency()) == null){
-                return new ResponseEntity<>("Wrong currency code!", HttpStatus.BAD_REQUEST);
+            if (incomes == null || incomes.length == 0) {
+                return new ResponseEntity<>("No incomes found in request!", HttpStatus.BAD_REQUEST);
+            } else {
+                List<IncomeDTO> createdIncomeListDTO = new ArrayList<>();
+                int index = 0;
+                for (Income income : incomes) {
+                    if (CurrencyUtil.getCurrency(income.getCurrency()) == null) {
+                        return new ResponseEntity<>("Wrong currency code for index [" + index + "] and Currency code [" + income.getCurrency() + "]!", HttpStatus.BAD_REQUEST);
+                    }
+                    AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+                    income.setUser(user);
+                    if (!user.getDefaultCurrency().getCurrencyCode().equals(income.getCurrency())) {
+                        setDefaultCurrencyAmount(income, user.getDefaultCurrency());
+                    }
+                    Income savedIncome = incomeDao.saveAndFlush(income);
+                    IncomeDTO createdIncomeDTO = incomeConverter.convertTo(savedIncome);
+                    createdIncomeListDTO.add(createdIncomeDTO);
+                    index++;
+                }
+                return new ResponseEntity<>(createdIncomeListDTO, HttpStatus.OK);
             }
-            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-            income.setUser(user);
-            if(!user.getDefaultCurrency().getCurrencyCode().equals(income.getCurrency())){
-                setDefaultCurrencyAmount(income, user.getDefaultCurrency());
-            }
-            Income createdIncome = incomeDao.saveAndFlush(income);
-            return new ResponseEntity<>(incomeConverter.convertTo(createdIncome), HttpStatus.OK);
+
         } catch (ConstraintViolationException e) {
             log.log(Level.SEVERE, e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

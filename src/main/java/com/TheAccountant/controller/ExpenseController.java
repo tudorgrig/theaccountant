@@ -51,25 +51,33 @@ public class ExpenseController {
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<ExpenseDTO> createExpense(@RequestBody @Valid Expense expense) {
+    public ResponseEntity<List<ExpenseDTO>> createExpenses(@RequestBody @Valid Expense[] expenses) {
     
         try {
-            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
-                throw new BadRequestException("Wrong currency code!");
+            if (expenses == null || expenses.length == 0) {
+                throw new BadRequestException("No expenses found in request!");
+            } else {
+                List<ExpenseDTO> createdExpenseListDTO = new ArrayList<>();
+                int index = 0;
+                for (Expense expense : expenses) {
+                    if (CurrencyUtil.getCurrency(expense.getCurrency()) == null) {
+                        throw new BadRequestException("Wrong currency code for index [" + index + "] and Currency code [" + expense.getCurrency() + "]!");
+                    }
+
+                    AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+                    Category category = resolveCategory(user, expense.getCategory().getName());
+                    if (!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())) {
+                        setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
+                    }
+                    expense.setCategory(category);
+                    expense.setUser(user);
+
+                    ExpenseDTO createdExpenseDto = expenseConverter.convertTo(expenseDao.saveAndFlush(expense));
+                    createdExpenseListDTO.add(createdExpenseDto);
+                    index++;
+                }
+                return new ResponseEntity<>(createdExpenseListDTO, HttpStatus.OK);
             }
-            String categoryName = expense.getCategory().getName();
-            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-            Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(categoryName, user);
-            }
-            if(!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())){
-                setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
-            }
-            expense.setCategory(category);
-            expense.setUser(user);
-            Expense createdExpense = expenseDao.saveAndFlush(expense);
-            return new ResponseEntity<>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -159,10 +167,7 @@ public class ExpenseController {
         Category oldCategory = oldExpense.getCategory();
         String newExpenseCategoryName = expense.getCategory().getName();
         if (!oldCategory.getName().equals(newExpenseCategoryName)) {
-            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(newExpenseCategoryName, oldExpense.getUser());
-            }
+            Category category = resolveCategory(oldExpense.getUser(), newExpenseCategoryName);
             expense.setCategory(category);
         }
         if(CurrencyUtil.getCurrency(expense.getCurrency()) == null){
@@ -215,6 +220,14 @@ public class ExpenseController {
         expenseDao.deleteAllByCategoryAndUsername(categoryId, user.getUsername());
         expenseDao.flush();
         return new ResponseEntity<>("Expenses deleted", HttpStatus.NO_CONTENT);
+    }
+
+    private Category resolveCategory(AppUser user, String categoryName) {
+        Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
+        if (category == null) {
+            category = createAndSaveCategory(categoryName, user);
+        }
+        return category;
     }
 
     private Category createAndSaveCategory(String categoryName, AppUser user) {

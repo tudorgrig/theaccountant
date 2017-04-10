@@ -67,41 +67,63 @@ public class IncomeControllerTest {
     @Test
     public void shouldCreateIncome() {
 
-        Income income = createIncome();
-        income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        Income[] incomes = new Income[2];
+        Income income1 = createIncome();
+        income1.setUser(applicationUser);
+        Income income2 = createIncome();
+        income2.setUser(applicationUser);
+
+        incomes[0] = income1;
+        incomes[1] = income2;
+
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((IncomeDTO) responseEntity.getBody()).getId() > 0);
+        assertTrue(((List<IncomeDTO>) responseEntity.getBody()).size() == 2);
     }
 
     @Test
     public void shouldNotCreateIncomeWithWrongCurrency() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
         income.setCurrency("IAC");
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals("Wrong currency code!", responseEntity.getBody());
+        assertEquals("Wrong currency code for index [0] and Currency code [" + income.getCurrency() + "]!", responseEntity.getBody());
     }
 
     @Test
     public void shouldNotCreateIncome() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
         income.setName(null);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        incomes[0] = income;
+
+        boolean errorOccur = false;
+        try {
+            ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
+            assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        } catch(Throwable t) {
+            errorOccur = true;
+        }
+        assertTrue("An error should occur while adding invalid Income!", errorOccur);
     }
 
     @Test
     public void shouldListAllIncomes() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
         responseEntity = incomeController.listAllIncomes();
         assertEquals(1, ((List<IncomeDTO>) responseEntity.getBody()).size());
         IncomeDTO result = ((List<IncomeDTO>) responseEntity.getBody()).get(0);
@@ -111,11 +133,14 @@ public class IncomeControllerTest {
     @Test
     public void shouldFindById() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = incomeController.findIncome(((IncomeDTO) responseEntity.getBody()).getId());
+
+        responseEntity = incomeController.findIncome(((List<IncomeDTO>) responseEntity.getBody()).get(0).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         IncomeDTO found = (IncomeDTO) responseEntity.getBody();
         assertEquals(income.getName(), found.getName());
@@ -140,10 +165,13 @@ public class IncomeControllerTest {
     @Test
     public void shouldUpdateIncome() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
         Income toUpdate = createIncome();
         toUpdate.setName("updated_income");
         toUpdate.setUser(applicationUser);
@@ -154,13 +182,16 @@ public class IncomeControllerTest {
         assertEquals("updated_income", found.getName());
     }
 
-    @Test
+   @Test
     public void shouldNotUpdateIncomeWithWrongCurrency() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
         Income toUpdate = createIncome();
         toUpdate.setName("updated_income");
         toUpdate.setCurrency("IAC");
@@ -191,9 +222,11 @@ public class IncomeControllerTest {
     @Test
     public void shouldDeleteIncome() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = incomeController.deleteIncome(income.getId());
@@ -223,9 +256,11 @@ public class IncomeControllerTest {
     @Test
     public void shouldDeleteAllIncomes() {
 
+        Income[] incomes = new Income[1];
         Income income = createIncome();
         income.setUser(applicationUser);
-        ResponseEntity<?> responseEntity = incomeController.createIncome(income);
+        incomes[0] = income;
+        ResponseEntity<?> responseEntity = incomeController.createIncomes(incomes);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = incomeController.deleteAll();
