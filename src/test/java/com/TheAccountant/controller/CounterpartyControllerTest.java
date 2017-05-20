@@ -20,10 +20,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Timestamp;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -46,6 +48,9 @@ public class CounterpartyControllerTest {
 
     @Autowired
     private CounterpartyController counterpartyController;
+
+    @Autowired
+    private LoanController loanController;
 
     @Autowired
     AppUserDao appUserDao;
@@ -82,7 +87,6 @@ public class CounterpartyControllerTest {
         CounterpartyDTO result = (CounterpartyDTO) responseEntity.getBody();
         assertTrue(result.getId() > 0 );
         assertEquals(counterparty.getName(), result.getName());
-        assertEquals(appUser.getUsername(), result.getUser().getUsername());
         assertEquals(counterparty.getEmail(), result.getEmail());
     }
 
@@ -95,7 +99,6 @@ public class CounterpartyControllerTest {
         assertTrue(resultList.size() == 1);
         assertEquals(counterparty.getName(), resultList.get(0).getName());
         assertEquals(counterparty.getEmail(), resultList.get(0).getEmail());
-        assertEquals(counterparty.getUser().getUsername(), resultList.get(0).getUser().getUsername());
     }
 
     @Test
@@ -115,8 +118,25 @@ public class CounterpartyControllerTest {
         assertTrue(resultList.size() == 1);
         assertEquals(counterparty.getName(), resultList.get(0).getName());
         assertEquals(counterparty.getEmail(), resultList.get(0).getEmail());
-        assertEquals(counterparty.getUser().getUsername(), resultList.get(0).getUser().getUsername());
         assertEquals(AMOUNT - 250, resultList.get(0).getTotal(), 0.0001);
+    }
+
+    @Test
+    public void shouldFindAllCounterpartiesWithTotalAndDiferentCurrencies(){
+        Counterparty counterparty = createCounterparty();
+        counterpartyDao.saveAndFlush(counterparty);
+        Loan loan1 = createLoan();
+        loan1.setCounterparty(counterparty);
+        loanController.create(loan1);
+        Loan loan2 = createLoan();
+        loan2.setCurrency("USD");
+        loan2.setAmount(Double.valueOf(250));
+        loan2.setCounterparty(counterparty);
+        loanController.create(loan2);
+        ResponseEntity responseEntity = counterpartyController.findAll();
+        List<CounterpartyDTO> resultList = (List<CounterpartyDTO>) responseEntity.getBody();
+        assertTrue(resultList.size() == 1);
+        assertNotEquals(loan1.getAmount() + loan2.getAmount(), resultList.get(0).getTotal());
     }
 
     @Test
@@ -163,6 +183,7 @@ public class CounterpartyControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance(CURRENCY));
         appUserDao.saveAndFlush(appUser);
         return appUser;
     }
@@ -170,7 +191,7 @@ public class CounterpartyControllerTest {
     private Loan createLoan() {
         Loan loan = new Loan();
         loan.setUser(appUser);
-        loan.setCreationDate(new Timestamp(1l));
+        loan.setCreationDate(new Timestamp(System.currentTimeMillis()));
         loan.setActive(ACTIVE);
         loan.setAmount(AMOUNT);
         loan.setCurrency(CURRENCY);

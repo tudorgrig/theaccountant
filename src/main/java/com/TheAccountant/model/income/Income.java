@@ -1,9 +1,9 @@
 package com.TheAccountant.model.income;
 
+import com.TheAccountant.model.abstracts.CurrencyHolderEntity;
 import com.TheAccountant.model.user.AppUser;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
@@ -13,7 +13,7 @@ import java.sql.Timestamp;
  * @author Florin, on 19.12.2015
  */
 @Entity
-public class Income {
+public class Income extends CurrencyHolderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,19 +27,6 @@ public class Income {
     private String name;
 
     private String description;
-
-    @NotNull
-    @Min(value = 0)
-    private Double amount;
-
-    @NotNull
-    private Timestamp creationDate;
-
-    @NotNull
-    private String currency;
-
-    private String defaultCurrency;
-    private Double defaultCurrencyAmount;
 
     @Column(name = "frequency", nullable = true)
     private Integer frequency;
@@ -85,56 +72,12 @@ public class Income {
         this.description = description;
     }
 
-    public Double getAmount() {
-
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-
-        this.amount = amount;
-    }
-
-    public Timestamp getCreationDate() {
-
-        return creationDate;
-    }
-
-    public void setCreationDate(Timestamp creationDate) {
-
-        this.creationDate = creationDate;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
     public Integer getFrequency() {
         return frequency;
     }
 
     public void setFrequency(Integer frequency) {
         this.frequency = frequency;
-    }
-
-    public String getDefaultCurrency() {
-        return defaultCurrency;
-    }
-
-    public void setDefaultCurrency(String defaultCurrency) {
-        this.defaultCurrency = defaultCurrency;
-    }
-
-    public Double getDefaultCurrencyAmount() {
-        return defaultCurrencyAmount;
-    }
-
-    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
-        this.defaultCurrencyAmount = defaultCurrencyAmount;
     }
 
     @Override
@@ -145,6 +88,8 @@ public class Income {
         income.setDescription(getDescription());
         income.setCreationDate(getCreationDate());
         income.setAmount(getAmount());
+        income.setDefaultCurrency(getDefaultCurrency());
+        income.setDefaultCurrencyAmount(getDefaultCurrencyAmount());
         income.setName(getName());
         income.setFrequency(0);
         return income;

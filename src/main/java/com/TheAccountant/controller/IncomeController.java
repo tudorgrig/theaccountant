@@ -1,12 +1,11 @@
 package com.TheAccountant.controller;
 
-import com.TheAccountant.controller.exception.BadRequestException;
+import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.converter.IncomeConverter;
 import com.TheAccountant.dao.IncomeDao;
 import com.TheAccountant.dto.income.IncomeDTO;
 import com.TheAccountant.model.income.Income;
 import com.TheAccountant.model.user.AppUser;
-import com.TheAccountant.util.CurrencyConverter;
 import com.TheAccountant.util.CurrencyUtil;
 import com.TheAccountant.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,18 +30,17 @@ import java.util.logging.Logger;
  */
 @RestController
 @RequestMapping(value = "/income")
-public class IncomeController {
-    
+public class IncomeController extends CurrencyHolderController {
+
     @Autowired
     IncomeDao incomeDao;
-    
+
     @Autowired
     private UserUtil userUtil;
     
     @Autowired
     IncomeConverter incomeConverter;
 
-    private static final long ONE_DAY = 24 * 60 * 60 * 1000;
     private static final Logger log = Logger.getLogger(AppUserController.class.getName());
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -183,62 +178,11 @@ public class IncomeController {
     }
 
 
-    private void setDefaultCurrencyAmount(Income income, Currency defaultCurrency){
-        String incomeCurrency = income.getCurrency();
-        Double amount = income.getAmount();
-        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(income.getCreationDate().getTime());
-        Double exchangeRateOnDay = null;
-        try {
-            if(incomeCurrency.equals(defaultCurrency.getCurrencyCode())){
-                income.setDefaultCurrencyAmount(null);
-                income.setDefaultCurrency(null);
-                return;
-            }
-            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(incomeCurrency, defaultCurrency, formatDate);
-            if(exchangeRateOnDay != null) {
-                income.setDefaultCurrency(defaultCurrency.getCurrencyCode());
-                income.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
-            }
-        } catch (IOException e) {
-            throw new BadRequestException(e);
-        }
-    }
-
-
-    private boolean shouldUpdateDefaultCurrencyAmount(Income income, AppUser user, Income oldIncome) {
-        boolean creationDateChanged = !income.getCreationDate().equals(oldIncome.getCreationDate())
-                && (income.getCreationDate().getTime() - oldIncome.getCreationDate().getTime() >= ONE_DAY
-                ||
-                oldIncome.getCreationDate().getTime() - income.getCreationDate().getTime() >= ONE_DAY);
-
-        boolean currencyChanged = !income.getCurrency().equals(oldIncome.getCurrency());
-        boolean amountChanged = !income.getAmount().equals(oldIncome.getAmount());
-        if(creationDateChanged || currencyChanged || amountChanged){
-            //if any of those fields changed, check if the user updated the income with his own default currency.
-            //if yes, no conversion is needed, if not conversion is needed between the income currency
-            // and the users default currency
-            boolean hasDiffCurrencyThanDefault = !income.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-            if(!hasDiffCurrencyThanDefault){
-                income.setDefaultCurrency(null);
-                income.setDefaultCurrencyAmount(null);
-            }
-            return hasDiffCurrencyThanDefault;
-        }
-        return false;
-    }
-
-    private void convertIncomesToDefaultCurrency(List<Income> incomes, AppUser user) {
-        incomes.stream().filter(income -> shouldUpdateDefaultCurrencyAmount(income, user)).forEach(income -> {
+    protected void convertIncomesToDefaultCurrency(List<Income> entityList, AppUser user) {
+        entityList.stream().filter(income -> shouldUpdateDefaultCurrencyAmount(income, user)).forEach(income -> {
             setDefaultCurrencyAmount(income, user.getDefaultCurrency());
             incomeDao.saveAndFlush(income);
         });
     }
 
-    private boolean shouldUpdateDefaultCurrencyAmount(Income income, AppUser user) {
-        boolean incomeWasOnOldDefaultCurrency = income.getDefaultCurrency() == null &&
-                !income.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        boolean userChangedDefaultCurrency = income.getDefaultCurrency() != null &&
-                !income.getDefaultCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        return incomeWasOnOldDefaultCurrency || userChangedDefaultCurrency;
-    }
 }
