@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -10,6 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.TheAccountant.model.notification.Notification;
+import com.TheAccountant.model.notification.NotificationPriority;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -328,14 +331,14 @@ public class ExpenseControllerTest {
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with an existent category!", HttpStatus.OK, responseEntity.getStatusCode());
 
         Category category = new Category();
         category.setName("another_category");
         category.setUser(applicationUser);
         toUpdate.setCategory(category);
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with a non-existent category!", HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = expenseController.findExpense(expense.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -357,13 +360,13 @@ public class ExpenseControllerTest {
         toUpdate.setName("updated_expense");
         toUpdate.setCurrency("EUR");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with an existent category!", HttpStatus.OK, responseEntity.getStatusCode());
 
         Category category = new Category();
         category.setName("another_category");
         toUpdate.setCategory(category);
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals("Should update expense with a non-existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with a non-existent category!", HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = expenseController.findExpense(expense.getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -384,7 +387,7 @@ public class ExpenseControllerTest {
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
         responseEntity = expenseController.updateExpense(expense.getId(), toUpdate);
-        assertEquals("Should update expense with an existent category!", HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals("Should update expense with an existent category!", HttpStatus.OK, responseEntity.getStatusCode());
 
         Category category = new Category();
         category.setName("another_category");
@@ -460,6 +463,48 @@ public class ExpenseControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
 
+    @Test
+    public void shouldCreateNotificationWithHighPriority() {
+
+        Category categ = this.createAndSaveCategory(applicationUser, 1000.0, "notification test");
+        Expense expense1 = createExpense(categ, applicationUser);
+        Expense expense2 = createExpense(categ, applicationUser);
+        expense1.setAmount(600.0);
+        expense2.setAmount(500.0);
+
+        Expense[] expenses = new Expense[] {expense1, expense2};
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(responseEntity.getBody() instanceof Notification);
+        assertTrue(((Notification) responseEntity.getBody()).getPriority().equals(NotificationPriority.HIGH.name()));
+
+        expense1.setAmount(550.0);
+        responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
+        assertTrue(responseEntity.getBody() instanceof Notification);
+        assertTrue(((Notification) responseEntity.getBody()).getPriority().equals(NotificationPriority.HIGH.name()));
+    }
+
+    @Test
+    public void shouldNotCreateNotificationWithHighPriority() {
+
+        Category categ = this.createAndSaveCategory(applicationUser, 1000.0, "notification test");
+        Expense expense1 = createExpense(categ, applicationUser);
+        Expense expense2 = createExpense(categ, applicationUser);
+        expense1.setAmount(100.0);
+        expense2.setAmount(200.0);
+
+        Expense[] expenses = new Expense[] {expense1, expense2};
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertFalse(responseEntity.getBody() instanceof Notification);
+
+        expense1.setAmount(200.0);
+        responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
+        assertFalse(responseEntity.getBody() instanceof Notification);
+    }
+
     private Expense createExpense(Category category, AppUser user) {
 
         Expense expense = new Expense();
@@ -473,13 +518,18 @@ public class ExpenseControllerTest {
         return expense;
     }
 
-    private Category createAndSaveCategory(AppUser user) {
 
+    private Category createAndSaveCategory(AppUser user, Double threshold, String name) {
         Category category = new Category();
-        category.setName(CATEGORY_NAME);
+        category.setName(name);
         category.setUser(user);
+        category.setThreshold(threshold);
         categoryDao.saveAndFlush(category);
         return category;
+    }
+
+    private Category createAndSaveCategory(AppUser user) {
+        return this.createAndSaveCategory(user, 0.0, CATEGORY_NAME);
     }
 
     private AppUser createAndSaveAppUser(String username, String email) {

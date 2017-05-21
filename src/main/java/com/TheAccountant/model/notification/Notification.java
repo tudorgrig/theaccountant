@@ -31,6 +31,8 @@ public class Notification {
     @NotNull
     private String category;
 
+    private String priority;
+
     public long getId() {
         return id;
     }
@@ -77,5 +79,13 @@ public class Notification {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

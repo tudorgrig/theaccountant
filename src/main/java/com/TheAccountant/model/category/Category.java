@@ -28,7 +28,7 @@ public class Category {
 
     private Set<Expense> expenses = new HashSet<>();
 
-    private float threshold = 0;
+    private Double threshold = 0D;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "category" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     public Set<Expense> getExpenses() {
@@ -97,11 +97,11 @@ public class Category {
 
 
     @Column(name = "threshold", unique = false, nullable = true)
-    public float getThreshold() {
+    public Double getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(float threshold) {
+    public void setThreshold(Double threshold) {
         this.threshold = threshold;
     }
 

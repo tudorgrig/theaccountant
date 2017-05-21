@@ -216,6 +216,15 @@ public class ExpenseDaoTest {
         expenseDao.flush();
     }
 
+    @Test
+    public void shouldFindTotalAmountByCategoryThisMonth() {
+        Expense expense = createExpense(new Timestamp(System.currentTimeMillis()));
+        expenseDao.save(expense);
+        expenseDao.flush();
+        Double totalAmount = expenseDao.getTotalAmountByCategoryForCurrentMonth(expense.getCategory().getId());
+        assertTrue(totalAmount != null && totalAmount > 0);
+    }
+
     private Expense createExpense() {
         return createExpense(new Timestamp(System.currentTimeMillis()));
     }

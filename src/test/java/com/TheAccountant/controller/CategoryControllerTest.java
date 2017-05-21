@@ -42,7 +42,7 @@ public class CategoryControllerTest {
     private static final String CATEGORY_NAME = "Category1";
     private static final Long CATEGORY_ID = 777L;
     private static final String TEST_COLOUR = "stable";
-    private static final float TEST_THRESHOLD = (float)42.2;
+    private static final double TEST_THRESHOLD = 42.2;
 
     @Autowired
     CategoryController categoryController;

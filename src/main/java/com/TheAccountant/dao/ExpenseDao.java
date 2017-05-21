@@ -52,4 +52,21 @@ public interface ExpenseDao extends JpaRepository<Expense, Long> {
             " AND e.creationDate BETWEEN ?3 AND ?4")
     Set<Expense> findByTimeIntervalAndCategory(String username, long categoryId,
                                                Timestamp startDate, Timestamp endDate);
+
+
+    String SELECT_TOTAL_AMOUNT_BY_CATEGORY_THIS_MONTH =
+            "SELECT " +
+            "   SUM ( " +
+            "       CASE " +
+            "           WHEN expense.defaultcurrencyamount IS NULL THEN expense.amount " +
+            "           ELSE expense.defaultcurrencyamount " +
+            "       END " +
+            "   ) " +
+            "FROM expense " +
+            "   INNER JOIN category ON category.id = expense.category_id " +
+            "   WHERE category.id = ?1 AND expense.creationdate >= " +
+            "       (date (EXTRACT(year FROM CURRENT_DATE) || '-' || EXTRACT(month FROM CURRENT_DATE) || '-01')); ";
+
+    @Query(value = SELECT_TOTAL_AMOUNT_BY_CATEGORY_THIS_MONTH, nativeQuery = true)
+    Double getTotalAmountByCategoryForCurrentMonth(Long idCategory);
 }

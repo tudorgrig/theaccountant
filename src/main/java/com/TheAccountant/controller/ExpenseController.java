@@ -8,7 +8,9 @@ import com.TheAccountant.dao.ExpenseDao;
 import com.TheAccountant.dto.expense.ExpenseDTO;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.expense.Expense;
+import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.user.AppUser;
+import com.TheAccountant.service.NotificationService;
 import com.TheAccountant.util.CurrencyConverter;
 import com.TheAccountant.util.CurrencyUtil;
 import com.TheAccountant.util.UserUtil;
@@ -37,6 +39,7 @@ import java.util.*;
 public class ExpenseController {
 
     private static final long ONE_DAY = 24 * 60 * 60 * 1000;
+
     @Autowired
     private ExpenseDao expenseDao;
     
@@ -48,10 +51,13 @@ public class ExpenseController {
     
     @Autowired
     private UserUtil userUtil;
+
+    @Autowired
+    private NotificationService notificationService;
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<List<ExpenseDTO>> createExpenses(@RequestBody @Valid Expense[] expenses) {
+    public ResponseEntity<?> createExpenses(@RequestBody @Valid Expense[] expenses) {
     
         try {
             if (expenses == null || expenses.length == 0) {
@@ -75,6 +81,10 @@ public class ExpenseController {
                     ExpenseDTO createdExpenseDto = expenseConverter.convertTo(expenseDao.saveAndFlush(expense));
                     createdExpenseListDTO.add(createdExpenseDto);
                     index++;
+                }
+                Notification notification = notificationService.registerThresholdNotification(expenses[0].getCategory());
+                if (notification != null) {
+                    return new ResponseEntity<>(notification, HttpStatus.OK);
                 }
                 return new ResponseEntity<>(createdExpenseListDTO, HttpStatus.OK);
             }
@@ -154,7 +164,7 @@ public class ExpenseController {
     
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<String> updateExpense(@PathVariable("id") Long id, @RequestBody @Valid Expense expense) {
+    public ResponseEntity<?> updateExpense(@PathVariable("id") Long id, @RequestBody @Valid Expense expense) {
     
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         Expense oldExpense = expenseDao.findOne(id);
@@ -179,7 +189,11 @@ public class ExpenseController {
             setDefaultCurrencyAmount(expense,user.getDefaultCurrency());
         }
         expenseDao.saveAndFlush(expense);
-        return new ResponseEntity<>("Expense updated", HttpStatus.NO_CONTENT);
+        Notification notification = notificationService.registerThresholdNotification(expense.getCategory());
+        if (notification != null) {
+            return new ResponseEntity<>(notification, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Expense updated", HttpStatus.OK);
     }
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
