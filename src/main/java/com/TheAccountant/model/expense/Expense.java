@@ -1,5 +1,6 @@
 package com.TheAccountant.model.expense;
 
+import com.TheAccountant.model.abstracts.CurrencyHolderEntity;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.user.AppUser;
 
@@ -14,7 +15,7 @@ import java.sql.Timestamp;
  * @author Florin, on 20.12.2015
  */
 @Entity
-public class Expense {
+public class Expense extends CurrencyHolderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,19 +32,6 @@ public class Expense {
     @NotNull
     private String name;
     private String description;
-
-    @Column(nullable = false)
-    @Min(value = 0)
-    private Double amount;
-
-    @Column(nullable = false)
-    private Timestamp creationDate;
-
-    @NotNull
-    private String currency;
-
-    private String defaultCurrency;
-    private Double defaultCurrencyAmount;
 
     @Column(name = "frequency", nullable = true)
     private Integer frequency;
@@ -98,56 +86,12 @@ public class Expense {
         this.description = description;
     }
 
-    public Double getAmount() {
-
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-
-        this.amount = amount;
-    }
-
-    public Timestamp getCreationDate() {
-
-        return creationDate;
-    }
-
-    public void setCreationDate(Timestamp creationDate) {
-
-        this.creationDate = creationDate;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
     public Integer getFrequency() {
         return frequency;
     }
 
     public void setFrequency(Integer frequency) {
         this.frequency = frequency;
-    }
-
-    public String getDefaultCurrency() {
-        return defaultCurrency;
-    }
-
-    public void setDefaultCurrency(String defaultCurrency) {
-        this.defaultCurrency = defaultCurrency;
-    }
-
-    public Double getDefaultCurrencyAmount() {
-        return defaultCurrencyAmount;
-    }
-
-    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
-        this.defaultCurrencyAmount = defaultCurrencyAmount;
     }
 
     @Override
@@ -161,6 +105,8 @@ public class Expense {
         expense.setDescription(getDescription());
         expense.setUser(getUser());
         expense.setFrequency(0);
+        expense.setDefaultCurrency(getDefaultCurrency());
+        expense.setDefaultCurrencyAmount(getDefaultCurrencyAmount());
         return expense;
     }
 }
