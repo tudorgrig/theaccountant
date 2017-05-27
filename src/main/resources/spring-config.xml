@@ -94,4 +94,6 @@
           class="com.TheAccountant.converter.CounterpartyConverter"/>
     <bean id="recurrentEventService"
           class="com.TheAccountant.service.impl.RecurrentEventService"/>
+    <bean id="loanNotificationService"
+          class="com.TheAccountant.service.impl.LoanNotificationService"/>
 </beans>

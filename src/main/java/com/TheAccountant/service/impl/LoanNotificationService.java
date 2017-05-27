@@ -16,8 +16,9 @@ import java.util.List;
  */
 public class LoanNotificationService {
 
-    private static final String PREFIX = "You have a loan that is due today, with ";
-    private static final String SUFFIX = ", on amount of ";
+    private static final String PREFIX = "Loan active! ";
+    private static final String TO_RECEIVE_FROM = "To receive from ";
+    private static final String TO_GIVE_TO = "To give to ";
     @Autowired
     private LoanDao loanDao;
 
@@ -47,14 +48,12 @@ public class LoanNotificationService {
     private String createMessage(Loan loan) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(PREFIX);
+        stringBuilder.append(loan.getReceiving() == Boolean.TRUE ? TO_RECEIVE_FROM : TO_GIVE_TO);
         stringBuilder.append(loan.getCounterparty().getName());
-        stringBuilder.append(SUFFIX);
-        stringBuilder.append(resolveAmount(loan));
-        //TODO: Add currency also
-//        stringBuilder.append(resolveCurrency(loan));loan.getDefaultCurrency() || loan.getCurrency();
+        stringBuilder.append(" ");
+        stringBuilder.append(loan.getAmount());
+        stringBuilder.append(loan.getCurrency());
+        return stringBuilder.toString();
     }
 
-    private double resolveAmount(Loan loan) {
-        return loan.getDefaultCurrencyAmount() != null ? loan.getDefaultCurrencyAmount() : loan.getAmount();
-    }
 }
