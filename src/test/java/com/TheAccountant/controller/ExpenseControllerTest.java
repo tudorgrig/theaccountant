@@ -1,9 +1,7 @@
 package com.TheAccountant.controller;
 
 import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.sql.Timestamp;
 import java.util.Currency;
@@ -11,8 +9,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.TheAccountant.dto.notification.NotificationEntityWrapperDTO;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationPriority;
+import com.TheAccountant.service.NotificationService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +63,9 @@ public class ExpenseControllerTest {
     @Autowired
     private ExpenseDao expenseDao;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Before
     public void setup() {
 
@@ -89,7 +92,8 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 2);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertTrue(responseBody.getEntityList().size() == 2);
     }
 
     @Test
@@ -102,9 +106,10 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
-        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrency());
-        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrencyAmount());
+        List<ExpenseDTO> entityList = ((NotificationEntityWrapperDTO) responseEntity.getBody()).getEntityList();
+        assertTrue(entityList.size() == 1);
+        assertNotNull(entityList.get(0).getDefaultCurrency());
+        assertNotNull(entityList.get(0).getDefaultCurrencyAmount());
     }
 
     @Test
@@ -117,7 +122,8 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertTrue(responseBody.getEntityList().size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
@@ -143,7 +149,8 @@ public class ExpenseControllerTest {
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertTrue(responseBody.getEntityList().size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
@@ -304,8 +311,10 @@ public class ExpenseControllerTest {
         expenses[0] = expense;
 
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        List<ExpenseDTO> expenseDTOList = ((NotificationEntityWrapperDTO) responseEntity.getBody()).getEntityList();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = expenseController.findExpense(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getId());
+        responseEntity = expenseController.findExpense(expenseDTOList.get(0).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
         assertEquals(expense.getName(), found.getName());
@@ -474,15 +483,17 @@ public class ExpenseControllerTest {
 
         Expense[] expenses = new Expense[] {expense1, expense2};
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(responseEntity.getBody() instanceof Notification);
-        assertTrue(((Notification) responseEntity.getBody()).getPriority().equals(NotificationPriority.HIGH.name()));
+        assertNotNull(responseBody.getNotification());
+        assertTrue(responseBody.getNotification().getPriority().equals(NotificationPriority.HIGH.name()));
 
         expense1.setAmount(550.0);
         responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
-        assertTrue(responseEntity.getBody() instanceof Notification);
-        assertTrue(((Notification) responseEntity.getBody()).getPriority().equals(NotificationPriority.HIGH.name()));
+        responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertNotNull(responseBody.getNotification());
+        assertTrue(responseBody.getNotification().getPriority().equals(NotificationPriority.HIGH.name()));
     }
 
     @Test
@@ -496,13 +507,61 @@ public class ExpenseControllerTest {
 
         Expense[] expenses = new Expense[] {expense1, expense2};
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertFalse(responseEntity.getBody() instanceof Notification);
+        assertNull(responseBody.getNotification());
 
         expense1.setAmount(200.0);
         responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
-        assertFalse(responseEntity.getBody() instanceof Notification);
+        responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertNull(responseBody.getNotification());
+    }
+
+    @Test
+    public void shouldCreateNotificationWithMediumPriority() {
+
+        Double categoryThresholdAmount = 1000.0;
+        Double percent = notificationService.getThresholdMediumNotificationPercent();
+        Category categ = this.createAndSaveCategory(applicationUser, categoryThresholdAmount, "notification test");
+        Expense expense1 = createExpense(categ, applicationUser);
+        expense1.setAmount(categoryThresholdAmount - categoryThresholdAmount * percent/100 + 1);
+
+        Expense[] expenses = new Expense[] {expense1};
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseBody.getNotification());
+        assertTrue(responseBody.getNotification().getPriority().equals(NotificationPriority.MEDIUM.name()));
+
+        expense1.setAmount(expense1.getAmount() + 1);
+        responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
+        responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertNotNull(responseBody.getNotification());
+        assertTrue(responseBody.getNotification().getPriority().equals(NotificationPriority.MEDIUM.name()));
+    }
+
+    @Test
+    public void shouldNotCreateNotificationWithMediumPriority() {
+
+        Double categoryThresholdAmount = 1000.0;
+        Double percent = notificationService.getThresholdMediumNotificationPercent();
+        Category categ = this.createAndSaveCategory(applicationUser, categoryThresholdAmount, "notification test");
+        Expense expense1 = createExpense(categ, applicationUser);
+        expense1.setAmount(categoryThresholdAmount - categoryThresholdAmount * percent/100 - 1);
+
+        Expense[] expenses = new Expense[] {expense1};
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
+        NotificationEntityWrapperDTO responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNull(responseBody.getNotification());
+
+        expense1.setAmount(expense1.getAmount() - 1);
+        responseEntity = expenseController.updateExpense(expense1.getId(), expense1);
+        responseBody = (NotificationEntityWrapperDTO) responseEntity.getBody();
+        assertNull(responseBody.getNotification());
     }
 
     private Expense createExpense(Category category, AppUser user) {

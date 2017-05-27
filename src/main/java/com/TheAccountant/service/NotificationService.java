@@ -18,4 +18,12 @@ public interface NotificationService {
      * @return
      */
     Notification registerThresholdNotification(Category category);
+
+    /**
+     * Get the percentage value for creating MEDIUM priority notification, when total amount
+     * spent for a category percentage is smaller than the threshold percentage configured
+     *
+     * @return
+     */
+    Double getThresholdMediumNotificationPercent();
 }

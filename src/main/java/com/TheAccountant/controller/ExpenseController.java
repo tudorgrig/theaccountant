@@ -6,6 +6,7 @@ import com.TheAccountant.converter.ExpenseConverter;
 import com.TheAccountant.dao.CategoryDao;
 import com.TheAccountant.dao.ExpenseDao;
 import com.TheAccountant.dto.expense.ExpenseDTO;
+import com.TheAccountant.dto.notification.NotificationEntityWrapperDTO;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.expense.Expense;
 import com.TheAccountant.model.notification.Notification;
@@ -83,10 +84,8 @@ public class ExpenseController {
                     index++;
                 }
                 Notification notification = notificationService.registerThresholdNotification(expenses[0].getCategory());
-                if (notification != null) {
-                    return new ResponseEntity<>(notification, HttpStatus.OK);
-                }
-                return new ResponseEntity<>(createdExpenseListDTO, HttpStatus.OK);
+                NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO<ExpenseDTO>(createdExpenseListDTO, notification);
+                return new ResponseEntity<>(responseDTO, HttpStatus.OK);
             }
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
@@ -188,12 +187,13 @@ public class ExpenseController {
         if(shouldUpdateDefaultCurrencyAmount(expense, user, oldExpense)){
             setDefaultCurrencyAmount(expense,user.getDefaultCurrency());
         }
-        expenseDao.saveAndFlush(expense);
+        expense = expenseDao.saveAndFlush(expense);
         Notification notification = notificationService.registerThresholdNotification(expense.getCategory());
-        if (notification != null) {
-            return new ResponseEntity<>(notification, HttpStatus.OK);
-        }
-        return new ResponseEntity<>("Expense updated", HttpStatus.OK);
+        List<ExpenseDTO> expenseDTOList = new ArrayList<>();
+        expenseDTOList.add(expenseConverter.convertTo(expense));
+        NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO(expenseDTOList, notification);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
