@@ -171,6 +171,7 @@ public class CounterpartyControllerTest {
         Loan loan = new Loan();
         loan.setUser(appUser);
         loan.setCreationDate(new Timestamp(1l));
+        loan.setUntilDate(new Timestamp(1l));
         loan.setActive(ACTIVE);
         loan.setAmount(AMOUNT);
         loan.setCurrency(CURRENCY);

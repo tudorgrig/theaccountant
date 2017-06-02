@@ -175,6 +175,7 @@ public class LoanDaoTest {
         loan.setCurrency("USD");
         loan.setDescription("Test Loan");
         loan.setCreationDate(new Timestamp(new Date().getTime()));
+        loan.setUntilDate(new Timestamp(new Date().getTime()));
         loan.setReceiving(true);
         return loan;
     }

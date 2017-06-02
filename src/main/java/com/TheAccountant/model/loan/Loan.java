@@ -46,6 +46,9 @@ public class Loan {
 
     private String description;
 
+    @Column(nullable = false)
+    private Timestamp untilDate;
+
     public long getId() {
         return id;
     }
@@ -124,5 +127,13 @@ public class Loan {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Timestamp getUntilDate() {
+        return untilDate;
+    }
+
+    public void setUntilDate(Timestamp untilDate) {
+        this.untilDate = untilDate;
     }
 }

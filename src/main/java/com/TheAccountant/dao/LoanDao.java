@@ -25,7 +25,7 @@ public interface LoanDao extends JpaRepository<Loan, Long> {
     @Query("SELECT DISTINCT L FROM Loan L WHERE L.user.username = ?1 and L.active = ?2 ORDER BY L.creationDate DESC")
     List<Loan> findByActive(String username, boolean active);
 
-    @Query("SELECT DISTINCT L FROM Loan L WHERE L.active = true AND L.creationDate <= ?1 ORDER BY L.creationDate DESC")
+    @Query("SELECT DISTINCT L FROM Loan L WHERE L.active = true AND L.untilDate <= ?1 ORDER BY L.untilDate DESC")
     List<Loan> findAllActiveBeforeDate(Timestamp timestamp);
 
     @Query("SELECT DISTINCT L FROM Loan L WHERE L.user.username = ?1 AND L.counterparty.id = ?2 ORDER BY L.creationDate DESC")
