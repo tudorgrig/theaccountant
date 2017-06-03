@@ -1,12 +1,14 @@
 package com.TheAccountant.dto.income;
 
+import com.TheAccountant.dto.abstracts.CurrencyHolderDTO;
+
 import java.sql.Timestamp;
 
 /**
  * DTO class for income model class
  * @author Tudor
  */
-public class IncomeDTO {
+public class IncomeDTO extends CurrencyHolderDTO {
 
     private long id;
 
@@ -14,17 +16,7 @@ public class IncomeDTO {
 
     private String description;
 
-    private Double amount;
-
-    private Timestamp creationDate;
-
-    private String currency;
-
     private String frequency;
-
-    private String defaultCurrency;
-
-    private Double defaultCurrencyAmount;
 
     public long getId() {
 
@@ -56,34 +48,6 @@ public class IncomeDTO {
         this.description = description;
     }
 
-    public Double getAmount() {
-
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-
-        this.amount = amount;
-    }
-
-    public Timestamp getCreationDate() {
-
-        return creationDate;
-    }
-
-    public void setCreationDate(Timestamp creationDate) {
-
-        this.creationDate = creationDate;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
     public String getFrequency() {
         return frequency;
     }
@@ -92,19 +56,4 @@ public class IncomeDTO {
         this.frequency = frequency;
     }
 
-    public String getDefaultCurrency() {
-        return defaultCurrency;
-    }
-
-    public void setDefaultCurrency(String defaultCurrency) {
-        this.defaultCurrency = defaultCurrency;
-    }
-
-    public Double getDefaultCurrencyAmount() {
-        return defaultCurrencyAmount;
-    }
-
-    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
-        this.defaultCurrencyAmount = defaultCurrencyAmount;
-    }
 }

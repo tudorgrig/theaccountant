@@ -78,10 +78,15 @@ public class ExpenseControllerTest {
     @Test
     public void shouldCreateExpense() {
 
-        Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense expense1 = createExpense(category, applicationUser);
+        Expense expense2 = createExpense(category, applicationUser);
+        Expense[] expenses = new Expense[2];
+        expenses[0] = expense1;
+        expenses[1] = expense2;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 2);
     }
 
     @Test
@@ -89,11 +94,14 @@ public class ExpenseControllerTest {
 
         Expense expense = createExpense(category, applicationUser);
         expense.setCurrency("EUR");
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
-        assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrency());
-        assertNotNull(((ExpenseDTO) responseEntity.getBody()).getDefaultCurrencyAmount());
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
+        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrency());
+        assertNotNull(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getDefaultCurrencyAmount());
     }
 
     @Test
@@ -101,9 +109,12 @@ public class ExpenseControllerTest {
 
         Expense expense = createExpense(category, applicationUser);
         expense.setFrequency(1);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
@@ -111,7 +122,10 @@ public class ExpenseControllerTest {
 
         Expense expense = createExpense(category, applicationUser);
         expense.setCurrency("Pikachu");
-        expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        expenseController.createExpenses(expenses);
     }
 
     @Test
@@ -121,16 +135,22 @@ public class ExpenseControllerTest {
         category.setName("new_created_category");
         category.setUser(applicationUser);
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(((ExpenseDTO) responseEntity.getBody()).getId() > 0);
+        assertTrue(((List<ExpenseDTO>) responseEntity.getBody()).size() == 1);
     }
 
     @Test(expected = BadRequestException.class)
     public void shouldNotCreateExpense() {
         Expense expense = createExpense(category, applicationUser);
         expense.setName(null);
-        expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        expenseController.createExpenses(expenses);
     }
 
     @SuppressWarnings("unchecked")
@@ -138,7 +158,10 @@ public class ExpenseControllerTest {
     public void shouldListAllExpense() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = expenseController.listAllExpenses();
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
@@ -151,7 +174,10 @@ public class ExpenseControllerTest {
     public void shouldListAllExpenseByCategoryName() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = expenseController.listAllExpensesByCategoryName(category.getName());
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
@@ -163,7 +189,10 @@ public class ExpenseControllerTest {
     public void shouldListAllExpenseByCategoryNameAndTimeInterval() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
@@ -179,7 +208,10 @@ public class ExpenseControllerTest {
     public void shouldThrowExceptionIdIsNotNumber() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
@@ -192,7 +224,10 @@ public class ExpenseControllerTest {
     public void shouldListAllExpenseForAllCategoriesAndTimeInterval() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
@@ -226,7 +261,10 @@ public class ExpenseControllerTest {
     public void shouldNotListAllExpenseByCategoryNameAndTimeIntervalForInvalidInterval() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         long queryStartTime = expense.getCreationDate().getTime() + 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 2000;
@@ -241,7 +279,10 @@ public class ExpenseControllerTest {
     public void shouldNotListAllExpenseByCategoryNameAndTimeIntervalForInvalidCategory() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         long queryStartTime = expense.getCreationDate().getTime() - 1000;
         long queryEndTime = expense.getCreationDate().getTime() + 1000;
@@ -256,9 +297,12 @@ public class ExpenseControllerTest {
     public void shouldFindById() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = expenseController.findExpense(((ExpenseDTO) responseEntity.getBody()).getId());
+        responseEntity = expenseController.findExpense(((List<ExpenseDTO>) responseEntity.getBody()).get(0).getId());
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ExpenseDTO found = (ExpenseDTO) responseEntity.getBody();
         assertEquals(expense.getName(), found.getName());
@@ -276,7 +320,10 @@ public class ExpenseControllerTest {
     public void shouldUpdateExpense() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
@@ -301,7 +348,10 @@ public class ExpenseControllerTest {
     public void shouldUpdateExpenseAndSetDefaultCurrencyAmount() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
@@ -326,7 +376,10 @@ public class ExpenseControllerTest {
     public void shouldNotUpdateExpenseWithWrongCurrency() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Expense toUpdate = createExpense(category, applicationUser);
         toUpdate.setName("updated_expense");
@@ -356,7 +409,10 @@ public class ExpenseControllerTest {
     public void shouldDeleteExpense() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = expenseController.deleteExpense(expense.getId());
@@ -374,7 +430,10 @@ public class ExpenseControllerTest {
     public void shouldDeleteAllExpenses() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = expenseController.deleteAll();
@@ -388,7 +447,10 @@ public class ExpenseControllerTest {
     public void shouldDeleteAllExpensesByCategoryName() {
 
         Expense expense = createExpense(category, applicationUser);
-        ResponseEntity<?> responseEntity = expenseController.createExpense(expense);
+        Expense[] expenses = new Expense[1];
+        expenses[0] = expense;
+
+        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         responseEntity = expenseController.deleteAllByCategory(category.getId());

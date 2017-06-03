@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by tudor.grigoriu on 3/17/2017.
  */
 @RestController
 @RequestMapping(value = "/loans")
-public class LoanController {
+public class LoanController extends CurrencyHolderController {
 
     @Autowired
     LoanDao loanDao;
@@ -43,7 +45,11 @@ public class LoanController {
             if(loan.getCounterparty().getId() == 0){
                 counterpartyDao.saveAndFlush(loan.getCounterparty());
             }
-            loan.setUser(userUtil.extractLoggedAppUserFromDatabase());
+            AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
+            loan.setUser(loggedUser);
+            if (!loggedUser.getDefaultCurrency().getCurrencyCode().equals(loan.getCurrency())) {
+                setDefaultCurrencyAmount(loan, loggedUser.getDefaultCurrency());
+            }
             Loan createdLoan = loanDao.saveAndFlush(loan);
             return new ResponseEntity<>(createdLoan, HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
@@ -57,7 +63,12 @@ public class LoanController {
         if (appUser == null) {
             throw new NotFoundException("User not found");
         }
-        return new ResponseEntity<>(loanDao.findByCounterparty(appUser.getUsername(), id), HttpStatus.OK);
+        List<Loan> loans = loanDao.findByCounterparty(appUser.getUsername(), id);
+        if (loans == null || loans.isEmpty()) {
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }
+        convertLoansToDefaultCurrency(loans, appUser);
+        return new ResponseEntity<>(loans, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -76,6 +87,9 @@ public class LoanController {
             counterpartyDao.saveAndFlush(loan.getCounterparty());
         }
         loan.setUser(appUser);
+        if(shouldUpdateDefaultCurrencyAmount(loan, appUser, oldLoan)){
+            setDefaultCurrencyAmount(loan, appUser.getDefaultCurrency());
+        }
         loan.setId(id);
         loanDao.saveAndFlush(loan);
         return new ResponseEntity<>("Loan updated", HttpStatus.NO_CONTENT);
@@ -101,5 +115,12 @@ public class LoanController {
             throw new NotFoundException(emptyResultDataAccessException.getMessage());
         }
         return new ResponseEntity<>("Loan deleted", HttpStatus.NO_CONTENT);
+    }
+
+    private void convertLoansToDefaultCurrency(List<Loan> loans, AppUser user) {
+        loans.stream().filter(loan -> shouldUpdateDefaultCurrencyAmount(loan, user)).forEach(loan -> {
+            setDefaultCurrencyAmount(loan, user.getDefaultCurrency());
+            loanDao.saveAndFlush(loan);
+        });
     }
 }

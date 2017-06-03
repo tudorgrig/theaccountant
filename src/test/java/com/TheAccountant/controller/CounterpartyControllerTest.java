@@ -82,7 +82,6 @@ public class CounterpartyControllerTest {
         CounterpartyDTO result = (CounterpartyDTO) responseEntity.getBody();
         assertTrue(result.getId() > 0 );
         assertEquals(counterparty.getName(), result.getName());
-        assertEquals(appUser.getUsername(), result.getUser().getUsername());
         assertEquals(counterparty.getEmail(), result.getEmail());
     }
 
@@ -95,7 +94,7 @@ public class CounterpartyControllerTest {
         assertTrue(resultList.size() == 1);
         assertEquals(counterparty.getName(), resultList.get(0).getName());
         assertEquals(counterparty.getEmail(), resultList.get(0).getEmail());
-        assertEquals(counterparty.getUser().getUsername(), resultList.get(0).getUser().getUsername());
+        assertEquals(counterparty.getUser().getUsername(), appUser.getUsername());
     }
 
     @Test
@@ -115,7 +114,7 @@ public class CounterpartyControllerTest {
         assertTrue(resultList.size() == 1);
         assertEquals(counterparty.getName(), resultList.get(0).getName());
         assertEquals(counterparty.getEmail(), resultList.get(0).getEmail());
-        assertEquals(counterparty.getUser().getUsername(), resultList.get(0).getUser().getUsername());
+        assertEquals(counterparty.getUser().getUsername(), appUser.getUsername());
         assertEquals(AMOUNT - 250, resultList.get(0).getTotal(), 0.0001);
     }
 

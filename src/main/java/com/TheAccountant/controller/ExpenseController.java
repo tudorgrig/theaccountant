@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.converter.ExpenseConverter;
@@ -22,9 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -34,9 +33,8 @@ import java.util.*;
  */
 @RestController
 @RequestMapping(value = "/expense")
-public class ExpenseController {
+public class ExpenseController extends CurrencyHolderController {
 
-    private static final long ONE_DAY = 24 * 60 * 60 * 1000;
     @Autowired
     private ExpenseDao expenseDao;
     
@@ -51,25 +49,33 @@ public class ExpenseController {
     
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<ExpenseDTO> createExpense(@RequestBody @Valid Expense expense) {
+    public ResponseEntity<List<ExpenseDTO>> createExpenses(@RequestBody @Valid Expense[] expenses) {
     
         try {
-            if(CurrencyUtil.getCurrency(expense.getCurrency())==null){
-                throw new BadRequestException("Wrong currency code!");
+            if (expenses == null || expenses.length == 0) {
+                throw new BadRequestException("No expenses found in request!");
+            } else {
+                List<ExpenseDTO> createdExpenseListDTO = new ArrayList<>();
+                int index = 0;
+                for (Expense expense : expenses) {
+                    if (CurrencyUtil.getCurrency(expense.getCurrency()) == null) {
+                        throw new BadRequestException("Wrong currency code for index [" + index + "] and Currency code [" + expense.getCurrency() + "]!");
+                    }
+
+                    AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+                    Category category = resolveCategory(user, expense.getCategory().getName());
+                    if (!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())) {
+                        setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
+                    }
+                    expense.setCategory(category);
+                    expense.setUser(user);
+
+                    ExpenseDTO createdExpenseDto = expenseConverter.convertTo(expenseDao.saveAndFlush(expense));
+                    createdExpenseListDTO.add(createdExpenseDto);
+                    index++;
+                }
+                return new ResponseEntity<>(createdExpenseListDTO, HttpStatus.OK);
             }
-            String categoryName = expense.getCategory().getName();
-            AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-            Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(categoryName, user);
-            }
-            if(!user.getDefaultCurrency().getCurrencyCode().equals(expense.getCurrency())){
-                setDefaultCurrencyAmount(expense, user.getDefaultCurrency());
-            }
-            expense.setCategory(category);
-            expense.setUser(user);
-            Expense createdExpense = expenseDao.saveAndFlush(expense);
-            return new ResponseEntity<>(expenseConverter.convertTo(createdExpense), HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -159,10 +165,7 @@ public class ExpenseController {
         Category oldCategory = oldExpense.getCategory();
         String newExpenseCategoryName = expense.getCategory().getName();
         if (!oldCategory.getName().equals(newExpenseCategoryName)) {
-            Category category = categoryDao.findByNameAndUsername(newExpenseCategoryName, user.getUsername());
-            if (category == null) {
-                category = createAndSaveCategory(newExpenseCategoryName, oldExpense.getUser());
-            }
+            Category category = resolveCategory(oldExpense.getUser(), newExpenseCategoryName);
             expense.setCategory(category);
         }
         if(CurrencyUtil.getCurrency(expense.getCurrency()) == null){
@@ -217,6 +220,14 @@ public class ExpenseController {
         return new ResponseEntity<>("Expenses deleted", HttpStatus.NO_CONTENT);
     }
 
+    private Category resolveCategory(AppUser user, String categoryName) {
+        Category category = categoryDao.findByNameAndUsername(categoryName, user.getUsername());
+        if (category == null) {
+            category = createAndSaveCategory(categoryName, user);
+        }
+        return category;
+    }
+
     private Category createAndSaveCategory(String categoryName, AppUser user) {
     
         Category category = new Category();
@@ -233,57 +244,6 @@ public class ExpenseController {
             expenseDTOs.add(expenseConverter.convertTo(expense));
         });
         return expenseDTOs;
-    }
-
-    private boolean shouldUpdateDefaultCurrencyAmount(Expense expense, AppUser user, Expense oldExpense) {
-        boolean creationDateChanged = !expense.getCreationDate().equals(oldExpense.getCreationDate()) 
-                && (expense.getCreationDate().getTime() - oldExpense.getCreationDate().getTime() >= ONE_DAY
-                        ||
-                    oldExpense.getCreationDate().getTime() - expense.getCreationDate().getTime() >= ONE_DAY);
-                
-        boolean currencyChanged = !expense.getCurrency().equals(oldExpense.getCurrency());
-        boolean amountChanged = !expense.getAmount().equals(oldExpense.getAmount());
-        if(creationDateChanged || currencyChanged || amountChanged){
-            //if any of those fields changed, check if the user updated the expense with his own default currency.
-            //if yes, no conversion is needed, if not conversion is needed between the expense currency
-            // and the users default currency
-            boolean hasDiffCurrencyThanDefault = !expense.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-            if(!hasDiffCurrencyThanDefault){
-                expense.setDefaultCurrency(null);
-                expense.setDefaultCurrencyAmount(null);
-            }
-            return hasDiffCurrencyThanDefault;
-        }
-        return false;
-    }
-
-    private boolean shouldUpdateDefaultCurrencyAmount(Expense expense, AppUser user) {
-        boolean expenseWasOnOldDefaultCurrency = expense.getDefaultCurrency() == null &&
-                !expense.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        boolean userChangedDefaultCurrency = expense.getDefaultCurrency() != null &&
-                !expense.getDefaultCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        return expenseWasOnOldDefaultCurrency || userChangedDefaultCurrency;
-    }
-
-    private void setDefaultCurrencyAmount(Expense expense, Currency defaultCurrency){
-        String expenseCurrency = expense.getCurrency();
-        Double amount = expense.getAmount();
-        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(expense.getCreationDate().getTime());
-        Double exchangeRateOnDay = null;
-        try {
-            if(expenseCurrency.equals(defaultCurrency.getCurrencyCode())){
-                expense.setDefaultCurrencyAmount(null);
-                expense.setDefaultCurrency(null);
-                return;
-            }
-            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(expenseCurrency, defaultCurrency, formatDate);
-            if(exchangeRateOnDay != null) {
-                expense.setDefaultCurrency(defaultCurrency.getCurrencyCode());
-                expense.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
-            }
-        } catch (IOException e) {
-            throw new BadRequestException(e);
-        }
     }
 
     private void convertExpensesToDefaultCurrency(Set<Expense> expenses, AppUser user) {
