@@ -19,10 +19,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Timestamp;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
@@ -91,6 +93,19 @@ public class LoanControllerTest {
     }
 
     @Test
+    public void shouldCreateWithDefaultCurrencyAmount() {
+        Counterparty counterparty = createCounterparty();
+        counterparty = counterpartyDao.saveAndFlush(counterparty);
+        Loan loan = createLoan();
+        loan.setCurrency("EUR");
+        loan.setCounterparty(counterparty);
+        ResponseEntity responseEntity = loanController.create(loan);
+        Loan result = (Loan) responseEntity.getBody();
+        assertEquals(CURRENCY, result.getDefaultCurrency());
+        assertNotEquals(result.getAmount(), result.getDefaultCurrencyAmount());
+    }
+
+    @Test
     public void shouldCreateLoanAndCounterparty(){
         Counterparty counterparty = createCounterparty();
         Loan loan = createLoan();
@@ -140,7 +155,7 @@ public class LoanControllerTest {
         loanController.delete(loan.getId());
         ResponseEntity findAllResponseEntity = loanController.findAll(counterparty.getId());
         List<Counterparty> resultList = (List<Counterparty>) findAllResponseEntity.getBody();
-        assertTrue(resultList.isEmpty());
+        assertTrue(resultList == null || resultList.isEmpty());
     }
 
     @Test
@@ -160,6 +175,21 @@ public class LoanControllerTest {
         assertEquals(UPDATED_NAME, result.get(0).getDescription());
     }
 
+    @Test
+    public void shouldUpdateDefaultCurrency() {
+        Counterparty counterparty = createCounterparty();
+        counterparty = counterpartyDao.saveAndFlush(counterparty);
+        Loan loan = createLoan();
+        loan.setCounterparty(counterparty);
+        loanController.create(loan);
+        loan.setCurrency("EUR");
+        loanController.update(loan.getId(), loan);
+        ResponseEntity responseEntity = loanController.findAll(counterparty.getId());
+        List<Loan> result = (List<Loan>) responseEntity.getBody();
+        assertEquals(CURRENCY, result.get(0).getDefaultCurrency());
+        assertNotEquals(loan.getAmount(), result.get(0).getDefaultCurrencyAmount());
+    }
+
     private Counterparty createCounterparty() {
         Counterparty counterparty = new Counterparty();
         counterparty.setUser(appUser);
@@ -177,6 +207,7 @@ public class LoanControllerTest {
         appUser.setBirthdate(new Date());
         appUser.setUsername(username);
         appUser.setEmail(email);
+        appUser.setDefaultCurrency(Currency.getInstance(CURRENCY));
         appUserDao.saveAndFlush(appUser);
         return appUser;
     }
@@ -184,7 +215,8 @@ public class LoanControllerTest {
     private Loan createLoan() {
         Loan loan = new Loan();
         loan.setUser(appUser);
-        loan.setCreationDate(new Timestamp(1l));
+        loan.setCreationDate(new Timestamp(System.currentTimeMillis()));
+        loan.setUntilDate(new Timestamp(System.currentTimeMillis()));
         loan.setActive(ACTIVE);
         loan.setAmount(AMOUNT);
         loan.setCurrency(CURRENCY);

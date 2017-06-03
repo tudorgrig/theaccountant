@@ -30,14 +30,20 @@ public class CounterpartyConverter {
     }
 
     private Double getAmount(Loan loan) {
-        if(loan.getActive() == Boolean.FALSE){
-            return new Double(0);
+        Double amount = new Double(0);
+        if(loan.getActive() == Boolean.TRUE) {
+
+            if (loan.getDefaultCurrencyAmount() != null) {
+                amount = loan.getDefaultCurrencyAmount();
+            } else {
+                amount = loan.getAmount();
+            }
+            if (loan.getReceiving() == Boolean.FALSE) {
+                //if user is giving, it means that the logged in user must give money to the counterparty
+                return -1 * amount;
+            }
         }
-        if(loan.getReceiving() == Boolean.FALSE){
-            //if user is giving, it means that the logged in user must give money to the counterparty
-            return -1 * loan.getAmount();
-        }
-        return loan.getAmount();
+        return amount;
     }
 
     public Counterparty convertFrom(CounterpartyDTO counterpartyDTO) {

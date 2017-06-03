@@ -5,4 +5,5 @@ target/
 *.properties
 *.iml
 *.jks
+*.log
 .settings/

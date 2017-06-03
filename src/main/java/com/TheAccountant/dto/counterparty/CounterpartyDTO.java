@@ -8,7 +8,6 @@ import com.TheAccountant.model.user.AppUser;
 public class CounterpartyDTO {
 
     private long id;
-    private AppUser user;
     private String name;
     private String email;
     private double total;
@@ -19,14 +18,6 @@ public class CounterpartyDTO {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public AppUser getUser() {
-        return user;
-    }
-
-    public void setUser(AppUser user) {
-        this.user = user;
     }
 
     public String getName() {

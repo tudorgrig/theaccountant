@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.converter.ExpenseConverter;
@@ -12,7 +13,6 @@ import com.TheAccountant.model.expense.Expense;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.service.NotificationService;
-import com.TheAccountant.util.CurrencyConverter;
 import com.TheAccountant.util.CurrencyUtil;
 import com.TheAccountant.util.UserUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -37,9 +35,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping(value = "/expense")
-public class ExpenseController {
-
-    private static final long ONE_DAY = 24 * 60 * 60 * 1000;
+public class ExpenseController extends CurrencyHolderController {
 
     @Autowired
     private ExpenseDao expenseDao;
@@ -260,57 +256,6 @@ public class ExpenseController {
             expenseDTOs.add(expenseConverter.convertTo(expense));
         });
         return expenseDTOs;
-    }
-
-    private boolean shouldUpdateDefaultCurrencyAmount(Expense expense, AppUser user, Expense oldExpense) {
-        boolean creationDateChanged = !expense.getCreationDate().equals(oldExpense.getCreationDate()) 
-                && (expense.getCreationDate().getTime() - oldExpense.getCreationDate().getTime() >= ONE_DAY
-                        ||
-                    oldExpense.getCreationDate().getTime() - expense.getCreationDate().getTime() >= ONE_DAY);
-                
-        boolean currencyChanged = !expense.getCurrency().equals(oldExpense.getCurrency());
-        boolean amountChanged = !expense.getAmount().equals(oldExpense.getAmount());
-        if(creationDateChanged || currencyChanged || amountChanged){
-            //if any of those fields changed, check if the user updated the expense with his own default currency.
-            //if yes, no conversion is needed, if not conversion is needed between the expense currency
-            // and the users default currency
-            boolean hasDiffCurrencyThanDefault = !expense.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-            if(!hasDiffCurrencyThanDefault){
-                expense.setDefaultCurrency(null);
-                expense.setDefaultCurrencyAmount(null);
-            }
-            return hasDiffCurrencyThanDefault;
-        }
-        return false;
-    }
-
-    private boolean shouldUpdateDefaultCurrencyAmount(Expense expense, AppUser user) {
-        boolean expenseWasOnOldDefaultCurrency = expense.getDefaultCurrency() == null &&
-                !expense.getCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        boolean userChangedDefaultCurrency = expense.getDefaultCurrency() != null &&
-                !expense.getDefaultCurrency().equals(user.getDefaultCurrency().getCurrencyCode());
-        return expenseWasOnOldDefaultCurrency || userChangedDefaultCurrency;
-    }
-
-    private void setDefaultCurrencyAmount(Expense expense, Currency defaultCurrency){
-        String expenseCurrency = expense.getCurrency();
-        Double amount = expense.getAmount();
-        String formatDate = new SimpleDateFormat("yyyy-MM-dd").format(expense.getCreationDate().getTime());
-        Double exchangeRateOnDay = null;
-        try {
-            if(expenseCurrency.equals(defaultCurrency.getCurrencyCode())){
-                expense.setDefaultCurrencyAmount(null);
-                expense.setDefaultCurrency(null);
-                return;
-            }
-            exchangeRateOnDay = CurrencyConverter.getExchangeRateOnDay(expenseCurrency, defaultCurrency, formatDate);
-            if(exchangeRateOnDay != null) {
-                expense.setDefaultCurrency(defaultCurrency.getCurrencyCode());
-                expense.setDefaultCurrencyAmount(amount * exchangeRateOnDay);
-            }
-        } catch (IOException e) {
-            throw new BadRequestException(e);
-        }
     }
 
     private void convertExpensesToDefaultCurrency(Set<Expense> expenses, AppUser user) {

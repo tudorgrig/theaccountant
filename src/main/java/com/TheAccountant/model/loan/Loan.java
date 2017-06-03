@@ -1,5 +1,6 @@
 package com.TheAccountant.model.loan;
 
+import com.TheAccountant.model.abstracts.CurrencyHolderEntity;
 import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.user.AppUser;
 
@@ -12,7 +13,7 @@ import java.sql.Timestamp;
  * Created by Florin on 3/7/2017.
  */
 @Entity
-public class Loan {
+public class Loan extends CurrencyHolderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,22 +30,13 @@ public class Loan {
     @NotNull
     private Boolean receiving;
 
-    @Column(nullable = false)
-    @Min(value = 0)
-    private Double amount;
-
-    @Column(nullable = false)
-    private Timestamp creationDate;
-
-    @NotNull
-    private String currency;
-
-    private Double defaultCurrencyAmount;
-
     @NotNull
     private Boolean active;
 
     private String description;
+
+    @Column(nullable = false)
+    private Timestamp untilDate;
 
     public long getId() {
         return id;
@@ -78,38 +70,6 @@ public class Loan {
         this.receiving = receiving;
     }
 
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public Timestamp getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Timestamp creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public Double getDefaultCurrencyAmount() {
-        return defaultCurrencyAmount;
-    }
-
-    public void setDefaultCurrencyAmount(Double defaultCurrencyAmount) {
-        this.defaultCurrencyAmount = defaultCurrencyAmount;
-    }
-
     public Boolean getActive() {
         return active;
     }
@@ -124,5 +84,13 @@ public class Loan {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Timestamp getUntilDate() {
+        return untilDate;
+    }
+
+    public void setUntilDate(Timestamp untilDate) {
+        this.untilDate = untilDate;
     }
 }
