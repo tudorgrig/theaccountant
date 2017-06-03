@@ -81,7 +81,7 @@ public class CounterpartyController {
         return new ResponseEntity<>("Counterparty updated", HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @Transactional
     public ResponseEntity<String> delete(@PathVariable("id") Long id) {
 
