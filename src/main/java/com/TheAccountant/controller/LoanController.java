@@ -4,8 +4,10 @@ import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.ConflictException;
 import com.TheAccountant.controller.exception.NotFoundException;
+import com.TheAccountant.converter.LoanConverter;
 import com.TheAccountant.dao.CounterpartyDao;
 import com.TheAccountant.dao.LoanDao;
+import com.TheAccountant.dto.loan.LoanDTO;
 import com.TheAccountant.model.loan.Loan;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.UserUtil;
@@ -35,30 +37,34 @@ public class LoanController extends CurrencyHolderController {
     CounterpartyDao counterpartyDao;
 
     @Autowired
+    LoanConverter loanConverter;
+
+    @Autowired
     private UserUtil userUtil;
 
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<Loan> create(@RequestBody @Valid Loan loan) {
+    public ResponseEntity<LoanDTO> create(@RequestBody @Valid Loan loan) {
         try {
             loan.setActive(true);
+            AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
             if(loan.getCounterparty().getId() == 0){
+                loan.getCounterparty().setUser(loggedUser);
                 counterpartyDao.saveAndFlush(loan.getCounterparty());
             }
-            AppUser loggedUser = userUtil.extractLoggedAppUserFromDatabase();
             loan.setUser(loggedUser);
             if (!loggedUser.getDefaultCurrency().getCurrencyCode().equals(loan.getCurrency())) {
                 setDefaultCurrencyAmount(loan, loggedUser.getDefaultCurrency());
             }
             Loan createdLoan = loanDao.saveAndFlush(loan);
-            return new ResponseEntity<>(createdLoan, HttpStatus.OK);
+            return new ResponseEntity<>(loanConverter.convertTo(createdLoan), HttpStatus.OK);
         } catch (DataIntegrityViolationException dive) {
             throw new ConflictException(dive.getMostSpecificCause().getMessage());
         }
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<List<Loan>> findAll(@PathVariable("id") Long id) {
+    public ResponseEntity<List<LoanDTO>> findAll(@PathVariable("id") Long id) {
         AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
         if (appUser == null) {
             throw new NotFoundException("User not found");
@@ -68,7 +74,7 @@ public class LoanController extends CurrencyHolderController {
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
         convertLoansToDefaultCurrency(loans, appUser);
-        return new ResponseEntity<>(loans, HttpStatus.OK);
+        return new ResponseEntity<>(loanConverter.convertToList(loans), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)

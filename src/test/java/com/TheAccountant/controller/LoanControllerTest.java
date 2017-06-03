@@ -2,6 +2,7 @@ package com.TheAccountant.controller;
 
 import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.CounterpartyDao;
+import com.TheAccountant.dto.loan.LoanDTO;
 import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.loan.Loan;
 import com.TheAccountant.model.user.AppUser;
@@ -26,8 +27,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 /**
  * Created by tudor.grigoriu on 3/17/2017.
  */
@@ -80,13 +79,12 @@ public class LoanControllerTest {
         Loan loan = createLoan();
         loan.setCounterparty(counterparty);
         ResponseEntity responseEntity = loanController.create(loan);
-        Loan result = (Loan) responseEntity.getBody();
+        LoanDTO result = (LoanDTO) responseEntity.getBody();
         assertTrue(result.getId() > 0 );
         assertEquals(loan.getActive(), result.getActive());
-        assertEquals(loan.getUser().getUsername(), result.getUser().getUsername());
         assertEquals(loan.getCreationDate(), result.getCreationDate());
         assertEquals(loan.getAmount(), result.getAmount());
-        assertEquals(loan.getCounterparty(), result.getCounterparty());
+        assertEquals(loan.getCounterparty().getId(), result.getCounterparty().getId());
         assertEquals(loan.getCurrency(), result.getCurrency());
         assertEquals(loan.getReceiving(), result.getReceiving());
         assertEquals(loan.getDescription(), result.getDescription());
@@ -100,7 +98,7 @@ public class LoanControllerTest {
         loan.setCurrency("EUR");
         loan.setCounterparty(counterparty);
         ResponseEntity responseEntity = loanController.create(loan);
-        Loan result = (Loan) responseEntity.getBody();
+        LoanDTO result = (LoanDTO) responseEntity.getBody();
         assertEquals(CURRENCY, result.getDefaultCurrency());
         assertNotEquals(result.getAmount(), result.getDefaultCurrencyAmount());
     }
@@ -111,13 +109,12 @@ public class LoanControllerTest {
         Loan loan = createLoan();
         loan.setCounterparty(counterparty);
         ResponseEntity responseEntity = loanController.create(loan);
-        Loan result = (Loan) responseEntity.getBody();
+        LoanDTO result = (LoanDTO) responseEntity.getBody();
         assertTrue(result.getId() > 0 );
         assertEquals(loan.getActive(), result.getActive());
-        assertEquals(loan.getUser().getUsername(), result.getUser().getUsername());
         assertEquals(loan.getCreationDate(), result.getCreationDate());
         assertEquals(loan.getAmount(), result.getAmount());
-        assertEquals(loan.getCounterparty(), result.getCounterparty());
+        assertEquals(loan.getCounterparty().getId(), result.getCounterparty().getId());
         assertEquals(loan.getCurrency(), result.getCurrency());
         assertEquals(loan.getReceiving(), result.getReceiving());
         assertEquals(loan.getDescription(), result.getDescription());
@@ -131,12 +128,11 @@ public class LoanControllerTest {
         loan.setCounterparty(counterparty);
         loanController.create(loan);
         ResponseEntity responseEntity = loanController.findAll(counterparty.getId());
-        List<Loan> resultList = (List<Loan>) responseEntity.getBody();
+        List<LoanDTO> resultList = (List<LoanDTO>) responseEntity.getBody();
         assertTrue(resultList.size() == 1);
-        Loan result = resultList.get(0);
+        LoanDTO result = resultList.get(0);
         assertTrue(result.getId() > 0 );
         assertEquals(loan.getActive(), result.getActive());
-        assertEquals(loan.getUser().getUsername(), result.getUser().getUsername());
         assertEquals(loan.getCreationDate(), result.getCreationDate());
         assertEquals(loan.getAmount(), result.getAmount());
         assertEquals(loan.getCounterparty().getId(), result.getCounterparty().getId());
@@ -171,7 +167,7 @@ public class LoanControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
         assertEquals("Loan updated", updated.getBody());
         ResponseEntity responseEntity = loanController.findAll(counterparty.getId());
-        List<Loan> result = (List<Loan>) responseEntity.getBody();
+        List<LoanDTO> result = (List<LoanDTO>) responseEntity.getBody();
         assertEquals(UPDATED_NAME, result.get(0).getDescription());
     }
 
@@ -185,7 +181,7 @@ public class LoanControllerTest {
         loan.setCurrency("EUR");
         loanController.update(loan.getId(), loan);
         ResponseEntity responseEntity = loanController.findAll(counterparty.getId());
-        List<Loan> result = (List<Loan>) responseEntity.getBody();
+        List<LoanDTO> result = (List<LoanDTO>) responseEntity.getBody();
         assertEquals(CURRENCY, result.get(0).getDefaultCurrency());
         assertNotEquals(loan.getAmount(), result.get(0).getDefaultCurrencyAmount());
     }
