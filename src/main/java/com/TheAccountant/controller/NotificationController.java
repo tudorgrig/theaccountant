@@ -2,7 +2,9 @@ package com.TheAccountant.controller;
 
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.NotFoundException;
+import com.TheAccountant.converter.NotificationConverter;
 import com.TheAccountant.dao.NotificationDao;
+import com.TheAccountant.dto.notification.NotificationDTO;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.UserUtil;
@@ -28,14 +30,17 @@ public class NotificationController {
     @Autowired
     private UserUtil userUtil;
 
+    @Autowired
+    private NotificationConverter notificationConverter;
+
     @RequestMapping(params = {"limit", "offset"},method = RequestMethod.GET)
-    public ResponseEntity<List<Notification>> findNotifications(@RequestParam("limit") Integer limit, @RequestParam("offset") Integer offset) {
+    public ResponseEntity<List<NotificationDTO>> findNotifications(@RequestParam("limit") Integer limit, @RequestParam("offset") Integer offset) {
 
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         if (user == null) {
             throw new BadRequestException("User not found");
         }
-        return new ResponseEntity<>(notificationDao.fetchAll(user.getUserId(), limit, offset), HttpStatus.OK);
+        return new ResponseEntity<>(notificationConverter.convertList(notificationDao.fetchAll(user.getUserId(), limit, offset)), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)

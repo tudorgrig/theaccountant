@@ -103,7 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String defaultCurrency = userUtil.extractLoggedAppUserFromDatabase().getDefaultCurrency().getCurrencyCode();
         String thresholdAmount = category.getThreshold() + " " + defaultCurrency;
-        String message = "Threshold of value " + thresholdAmount +  " for category " + category.getName() + " has been exceeded!\n" +
+        String message = "Threshold of value " + thresholdAmount +  " for category " + category.getName() + " has been exceeded! " +
                 "Current amount spent: " + totalAmountSpent + " " + defaultCurrency + ".";
 
         return message;

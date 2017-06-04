@@ -4,6 +4,7 @@ import com.TheAccountant.controller.abstracts.CurrencyHolderController;
 import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.converter.ExpenseConverter;
+import com.TheAccountant.converter.NotificationConverter;
 import com.TheAccountant.dao.CategoryDao;
 import com.TheAccountant.dao.ExpenseDao;
 import com.TheAccountant.dto.expense.ExpenseDTO;
@@ -45,6 +46,9 @@ public class ExpenseController extends CurrencyHolderController {
     
     @Autowired
     private ExpenseConverter expenseConverter;
+
+    @Autowired
+    private NotificationConverter notificationConverter;
     
     @Autowired
     private UserUtil userUtil;
@@ -80,7 +84,8 @@ public class ExpenseController extends CurrencyHolderController {
                     index++;
                 }
                 Notification notification = notificationService.registerThresholdNotification(expenses[0].getCategory());
-                NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO<ExpenseDTO>(createdExpenseListDTO, notification);
+                NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO(createdExpenseListDTO,
+                        notificationConverter.convertTo(notification));
                 return new ResponseEntity<>(responseDTO, HttpStatus.OK);
             }
         } catch (ConstraintViolationException e) {
@@ -187,7 +192,8 @@ public class ExpenseController extends CurrencyHolderController {
         Notification notification = notificationService.registerThresholdNotification(expense.getCategory());
         List<ExpenseDTO> expenseDTOList = new ArrayList<>();
         expenseDTOList.add(expenseConverter.convertTo(expense));
-        NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO(expenseDTOList, notification);
+        NotificationEntityWrapperDTO responseDTO = new NotificationEntityWrapperDTO(expenseDTOList,
+                notificationConverter.convertTo(notification));
 
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }

@@ -2,6 +2,7 @@ package com.TheAccountant.controller;
 
 import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.NotificationDao;
+import com.TheAccountant.dto.notification.NotificationDTO;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationCategory;
 import com.TheAccountant.model.user.AppUser;
@@ -64,12 +65,11 @@ public class NotificationControllerTest {
     @Test
     public void shouldFindNotifications(){
         Notification notification = createNotification();
-        ResponseEntity<List<Notification>> responseEntity = notificationController.findNotifications(10, 0);
-        List<Notification> notifications = responseEntity.getBody();
+        ResponseEntity<List<NotificationDTO>> responseEntity = notificationController.findNotifications(10, 0);
+        List<NotificationDTO> notifications = responseEntity.getBody();
         assertEquals(notification.getMessage(), notifications.get(0).getMessage());
         assertEquals(notification.getCategory(), notifications.get(0).getCategory());
         assertEquals(notification.getCreationDate(), notifications.get(0).getCreationDate());
-        assertEquals(notification.getUser().getUsername(), notifications.get(0).getUser().getUsername());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.TheAccountant.dto.notification;
 
-import com.TheAccountant.model.notification.Notification;
 
 import java.util.List;
 
@@ -10,11 +9,11 @@ import java.util.List;
 public class NotificationEntityWrapperDTO <E> {
 
     private List<E> entityList;
-    private Notification notification;
+    private NotificationDTO notification;
 
     public NotificationEntityWrapperDTO() {}
 
-    public NotificationEntityWrapperDTO(List<E> entitiyList, Notification notification) {
+    public NotificationEntityWrapperDTO(List<E> entitiyList, NotificationDTO notification) {
         this.entityList = entitiyList;
         this.notification = notification;
     }
@@ -27,11 +26,11 @@ public class NotificationEntityWrapperDTO <E> {
         this.entityList = entityList;
     }
 
-    public Notification getNotification() {
+    public NotificationDTO getNotification() {
         return notification;
     }
 
-    public void setNotification(Notification notification) {
+    public void setNotification(NotificationDTO notification) {
         this.notification = notification;
     }
 }

@@ -1,6 +1,5 @@
 package com.TheAccountant.controller;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.*;
 
 import java.sql.Timestamp;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 
 import com.TheAccountant.dto.notification.NotificationEntityWrapperDTO;
-import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationPriority;
 import com.TheAccountant.service.NotificationService;
 import org.junit.After;
