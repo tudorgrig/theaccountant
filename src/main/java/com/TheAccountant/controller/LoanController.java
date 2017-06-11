@@ -91,6 +91,19 @@ public class LoanController extends CurrencyHolderController {
         return new ResponseEntity<>(loanConverter.convertToList(loans), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/findOne/{id}", method = RequestMethod.GET)
+    public ResponseEntity<LoanDTO> findOne(@PathVariable("id") Long id) {
+        AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
+        if (appUser == null) {
+            throw new NotFoundException("User not found");
+        }
+        Loan loan = loanDao.findOne(id);
+        if (loan == null || loan.getUser().getUserId() != appUser.getUserId()) {
+            throw  new BadRequestException("Invalid Loan id [" + id + "]");
+        }
+        return new ResponseEntity<>(loanConverter.convertTo(loan), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     @Transactional
     public ResponseEntity<String> update(@PathVariable("id") Long id, @RequestBody @Valid Loan loan) {
@@ -115,7 +128,7 @@ public class LoanController extends CurrencyHolderController {
         return new ResponseEntity<>("Loan updated", HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @Transactional
     public ResponseEntity<String> delete(@PathVariable("id") Long id) {
 

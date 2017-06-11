@@ -121,8 +121,8 @@ public class NotificationServiceImpl implements NotificationService {
         String defaultCurrency = userUtil.extractLoggedAppUserFromDatabase().getDefaultCurrency().getCurrencyCode();
         String thresholdAmount = category.getThreshold() + " " + defaultCurrency;
         String message = "You are close to reaching threshold of " + thresholdAmount + " on category " + category.getName() + "!" +
-                "Current amount spent: " + totalAmountSpent + " " + defaultCurrency + "!" +
-                "Please take care of your expenses!";
+                " Current amount spent: " + totalAmountSpent + " " + defaultCurrency + "!" +
+                " Please take care of your expenses!";
 
         return message;
     }

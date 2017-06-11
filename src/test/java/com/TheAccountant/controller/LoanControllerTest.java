@@ -160,6 +160,23 @@ public class LoanControllerTest {
     }
 
     @Test
+    public void shouldFindOne(){
+        Counterparty counterparty = createCounterparty();
+        counterpartyDao.saveAndFlush(counterparty);
+        Loan loan1 = createLoan();
+        Loan loan2 = createLoan();
+        loan2.setAmount(123.2);
+        loan1.setCounterparty(counterparty);
+        loan2.setCounterparty(counterparty);
+        loanController.create(loan1);
+        loanController.create(loan2);
+        ResponseEntity responseEntity = loanController.findOne(loan1.getId());
+        LoanDTO resulLoan = (LoanDTO) responseEntity.getBody();
+        assertTrue(resulLoan.getId() > 0);
+        assertEquals(loan1.getAmount(), resulLoan.getAmount());
+    }
+
+    @Test
     public void shouldDelete(){
         Counterparty counterparty = createCounterparty();
         counterparty = counterpartyDao.saveAndFlush(counterparty);
