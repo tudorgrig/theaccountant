@@ -63,13 +63,27 @@ public class LoanController extends CurrencyHolderController {
         }
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<List<LoanDTO>> findAll(@PathVariable("id") Long id) {
+    @RequestMapping(value = "/{counterpartyId}", method = RequestMethod.GET)
+    public ResponseEntity<List<LoanDTO>> findAll(@PathVariable("counterpartyId") Long counterpartyId) {
         AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
         if (appUser == null) {
             throw new NotFoundException("User not found");
         }
-        List<Loan> loans = loanDao.findByCounterparty(appUser.getUsername(), id);
+        List<Loan> loans = loanDao.findByCounterparty(appUser.getUsername(), counterpartyId);
+        if (loans == null || loans.isEmpty()) {
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }
+        convertLoansToDefaultCurrency(loans, appUser);
+        return new ResponseEntity<>(loanConverter.convertToList(loans), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<LoanDTO>> findAll() {
+        AppUser appUser = userUtil.extractLoggedAppUserFromDatabase();
+        if (appUser == null) {
+            throw new NotFoundException("User not found");
+        }
+        List<Loan> loans = loanDao.fetchAll(appUser.getUsername());
         if (loans == null || loans.isEmpty()) {
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }

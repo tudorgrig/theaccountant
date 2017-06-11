@@ -142,6 +142,24 @@ public class LoanControllerTest {
     }
 
     @Test
+    public void shouldFindAllForCurrentUser(){
+        Counterparty counterparty = createCounterparty();
+        counterpartyDao.saveAndFlush(counterparty);
+        Loan loan1 = createLoan();
+        Loan loan2 = createLoan();
+        loan1.setCounterparty(counterparty);
+        loan2.setCounterparty(counterparty);
+        loanController.create(loan1);
+        loanController.create(loan2);
+        ResponseEntity responseEntity = loanController.findAll();
+        List<LoanDTO> resultList = (List<LoanDTO>) responseEntity.getBody();
+        assertTrue(resultList.size() == 2);
+        LoanDTO result = resultList.get(0);
+        assertTrue(result.getId() > 0 );
+        assertEquals(loan1.getActive(), result.getActive());
+    }
+
+    @Test
     public void shouldDelete(){
         Counterparty counterparty = createCounterparty();
         counterparty = counterpartyDao.saveAndFlush(counterparty);
