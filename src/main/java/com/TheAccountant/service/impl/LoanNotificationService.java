@@ -52,7 +52,7 @@ public class LoanNotificationService {
         stringBuilder.append(loan.getCounterparty().getName());
         stringBuilder.append(" ");
         stringBuilder.append(loan.getAmount());
-        stringBuilder.append(loan.getCurrency());
+        stringBuilder.append(" " + loan.getCurrency());
         return stringBuilder.toString();
     }
 

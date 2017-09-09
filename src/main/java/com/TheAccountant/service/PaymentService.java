@@ -17,4 +17,13 @@ public interface PaymentService {
      * @throws ServiceException
      */
     ChargeDTO charge(ChargeDTO chargeDTO, PaymentType paymentType) throws ServiceException;
+
+    /**
+     * Check if the payment having the specified type was approved for the session user
+     *
+     * @param paymentType
+     * @return
+     * @throws ServiceException
+     */
+    ChargeDTO getPaymentStatusForUser(PaymentType paymentType) throws ServiceException;
 }

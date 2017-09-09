@@ -10,10 +10,7 @@ import com.TheAccountant.service.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -35,12 +32,35 @@ public class PaymentController {
 
         LOG.info("------ Charge controller chargeDTO: " + chargeDTO.toString());
 
+        ChargeDTO resultDTO;
         try {
-            paymentService.charge(chargeDTO, PaymentType.USER_LICENSE);
+            resultDTO = paymentService.charge(chargeDTO, PaymentType.USER_LICENSE);
         } catch (ServiceException e) {
             LOG.log(Level.SEVERE, e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
-        return new ResponseEntity<>(chargeDTO, HttpStatus.OK);
+        return new ResponseEntity<>(resultDTO, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/getPaymentStatusForUser/{paymentType}", method = RequestMethod.GET)
+    @Transactional
+    public ResponseEntity<?> getPaymentStatusForUser(@PathVariable("paymentType") String paymentType) {
+
+        PaymentType paymentTypeEnum;
+        if (paymentType.equalsIgnoreCase(PaymentType.USER_LICENSE.name())) {
+            paymentTypeEnum = PaymentType.USER_LICENSE;
+        } else {
+            LOG.log(Level.SEVERE, "Payment type '" + paymentType + "' not recognized!");
+            throw new BadRequestException("Payment type '" + paymentType + "' not recognized!");
+        }
+
+        ChargeDTO resultDTO;
+        try {
+            resultDTO = paymentService.getPaymentStatusForUser(paymentTypeEnum);
+        } catch (ServiceException e) {
+            LOG.log(Level.SEVERE, e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return new ResponseEntity<>(resultDTO, HttpStatus.OK);
     }
 }

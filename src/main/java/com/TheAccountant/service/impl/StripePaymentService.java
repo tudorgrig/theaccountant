@@ -6,6 +6,7 @@ import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.model.payment.Payment;
 import com.TheAccountant.model.payment.PaymentStripe;
 import com.TheAccountant.model.payment.PaymentType;
+import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.service.PaymentService;
 import com.TheAccountant.service.exception.ServiceException;
 import com.TheAccountant.util.UserUtil;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,8 +87,6 @@ public class StripePaymentService implements PaymentService {
             throw new ServiceException("Problems accessing payment support! Error: " + e.getMessage());
         }
 
-        boolean paymentApproved = this.checkIfStripeTransactionApproved(chargeStripe);
-
         // PaymentStripe - details for charging with stripe
         PaymentStripe paymentStripe = new PaymentStripe();
         paymentStripe.setChargeId(chargeStripe.getId());
@@ -114,24 +114,64 @@ public class StripePaymentService implements PaymentService {
         paymentDao.save(payment);
 
         // create response
-        ChargeDTO chargeResponse = new ChargeDTO();
+        ChargeDTO chargeResponse  = this.checkIfStripeTransactionApproved(chargeStripe.getPaid(), chargeStripe.getStatus(), chargeStripe.getRefunded(), chargeStripe.getAmountRefunded());
         chargeResponse.setAmount(chargeStripe.getAmount());
         chargeResponse.setCurrency(ChargeDTO.Currency.valueOf(chargeStripe.getCurrency().toUpperCase()));
-        chargeResponse.setPaymentApproved(paymentApproved);
         return chargeResponse;
     }
 
-    private boolean checkIfStripeTransactionApproved(Charge chargeStripe) {
+    @Override
+    public ChargeDTO getPaymentStatusForUser(PaymentType paymentType) throws ServiceException {
+        ChargeDTO resultDTO = new ChargeDTO();
+        AppUser sessionUser = userUtil.extractLoggedAppUserFromDatabase();
+        if (sessionUser == null) {
+            resultDTO.setPaymentApproved(false);
+            resultDTO.setDescription("Cannot check payment status for invalid session user!");
+        } else {
+            List<Payment> paymentList = paymentDao.findByUserAndPaymentType(sessionUser.getUserId(), paymentType.name());
+            if (paymentList == null || paymentList.isEmpty()) {
+                resultDTO.setPaymentApproved(false);
+            } else {
+                Payment payment = paymentList.get(0);
+                PaymentStripe paymentStripe = payment.getPaymentStripe();
+                if (paymentStripe == null) {
+                    resultDTO.setPaymentApproved(false);
+                    resultDTO.setDescription("No provider payment registered for current user!");
+                } else {
+                    resultDTO = this.checkIfStripeTransactionApproved(paymentStripe.getPaid(), paymentStripe.getStatus(), paymentStripe.getRefunded(), paymentStripe.getAmountCentsRefunded());
+                }
+            }
+        }
 
-        if (chargeStripe.getPaid() == null || chargeStripe.getPaid() == false) {
-            return false;
+        return resultDTO;
+    }
+
+
+    /**
+     * Check the overall status of the transaction
+     *
+     * @param paid
+     * @param transactionStatus
+     * @param refunded
+     * @param amountRefunded
+     * @return
+     */
+    private ChargeDTO checkIfStripeTransactionApproved(Boolean paid, String transactionStatus, Boolean refunded, Long amountRefunded) {
+
+        ChargeDTO resultDTO = new ChargeDTO();
+        resultDTO.setPaymentApproved(true);
+        resultDTO.setDescription("Transaction approved");
+
+        if (paid == null || paid == false) {
+            resultDTO.setPaymentApproved(false);
+            resultDTO.setDescription("Payment was not approved!");
+        } else if (transactionStatus == null || !transactionStatus.equals(SUCCESS_STATUS)) {
+            resultDTO.setPaymentApproved(false);
+            resultDTO.setDescription("Payment was not successful! Payment status: " + transactionStatus);
+        } else if (refunded == true && amountRefunded > 100L) {
+            resultDTO.setPaymentApproved(false);
+            resultDTO.setDescription("Payment was refunded!");
         }
-        if (chargeStripe.getStatus() == null || !chargeStripe.getStatus().equals(SUCCESS_STATUS)) {
-            return false;
-        }
-        if (chargeStripe.getRefunded() == true && chargeStripe.getAmountRefunded() > 100L) {
-            return false;
-        }
-        return true;
+        return resultDTO;
     }
 }
