@@ -12,18 +12,19 @@ public interface PaymentService {
     /**
      * Method used to charge the session user with the amount specified into the DTO
      *
-     * @param chargeDTO
-     * @return
-     * @throws ServiceException
+     * @param chargeDTO: the charge details for the logged user
+     * @param paymentType: an enum with the type of payment that is transacted
+     * @return: the details of the charge if the trasaction was successful
+     * @throws ServiceException: exception thrown if en error event occurs while charging the user
      */
     ChargeDTO charge(ChargeDTO chargeDTO, PaymentType paymentType) throws ServiceException;
 
     /**
      * Check if the payment having the specified type was approved for the session user
      *
-     * @param paymentType
-     * @return
-     * @throws ServiceException
+     * @param paymentType: an enum with the type of payment to get status
+     * @return: the details of the charge including the status for the referred payment type
+     * @throws ServiceException: exception thrown if en error event occurs while getting payment status for the user
      */
-    ChargeDTO getPaymentStatusForUser(PaymentType paymentType) throws ServiceException;
+    ChargeDTO getPaymentStatus(PaymentType paymentType) throws ServiceException;
 }

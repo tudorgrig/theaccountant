@@ -5,6 +5,7 @@ import com.TheAccountant.dao.NotificationDao;
 import com.TheAccountant.model.loan.Loan;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationCategory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -50,9 +51,9 @@ public class LoanNotificationService {
         stringBuilder.append(PREFIX);
         stringBuilder.append(loan.getReceiving() == Boolean.TRUE ? TO_RECEIVE_FROM : TO_GIVE_TO);
         stringBuilder.append(loan.getCounterparty().getName());
-        stringBuilder.append(" ");
+        stringBuilder.append(StringUtils.SPACE);
         stringBuilder.append(loan.getAmount());
-        stringBuilder.append(" " + loan.getCurrency());
+        stringBuilder.append(StringUtils.SPACE + loan.getCurrency());
         return stringBuilder.toString();
     }
 

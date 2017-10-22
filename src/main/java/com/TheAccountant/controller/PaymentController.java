@@ -18,19 +18,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping(value = "/payment")
+@RequestMapping(value = "/payments")
 public class PaymentController {
 
-    private static final Logger LOG = Logger.getLogger(AppUserController.class.getName());
+    private static final Logger LOG = Logger.getLogger(PaymentController.class.getName());
 
     @Autowired
     private PaymentService paymentService;
 
-    @RequestMapping(value = "/user_license", method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     @Transactional
     public ResponseEntity<?> charge(@RequestBody @Valid ChargeDTO chargeDTO) {
 
-        LOG.info("------ Charge controller chargeDTO: " + chargeDTO.toString());
+        LOG.info(" Charge controller new chargeDTO: " + chargeDTO.getDescription());
 
         ChargeDTO resultDTO;
         try {
@@ -42,21 +42,15 @@ public class PaymentController {
         return new ResponseEntity<>(resultDTO, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/getPaymentStatusForUser/{paymentType}", method = RequestMethod.GET)
+    @RequestMapping(value = "/status", method = RequestMethod.GET)
     @Transactional
-    public ResponseEntity<?> getPaymentStatusForUser(@PathVariable("paymentType") String paymentType) {
+    public ResponseEntity<?> getPaymentStatusForUser() {
 
-        PaymentType paymentTypeEnum;
-        if (paymentType.equalsIgnoreCase(PaymentType.USER_LICENSE.name())) {
-            paymentTypeEnum = PaymentType.USER_LICENSE;
-        } else {
-            LOG.log(Level.SEVERE, "Payment type '" + paymentType + "' not recognized!");
-            throw new BadRequestException("Payment type '" + paymentType + "' not recognized!");
-        }
+        PaymentType paymentTypeEnum = PaymentType.USER_LICENSE;
 
         ChargeDTO resultDTO;
         try {
-            resultDTO = paymentService.getPaymentStatusForUser(paymentTypeEnum);
+            resultDTO = paymentService.getPaymentStatus(paymentTypeEnum);
         } catch (ServiceException e) {
             LOG.log(Level.SEVERE, e.getMessage());
             throw new BadRequestException(e.getMessage());

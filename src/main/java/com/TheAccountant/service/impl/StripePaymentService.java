@@ -1,5 +1,6 @@
 package com.TheAccountant.service.impl;
 
+import com.TheAccountant.controller.PaymentController;
 import com.TheAccountant.dao.PaymentDao;
 import com.TheAccountant.dao.PaymentStripeDao;
 import com.TheAccountant.dto.charge.ChargeDTO;
@@ -9,6 +10,7 @@ import com.TheAccountant.model.payment.PaymentType;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.service.PaymentService;
 import com.TheAccountant.service.exception.ServiceException;
+import com.TheAccountant.util.PaymentUtil;
 import com.TheAccountant.util.UserUtil;
 import com.stripe.Stripe;
 import com.stripe.exception.*;
@@ -23,6 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Florin on 7/31/2017.
@@ -31,7 +35,7 @@ import java.util.Map;
 @Transactional
 public class StripePaymentService implements PaymentService {
 
-    private static final String SUCCESS_STATUS = "succeeded";
+    private static final Logger LOG = Logger.getLogger(PaymentController.class.getName());
 
     @Value("${stripe.secret.key}")
     private String secretKey;
@@ -43,13 +47,13 @@ public class StripePaymentService implements PaymentService {
     private String paymentLicenseCurrency;
 
     @Autowired
-    private PaymentStripeDao paymentStripeDao;
-
-    @Autowired
     private PaymentDao paymentDao;
 
     @Autowired
     private UserUtil userUtil;
+
+    @Autowired
+    private PaymentUtil paymentUtil;
 
     @PostConstruct
     public void init() {
@@ -71,36 +75,23 @@ public class StripePaymentService implements PaymentService {
         try {
             chargeStripe = Charge.create(chargeParams);
         } catch (AuthenticationException e) {
-            e.printStackTrace();
-            throw new ServiceException("Problems verifying informations about provided data! Error: " + e.getMessage());
+            LOG.log(Level.SEVERE, "Problems verifying information about provided data! Error: " + e.getMessage());
+            throw new ServiceException("Problems verifying information about provided data! Error: " + e.getMessage());
         } catch (InvalidRequestException e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Invalid Payment attempt! Error: " + e.getMessage());
             throw new ServiceException("Invalid Payment attempt! Error: " + e.getMessage());
         } catch (APIConnectionException e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Invalid payment API access! Error: " + e.getMessage());
             throw new ServiceException("Invalid payment API access! Error: " + e.getMessage());
         } catch (CardException e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Problems validating the provided card information! Error: " + e.getMessage());
             throw new ServiceException("Problems validating the provided card information! Error: " + e.getMessage());
         } catch (APIException e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Problems accessing payment support! Error: " + e.getMessage());
             throw new ServiceException("Problems accessing payment support! Error: " + e.getMessage());
         }
 
-        // PaymentStripe - details for charging with stripe
-        PaymentStripe paymentStripe = new PaymentStripe();
-        paymentStripe.setChargeId(chargeStripe.getId());
-        paymentStripe.setCreationDate(new Date(chargeStripe.getCreated()));
-        paymentStripe.setStatus(chargeStripe.getStatus());
-        paymentStripe.setPaid(chargeStripe.getPaid());
-        paymentStripe.setRefunded(chargeStripe.getRefunded());
-        paymentStripe.setAmountCents(chargeStripe.getAmount());
-        paymentStripe.setAmountCentsRefunded(chargeStripe.getAmountRefunded());
-        paymentStripe.setCurrency(chargeStripe.getCurrency());
-        paymentStripe.setChargeOutcome(chargeStripe.getOutcome().toJson());
-        paymentStripe.setChargeEmail(chargeDTO.getStripeEmail());
-        paymentStripe.setPaymentDescription(chargeStripe.getDescription());
-        paymentStripe = paymentStripeDao.save(paymentStripe);
+        PaymentStripe paymentStripe = paymentUtil.createPaymentStripeInstance(chargeStripe, chargeDTO);
 
         // Payment - table to register user payments
         Payment payment = new Payment();
@@ -114,14 +105,14 @@ public class StripePaymentService implements PaymentService {
         paymentDao.save(payment);
 
         // create response
-        ChargeDTO chargeResponse  = this.checkIfStripeTransactionApproved(chargeStripe.getPaid(), chargeStripe.getStatus(), chargeStripe.getRefunded(), chargeStripe.getAmountRefunded());
+        ChargeDTO chargeResponse  = paymentUtil.checkIfStripeTransactionApproved(chargeStripe.getPaid(), chargeStripe.getStatus(), chargeStripe.getRefunded(), chargeStripe.getAmountRefunded());
         chargeResponse.setAmount(chargeStripe.getAmount());
         chargeResponse.setCurrency(ChargeDTO.Currency.valueOf(chargeStripe.getCurrency().toUpperCase()));
         return chargeResponse;
     }
 
     @Override
-    public ChargeDTO getPaymentStatusForUser(PaymentType paymentType) throws ServiceException {
+    public ChargeDTO getPaymentStatus(PaymentType paymentType) throws ServiceException {
         ChargeDTO resultDTO = new ChargeDTO();
         AppUser sessionUser = userUtil.extractLoggedAppUserFromDatabase();
         if (sessionUser == null) {
@@ -138,7 +129,7 @@ public class StripePaymentService implements PaymentService {
                     resultDTO.setPaymentApproved(false);
                     resultDTO.setDescription("No provider payment registered for current user!");
                 } else {
-                    resultDTO = this.checkIfStripeTransactionApproved(paymentStripe.getPaid(), paymentStripe.getStatus(), paymentStripe.getRefunded(), paymentStripe.getAmountCentsRefunded());
+                    resultDTO = paymentUtil.checkIfStripeTransactionApproved(paymentStripe.getPaid(), paymentStripe.getStatus(), paymentStripe.getRefunded(), paymentStripe.getAmountCentsRefunded());
                 }
             }
         }
@@ -146,32 +137,4 @@ public class StripePaymentService implements PaymentService {
         return resultDTO;
     }
 
-
-    /**
-     * Check the overall status of the transaction
-     *
-     * @param paid
-     * @param transactionStatus
-     * @param refunded
-     * @param amountRefunded
-     * @return
-     */
-    private ChargeDTO checkIfStripeTransactionApproved(Boolean paid, String transactionStatus, Boolean refunded, Long amountRefunded) {
-
-        ChargeDTO resultDTO = new ChargeDTO();
-        resultDTO.setPaymentApproved(true);
-        resultDTO.setDescription("Transaction approved");
-
-        if (paid == null || paid == false) {
-            resultDTO.setPaymentApproved(false);
-            resultDTO.setDescription("Payment was not approved!");
-        } else if (transactionStatus == null || !transactionStatus.equals(SUCCESS_STATUS)) {
-            resultDTO.setPaymentApproved(false);
-            resultDTO.setDescription("Payment was not successful! Payment status: " + transactionStatus);
-        } else if (refunded == true && amountRefunded > 100L) {
-            resultDTO.setPaymentApproved(false);
-            resultDTO.setDescription("Payment was refunded!");
-        }
-        return resultDTO;
-    }
 }

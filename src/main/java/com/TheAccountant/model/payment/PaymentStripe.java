@@ -16,11 +16,11 @@ public class PaymentStripe {
     private long id;
 
     @NotNull
-    @Column(name = "charge_id")
+    @Column(name = "charge_id", nullable = false)
     private String chargeId;
 
     @NotNull
-    @Column(name = "creation_date")
+    @Column(name = "creation_date", nullable = false)
     private Date creationDate;
 
     @NotNull
@@ -33,12 +33,13 @@ public class PaymentStripe {
     private Boolean refunded;
 
     @NotNull
-    @Column(name = "amount_cents")
+    @Column(name = "amount_cents", nullable = false)
     private Long amountCents;
 
     private Long amountCentsRefunded;
 
     @NotNull
+    @Column(name = "currency", nullable = false)
     private String currency;
 
     @Column(name = "charge_outcome")
