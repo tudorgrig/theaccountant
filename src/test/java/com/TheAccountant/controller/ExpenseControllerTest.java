@@ -1,5 +1,6 @@
 package com.TheAccountant.controller;
 
+import static com.TheAccountant.controller.PaymentControllerTest.TEST_TOKEN;
 import static org.junit.Assert.*;
 
 import java.sql.Timestamp;
@@ -8,9 +9,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.dto.notification.NotificationEntityWrapperDTO;
 import com.TheAccountant.model.notification.NotificationPriority;
 import com.TheAccountant.service.NotificationService;
+import com.TheAccountant.testUtil.TestMockUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +36,8 @@ import com.TheAccountant.model.expense.Expense;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.ControllerUtil;
 
+import javax.transaction.Transactional;
+
 /**
  * Test class for the expense controller
  *
@@ -41,6 +46,7 @@ import com.TheAccountant.util.ControllerUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-config.xml"})
 @TestPropertySource(locations="classpath:application-test.properties")
+@Transactional
 public class ExpenseControllerTest {
 
     private static final String LOGGED_USERNAME = "florin.iacob";
@@ -48,6 +54,9 @@ public class ExpenseControllerTest {
 
     private AppUser applicationUser;
     private Category category;
+
+    @Autowired
+    private PaymentController paymentController;
 
     @Autowired
     private ExpenseController expenseController;
@@ -70,13 +79,6 @@ public class ExpenseControllerTest {
         applicationUser = createAndSaveAppUser(LOGGED_USERNAME, "florin.iacob.expense@gmail.com");
         ControllerUtil.setCurrentLoggedUser(LOGGED_USERNAME);
         category = createAndSaveCategory(applicationUser);
-    }
-
-    @After
-    public void cleanUp() {
-        appUserDao.delete(applicationUser.getUserId());
-        appUserDao.flush();
-
     }
 
     @Test
@@ -172,22 +174,6 @@ public class ExpenseControllerTest {
         ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         responseEntity = expenseController.listAllExpenses();
-        assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
-        ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
-        assertEquals(expense.getName(), result.getName());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void shouldListAllExpenseByCategoryName() {
-
-        Expense expense = createExpense(category, applicationUser);
-        Expense[] expenses = new Expense[1];
-        expenses[0] = expense;
-
-        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        responseEntity = expenseController.listAllExpensesByCategoryName(category.getName());
         assertEquals(1, ((List<ExpenseDTO>) responseEntity.getBody()).size());
         ExpenseDTO result = ((List<ExpenseDTO>) responseEntity.getBody()).get(0);
         assertEquals(expense.getName(), result.getName());
@@ -454,24 +440,12 @@ public class ExpenseControllerTest {
     }
 
     @Test
-    public void shouldDeleteAllExpensesByCategoryName() {
-
-        Expense expense = createExpense(category, applicationUser);
-        Expense[] expenses = new Expense[1];
-        expenses[0] = expense;
-
-        ResponseEntity<?> responseEntity = expenseController.createExpenses(expenses);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-        responseEntity = expenseController.deleteAllByCategory(category.getId());
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-
-        responseEntity = expenseController.listAllExpensesByCategoryName(category.getName());
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-    }
-
-    @Test
     public void shouldCreateNotificationWithHighPriority() {
+
+        // Only paid accounts can access have Notifications
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
 
         Category categ = this.createAndSaveCategory(applicationUser, 1000.0, "notification test");
         Expense expense1 = createExpense(categ, applicationUser);
@@ -518,6 +492,11 @@ public class ExpenseControllerTest {
 
     @Test
     public void shouldCreateNotificationWithMediumPriority() {
+
+        // Only paid accounts can access have Notifications
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
 
         Double categoryThresholdAmount = 1000.0;
         Double percent = notificationService.getThresholdMediumNotificationPercent();

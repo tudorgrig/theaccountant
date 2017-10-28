@@ -1,11 +1,14 @@
 package com.TheAccountant.controller;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.CounterpartyDao;
+import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.dto.loan.LoanDTO;
 import com.TheAccountant.model.counterparty.Counterparty;
 import com.TheAccountant.model.loan.Loan;
 import com.TheAccountant.model.user.AppUser;
+import com.TheAccountant.testUtil.TestMockUtil;
 import com.TheAccountant.util.ControllerUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -18,21 +21,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static com.TheAccountant.controller.PaymentControllerTest.TEST_TOKEN;
+import static org.junit.Assert.*;
+
 /**
  * Created by tudor.grigoriu on 3/17/2017.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-config.xml"})
 @TestPropertySource(locations="classpath:application-test.properties")
+@Transactional
 public class LoanControllerTest {
 
     private static final String COUNTERPARTY_NAME = "COUNTERPARTY_NAME";
@@ -55,6 +60,9 @@ public class LoanControllerTest {
 
     private AppUser appUser;
 
+    @Autowired
+    private PaymentController paymentController;
+
     @Before
     public void initialize() {
 
@@ -62,14 +70,11 @@ public class LoanControllerTest {
         String email = "test@my-money-tracker.ro";
         appUser = createAppUser(username, email);
         ControllerUtil.setCurrentLoggedUser(username);
-    }
 
-    @After
-    public void cleanUp() {
-        if(appUser != null && appUser.getUserId() != 0) {
-            appUserDao.delete(appUser.getUserId());
-            appUserDao.flush();
-        }
+        // Only paid accounts can access Loan Module
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
     }
 
     @Test
@@ -88,6 +93,26 @@ public class LoanControllerTest {
         assertEquals(loan.getCurrency(), result.getCurrency());
         assertEquals(loan.getReceiving(), result.getReceiving());
         assertEquals(loan.getDescription(), result.getDescription());
+    }
+
+    @Test
+    public void shouldNotCreateForUnpaidAccount() {
+        String username = "unpaid_loan_controller_test";
+        String email = "unpaid@account.com";
+        createAppUser(username, email);
+        ControllerUtil.setCurrentLoggedUser(username);
+
+        Counterparty counterparty = createCounterparty();
+        counterparty = counterpartyDao.saveAndFlush(counterparty);
+        Loan loan = createLoan();
+        loan.setCounterparty(counterparty);
+        try {
+            loanController.create(loan);
+        } catch (BadRequestException e) {
+            assertEquals(e.getMessage(), "Adding loans is available only to paid accounts!");
+            return;
+        }
+        fail("Creating loan with unpaid account should throw exception!");
     }
 
     @Test

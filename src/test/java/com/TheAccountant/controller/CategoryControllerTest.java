@@ -1,14 +1,13 @@
 package com.TheAccountant.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.dao.CategoryDao;
+import com.TheAccountant.dto.charge.ChargeDTO;
+import com.TheAccountant.testUtil.TestMockUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +27,11 @@ import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.user.AppUser;
 import com.TheAccountant.util.ControllerUtil;
 
+import javax.transaction.Transactional;
+
+import static com.TheAccountant.controller.PaymentControllerTest.TEST_TOKEN;
+import static org.junit.Assert.*;
+
 /**
  * Test class for the CategoryController
  *
@@ -36,13 +40,14 @@ import com.TheAccountant.util.ControllerUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
 @TestPropertySource(locations="classpath:application-test.properties")
+@Transactional
 @SuppressWarnings("rawtypes")
 public class CategoryControllerTest {
     
     private static final String CATEGORY_NAME = "Category1";
     private static final Long CATEGORY_ID = 777L;
     private static final String TEST_COLOUR = "stable";
-    private static final double TEST_THRESHOLD = 42.2;
+    private static final double TEST_THRESHOLD = 0.0;
 
     @Autowired
     CategoryController categoryController;
@@ -57,6 +62,9 @@ public class CategoryControllerTest {
     CategoryDao categoryDao;
 
     private AppUser appUser;
+
+    @Autowired
+    private PaymentController paymentController;
     
     @Before
     public void initialize() {
@@ -67,14 +75,6 @@ public class CategoryControllerTest {
         ControllerUtil.setCurrentLoggedUser(username);
     }
 
-    @After
-    public void cleanUp() {
-        if(appUser != null && appUser.getUserId() != 0) {
-            appUserDao.delete(appUser.getUserId());
-            appUserDao.flush();
-        }
-    }
-    
     @Test
     public void shouldCreateCategory() {
     
@@ -85,7 +85,36 @@ public class CategoryControllerTest {
         assertEquals(TEST_COLOUR, ((CategoryDTO) responseEntity.getBody()).getColour());
         assertTrue(TEST_THRESHOLD == ((CategoryDTO) responseEntity.getBody()).getThreshold());
     }
-    
+
+    @Test
+    public void shouldCreateCategoryWithThreshold() {
+
+        // Only paid accounts can access Loan Module
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
+
+        Category category = createCategory(CATEGORY_NAME);
+        category.setThreshold(100.0);
+        ResponseEntity responseEntity = categoryController.createCategory(category);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(((CategoryDTO) responseEntity.getBody()).getId() > 0);
+        assertTrue(100.0 == ((CategoryDTO) responseEntity.getBody()).getThreshold());
+    }
+
+    @Test
+    public void shouldNotCreateCategoryWithThresholdForUnpaidAccount() {
+        Category category = createCategory(CATEGORY_NAME);
+        category.setThreshold(100.0);
+        try {
+            categoryController.createCategory(category);
+        } catch (BadRequestException e) {
+            assertEquals(e.getMessage(), "Category limit is allowed only for paid accounts!");
+            return;
+        }
+        fail("category limit should be allowed only for paid accounts!");
+    }
+
     @Test
     public void shouldFindEmptyListOfCategories() {
     
@@ -140,7 +169,46 @@ public class CategoryControllerTest {
         ResponseEntity updatedCategory = categoryController.getCategory(id);
         assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
     }
-    
+
+    @Test
+    public void shouldUpdateCategoryWithThreshold() {
+
+        // Only paid accounts can access Loan Module
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
+
+        String updatedName = "categWithThreshold";
+        Category category = createCategory(CATEGORY_NAME);
+        ResponseEntity responseEntity = categoryController.createCategory(category);
+        long id = ((CategoryDTO) responseEntity.getBody()).getId();
+        Category toUpdatecategory = createCategory(updatedName);
+        toUpdatecategory.setThreshold(100.0);
+        ResponseEntity updated = categoryController.updateCategory(id, toUpdatecategory);
+        assertEquals(HttpStatus.NO_CONTENT, updated.getStatusCode());
+        assertEquals("Category updated", updated.getBody());
+        ResponseEntity updatedCategory = categoryController.getCategory(id);
+        assertEquals(HttpStatus.OK, updatedCategory.getStatusCode());
+        assertTrue((100.0 - ((CategoryDTO) updatedCategory.getBody()).getThreshold()) < 0.1);
+    }
+
+    @Test
+    public void shouldNotUpdateCategoryWithThresholdForUnpaidAccount() {
+        String updatedName = "categWithThreshold";
+        Category category = createCategory(CATEGORY_NAME);
+        ResponseEntity responseEntity = categoryController.createCategory(category);
+        long id = ((CategoryDTO) responseEntity.getBody()).getId();
+        Category toUpdatecategory = createCategory(updatedName);
+        toUpdatecategory.setThreshold(100.0);
+        try {
+            categoryController.updateCategory(id, toUpdatecategory);
+        } catch (BadRequestException e) {
+            assertEquals(e.getMessage(), "Category limit is allowed only for paid accounts!");
+            return;
+        }
+        fail("Category limit should be allowed only for paid accounts!");
+    }
+
     @Test(expected = NotFoundException.class)
     public void shouldNotUpdateCategory() {
     

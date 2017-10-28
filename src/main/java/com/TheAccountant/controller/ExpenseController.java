@@ -106,24 +106,6 @@ public class ExpenseController extends CurrencyHolderController {
         return new ResponseEntity<>(createExpenseDTOs(expenses), HttpStatus.OK);
     }
 
-    //TODO: SAME AS UPPER TODO
-    @RequestMapping(value = "/find/category/{category_name:.+}", method = RequestMethod.GET)
-    @Transactional
-    public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryName(@PathVariable("category_name") String categoryName) {
-
-        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
-        Optional<Category> found =
-                user.getCategories().stream().filter(category -> category.getName().equals(categoryName)).findFirst();
-        if (!found.isPresent()) {
-            throw new NotFoundException("Category not found");
-        }
-        Category category = found.get();
-        if (category.getExpenses().isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(createExpenseDTOs(category.getExpenses()), HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/find/{id:.+}/{start_time_millis}/{end_time_millis}", method = RequestMethod.GET)
     public ResponseEntity<List<ExpenseDTO>> listAllExpensesByCategoryAndTimeInterval(
             @PathVariable("id") String id,
