@@ -28,7 +28,7 @@ public class PaymentController {
 
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
-    public ResponseEntity<?> charge(@RequestBody @Valid ChargeDTO chargeDTO) {
+    public ResponseEntity<ChargeDTO> charge(@RequestBody @Valid ChargeDTO chargeDTO) {
 
         LOG.info(" Charge controller new chargeDTO: " + chargeDTO.getDescription());
 
@@ -43,8 +43,7 @@ public class PaymentController {
     }
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
-    @Transactional
-    public ResponseEntity<?> getPaymentStatusForUser() {
+    public ResponseEntity<ChargeDTO> getPaymentStatusForUser() {
 
         PaymentType paymentTypeEnum = PaymentType.USER_LICENSE;
 

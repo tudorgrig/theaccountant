@@ -102,7 +102,7 @@ public class StripePaymentService implements PaymentService {
         payment.setCurrency(chargeStripe.getCurrency());
         payment.setPaymentDescription(chargeStripe.getDescription());
         payment.setCreationDate(new Date());
-        paymentDao.save(payment);
+        paymentDao.saveAndFlush(payment);
 
         // create response
         ChargeDTO chargeResponse  = paymentUtil.checkIfStripeTransactionApproved(chargeStripe.getPaid(), chargeStripe.getStatus(), chargeStripe.getRefunded(), chargeStripe.getAmountRefunded());

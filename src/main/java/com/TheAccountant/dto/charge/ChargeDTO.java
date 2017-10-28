@@ -10,7 +10,7 @@ public class ChargeDTO {
     private Currency currency;
     private String stripeEmail;
     private String stripeToken;
-    private Boolean paymentApproved;
+    private boolean paymentApproved;
 
     public String getDescription() {
         return description;
@@ -52,11 +52,11 @@ public class ChargeDTO {
         this.stripeToken = stripeToken;
     }
 
-    public Boolean getPaymentApproved() {
+    public boolean getPaymentApproved() {
         return paymentApproved;
     }
 
-    public void setPaymentApproved(Boolean paymentApproved) {
+    public void setPaymentApproved(boolean paymentApproved) {
         this.paymentApproved = paymentApproved;
     }
 
