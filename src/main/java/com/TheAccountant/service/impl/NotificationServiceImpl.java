@@ -1,12 +1,16 @@
 package com.TheAccountant.service.impl;
 
+import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.dao.ExpenseDao;
 import com.TheAccountant.dao.NotificationDao;
+import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationCategory;
 import com.TheAccountant.model.notification.NotificationPriority;
+import com.TheAccountant.model.payment.PaymentType;
 import com.TheAccountant.service.NotificationService;
+import com.TheAccountant.service.PaymentService;
 import com.TheAccountant.service.exception.ServiceException;
 import com.TheAccountant.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -36,10 +41,24 @@ public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private UserUtil userUtil;
 
+    @Autowired
+    private PaymentService paymentService;
+
     private static final Logger LOGGER = Logger.getLogger(NotificationServiceImpl.class.getName());
 
     @Override
     public Notification registerThresholdNotification(Category category) {
+
+        // Notifications should be created only for paid accounts
+        ChargeDTO chargeResult = null;
+        try {
+            chargeResult = paymentService.getPaymentStatus(PaymentType.USER_LICENSE);
+        } catch (ServiceException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
+        if (chargeResult == null || chargeResult.getPaymentApproved() == false) {
+            return null;
+        }
 
         Notification notification = null;
         if (category.getThreshold() > 0) {

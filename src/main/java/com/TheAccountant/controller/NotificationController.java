@@ -4,9 +4,13 @@ import com.TheAccountant.controller.exception.BadRequestException;
 import com.TheAccountant.controller.exception.NotFoundException;
 import com.TheAccountant.converter.NotificationConverter;
 import com.TheAccountant.dao.NotificationDao;
+import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.dto.notification.NotificationDTO;
 import com.TheAccountant.model.notification.Notification;
+import com.TheAccountant.model.payment.PaymentType;
 import com.TheAccountant.model.user.AppUser;
+import com.TheAccountant.service.PaymentService;
+import com.TheAccountant.service.exception.ServiceException;
 import com.TheAccountant.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Created by tudor.grigoriu on 3/5/2017.
@@ -33,8 +38,21 @@ public class NotificationController {
     @Autowired
     private NotificationConverter notificationConverter;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @RequestMapping(params = {"limit", "offset"},method = RequestMethod.GET)
     public ResponseEntity<List<NotificationDTO>> findNotifications(@RequestParam("limit") Integer limit, @RequestParam("offset") Integer offset) {
+
+        ChargeDTO chargeResult = null;
+        try {
+            chargeResult = paymentService.getPaymentStatus(PaymentType.USER_LICENSE);
+        } catch (ServiceException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+        if (chargeResult.getPaymentApproved() == false) {
+            throw new BadRequestException("Notifications are allowed only for paid accounts!");
+        }
 
         AppUser user = userUtil.extractLoggedAppUserFromDatabase();
         if (user == null) {

@@ -1,15 +1,18 @@
 package com.TheAccountant.service;
 
+import com.TheAccountant.controller.PaymentController;
 import com.TheAccountant.dao.AppUserDao;
 import com.TheAccountant.dao.AuthenticatedSessionDao;
 import com.TheAccountant.dao.CategoryDao;
 import com.TheAccountant.dao.ExpenseDao;
+import com.TheAccountant.dto.charge.ChargeDTO;
 import com.TheAccountant.model.category.Category;
 import com.TheAccountant.model.expense.Expense;
 import com.TheAccountant.model.notification.Notification;
 import com.TheAccountant.model.notification.NotificationPriority;
 import com.TheAccountant.model.session.AuthenticatedSession;
 import com.TheAccountant.model.user.AppUser;
+import com.TheAccountant.testUtil.TestMockUtil;
 import com.TheAccountant.util.ControllerUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -21,9 +24,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Currency;
 import java.util.Date;
+
+import static com.TheAccountant.controller.PaymentControllerTest.TEST_TOKEN;
 
 /**
  * Test class for {@link NotificationService}
@@ -33,6 +39,7 @@ import java.util.Date;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-config.xml" })
 @TestPropertySource(locations="classpath:application-test.properties")
+@Transactional
 public class NotificationServiceTest {
 
     private AppUser applicationUser = null;
@@ -49,27 +56,37 @@ public class NotificationServiceTest {
     @Autowired
     private ExpenseDao expenseDao;
 
+    @Autowired
+    private PaymentController paymentController;
+
     @Before
     public void setup() {
-
         applicationUser = createAndSaveAppUser("florin.iacob.expense@gmail.com", "username1");
         ControllerUtil.setCurrentLoggedUser("username1");
     }
 
-    @After
-    public void cleanUp() {
-        appUserDao.delete(applicationUser.getUserId());
-        appUserDao.flush();
-    }
-
     @Test
     public void shouldRegisterThresholdNotificationWithHighPriority() {
+        // Only paid accounts can access Loan Module
+        ChargeDTO chargeDTO = TestMockUtil.createMockChargeDTO();
+        chargeDTO.setStripeToken(TEST_TOKEN);
+        paymentController.charge(chargeDTO);
+
         Category category = this.createAndSaveCategory("notif test", 1000.0);
         this.createAndSaveExpense(category, 600);
         this.createAndSaveExpense(category, 500);
         Notification notification = notificationService.registerThresholdNotification(category);
         Assert.assertNotNull(notification);
         Assert.assertEquals(NotificationPriority.HIGH.name(), notification.getPriority());
+    }
+
+    @Test
+    public void shouldNotRegisterThresholdNotificationForUnpaidAccount() {
+        Category category = this.createAndSaveCategory("notif test", 1000.0);
+        this.createAndSaveExpense(category, 600);
+        this.createAndSaveExpense(category, 500);
+        Notification notification = notificationService.registerThresholdNotification(category);
+        Assert.assertNull(notification);
     }
 
     @Test
