@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import java.util.Currency;
 import java.util.Date;
 import java.util.HashSet;
@@ -72,6 +73,8 @@ public class AppUser {
     @Column(name = "defaultCurrency", unique = false, nullable = true)
     private Currency defaultCurrency;
 
+    @Column(name = "creation_date")
+    private Timestamp creationDate;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Category> categories = new HashSet<>();
@@ -221,6 +224,14 @@ public class AppUser {
         this.defaultCurrency = defaultCurrency;
     }
 
+    public Timestamp getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Timestamp creationDate) {
+        this.creationDate = creationDate;
+    }
+
     public Set<Counterparty> getCounterparties() {
         return counterparties;
     }
@@ -237,4 +248,5 @@ public class AppUser {
                 ", email='" + email + '\'' +
                 '}';
     }
+
 }

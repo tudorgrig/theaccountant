@@ -74,6 +74,7 @@ public class AppUserController {
         String encryptedPassword = passwordEncrypt.encryptPassword(appUser.getPassword());
         appUser.setPassword(encryptedPassword);
         appUser.setActivated(false);
+        appUser.setCreationDate(new Timestamp(System.currentTimeMillis()));
         try {
             AppUser createdAppUser = appUserDao.saveAndFlush(appUser);
             userUtil.generateDefaultCategoriesForUser(createdAppUser);
@@ -232,9 +233,10 @@ public class AppUserController {
 
         String newPasswordEncrypted = passwordEncrypt.encryptPassword(newPassword);
         appUser.setPassword(newPasswordEncrypted);
+        appUser.setForgotPassword(null);
         appUserDao.saveAndFlush(appUser);
 
-        forgotPasswordDao.delete(forgotPassword);
+        forgotPasswordDao.delete(forgotPassword.getId());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -293,8 +295,9 @@ public class AppUserController {
         } else {
             AppUser user = userRegistration.getUser();
             user.setActivated(true);
+            user.setUserRegistration(null);
             appUserDao.saveAndFlush(user);
-            userRegistrationDao.delete(userRegistration);
+            userRegistrationDao.delete(userRegistration.getId());
             return new ResponseEntity<>(appUserConverter.convertTo(user), HttpStatus.OK);
         }
     }

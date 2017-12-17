@@ -196,6 +196,8 @@ public class AppUserControllerTest {
         appUserController.activateUser(regList.get(0).getCode());
         appUser = appUserDao.findOne(appUser.getUserId());
         assertTrue("User should be activated!", appUser.isActivated());
+        regList = userRegistrationDao.findByUserId(appUser.getUserId());
+        assertTrue("Should delete used UserRegistration entity!", regList == null || regList.isEmpty());
         appUserDao.delete(appUser.getUserId());
         appUserDao.flush();
     }
@@ -628,6 +630,9 @@ public class AppUserControllerTest {
         assertEquals("The new password was NOT set for the User",
                 passwordEncrypt.encryptPassword(newPassword),
                 appUser.getPassword());
+
+        List<ForgotPassword> forgotPasswordList = forgotPasswordDao.findByUserId(appUser.getUserId());
+        assertTrue("Should delete used ForgotPassword entity", forgotPasswordList == null || forgotPasswordList.isEmpty());
 
         appUserDao.delete(appUser.getUserId());
         appUserDao.flush();
