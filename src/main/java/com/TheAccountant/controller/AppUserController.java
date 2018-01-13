@@ -236,7 +236,6 @@ public class AppUserController {
         appUser.setForgotPassword(null);
         appUserDao.saveAndFlush(appUser);
 
-        forgotPasswordDao.delete(forgotPassword.getId());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -297,7 +296,6 @@ public class AppUserController {
             user.setActivated(true);
             user.setUserRegistration(null);
             appUserDao.saveAndFlush(user);
-            userRegistrationDao.delete(userRegistration.getId());
             return new ResponseEntity<>(appUserConverter.convertTo(user), HttpStatus.OK);
         }
     }

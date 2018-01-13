@@ -89,10 +89,10 @@ public class AppUser {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user" , cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Counterparty> counterparties = new HashSet<>();
 
-    @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
+    @OneToOne (mappedBy="user", cascade = CascadeType.ALL, orphanRemoval = true)
     private ForgotPassword forgotPassword;
 
-    @OneToOne (mappedBy="user", cascade = CascadeType.ALL)
+    @OneToOne (mappedBy="user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserRegistration userRegistration;
 
     public Set<Notification> getNotifications() {
