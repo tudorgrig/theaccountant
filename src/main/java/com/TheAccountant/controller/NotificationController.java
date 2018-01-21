@@ -19,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -61,6 +63,21 @@ public class NotificationController {
         return new ResponseEntity<>(notificationConverter.convertList(notificationDao.fetchAll(user.getUserId(), limit, offset)), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/getTotal", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Long>> getTotalNotifications() {
+
+        Map<String, Long> resultDTO = new HashMap<>();
+
+        AppUser user = userUtil.extractLoggedAppUserFromDatabase();
+        if (user == null) {
+            throw new BadRequestException("User not found");
+        }
+        long totalNotifications = notificationDao.countByUserUserIdAndSeen(user.getUserId(), false);
+        resultDTO.put("total", totalNotifications);
+
+        return new ResponseEntity<>(resultDTO, HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     @Transactional
     public ResponseEntity<String> markNotificationAsSeen(@PathVariable("id") Long id) {
@@ -81,8 +98,7 @@ public class NotificationController {
         return new ResponseEntity<>("Notification updated", HttpStatus.NO_CONTENT);
     }
 
-    //Commented RequestMapping because delete should not be permited at this time
-    //@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @Transactional
     public ResponseEntity<String> deleteNotification(@PathVariable("id") Long id) {
         try {

@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.TheAccountant.controller.PaymentControllerTest.TEST_TOKEN;
 import static org.junit.Assert.assertEquals;
@@ -105,14 +106,37 @@ public class NotificationControllerTest {
         assertTrue(result.isSeen());
     }
 
+    @Test
+    public void shouldDeleteNotification(){
+        Notification notification = createNotificationAndSave();
+        notificationController.deleteNotification(notification.getId());
+        Notification result = notificationDao.findOne(notification.getId());
+        assertTrue(result == null);
+    }
+
+    @Test
+    public void shouldGetTotalNotifications() {
+        createNotificationAndSave(false);
+        Notification notificationToDelete = createNotificationAndSave(false);
+        createNotificationAndSave(false);
+        notificationController.deleteNotification(notificationToDelete.getId());
+        ResponseEntity<Map<String, Long>> responseEntity = notificationController.getTotalNotifications();
+        Map<String, Long> bodyResult = responseEntity.getBody();
+        assertTrue(bodyResult.get("total") == 2);
+    }
+
     private Notification createNotificationAndSave() {
+        return this.createNotificationAndSave(SEEN);
+    }
+
+    private Notification createNotificationAndSave(boolean seen) {
         long creationTimeMillis = System.currentTimeMillis();
         Timestamp creationDate = new Timestamp(creationTimeMillis);
         Notification notification = new Notification();
         notification.setMessage(MESSAGE);
         notification.setCategory(NotificationCategory.LOAN.name());
         notification.setCreationDate(creationDate);
-        notification.setSeen(SEEN);
+        notification.setSeen(seen);
         notification.setUser(applicationUser);
         notificationDao.saveAndFlush(notification);
         return notification;
