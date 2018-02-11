@@ -17,6 +17,8 @@ public interface NotificationDao extends JpaRepository<Notification, Long> {
     @Query(value = "SELECT DISTINCT n.* FROM notification n WHERE n.user_id = ?1 ORDER BY n.creationDate DESC LIMIT ?2 OFFSET ?3", nativeQuery = true)
     List<Notification> fetchAll(long userId, int limit, int offset);
 
+    long countByUserUserIdAndSeen(long userId, boolean seen);
+
     @Query("SELECT DISTINCT n FROM Notification n WHERE n.user.username = ?1 and n.seen = ?2 ORDER BY creationDate DESC")
     List<Notification> findBySeen(String username, boolean seen);
 }
